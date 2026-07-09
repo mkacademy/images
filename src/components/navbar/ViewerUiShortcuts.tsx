@@ -11,10 +11,10 @@ import ViewerNavigation from './ViewerNavigation';
 import { isViewerLoadingRoute, isViewerLoginRoute, isViewerNotFoundRoute } from '../../loadingRouteUtils';
 import { useFetchSequence } from '../../Hooks/useFetchSequence';
 
-const account = new URL('../../images/user.png', import.meta.url).href;
-const exit = new URL('../../images/3094700.png', import.meta.url).href;
-const fetchdataRed = new URL('../../images/fetchdata_red.png', import.meta.url).href;
-const loading = new URL('../../images/loading.gif', import.meta.url).href;
+const account = new URL('../../Images/user.png', import.meta.url).href;
+const exit = new URL('../../Images/3094700.png', import.meta.url).href;
+const fetchdataRed = new URL('../../Images/fetchdata_red.png', import.meta.url).href;
+const loading = new URL('../../Images/loading.gif', import.meta.url).href;
 
 interface ViewerUiShortcutsProps {
   convCss?: string;

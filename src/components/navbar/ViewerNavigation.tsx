@@ -16,9 +16,9 @@ import {
 } from '../../loadingRouteUtils';
 import * as styles from '../../styles/shortcuts.module.css';
 
-const quizIcon = new URL('../../images/7128236.png', import.meta.url).href;
-const courseIcon = new URL('../../images/2643368.png', import.meta.url).href;
-const tutorialIcon = new URL('../../images/5609505.png', import.meta.url).href;
+const quizIcon = new URL('../../Images/7128236.png', import.meta.url).href;
+const courseIcon = new URL('../../Images/2643368.png', import.meta.url).href;
+const tutorialIcon = new URL('../../Images/5609505.png', import.meta.url).href;
 
 interface ViewerNavigationProps {
   convCss?: string;
