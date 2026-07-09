@@ -1,0 +1,42 @@
+{
+  "name": "mkacademy-images",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "parcel index.html --port 3001",
+    "build": "parcel build index.html",
+    "preview": "npm run build && npx serve dist -p 3005 -s",
+    "serve": "npm run build && npx http-server dist -p 3006 -o --fallback /index.html",
+    "clear-cache": "rm -rf .parcel-cache dist",
+    "fresh-build": "npm run clear-cache && npm run build"
+  },
+  "browserslist": "> 0.5%, last 2 versions, not dead",
+  "@parcel/resolver-default": {
+    "packageExports": true
+  },
+  "dependencies": {
+    "@reduxjs/toolkit": "^2.7.0",
+    "bootstrap": "^5.3.5",
+    "buffer": "^6.0.3",
+    "jwt-decode": "^4.0.0",
+    "react": "^19.1.0",
+    "react-bootstrap": "^2.10.9",
+    "react-dom": "^19.1.0",
+    "react-hook-form": "^7.56.1",
+    "react-icons": "^5.5.0",
+    "react-redux": "^9.2.0",
+    "react-router-dom": "^7.6.3",
+    "react-responsive": "^10.0.1",
+    "redux-thunk": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.1",
+    "@types/react": "^19.0.10",
+    "@types/react-dom": "^19.0.4",
+    "parcel": "^2.15.4",
+    "postcss-preset-env": "^10.2.4",
+    "serve": "^14.2.5",
+    "typescript": "~5.7.2"
+  }
+}
