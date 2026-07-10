@@ -3,11 +3,11 @@
 **Repository:** [mkacademy/images](https://github.com/mkacademy/images) — read-only PNC viewer (formerly the `website` repo).
 
 - **Public site:** [mkacademy.ca](https://mkacademy.ca)
-- **CMS editor:** [mkacademy/cms](https://github.com/mkacademy/cms)
+- **Studio editor:** [mkacademy/studio](https://github.com/mkacademy/studio)
 
 ## Workspace
 
-Open the multi-root workspace (landing, cms, videos, images):
+Open the multi-root workspace (landing, studio, videos, images):
 
 ```bash
 open ~/Desktop/mkacademy.code-workspace
