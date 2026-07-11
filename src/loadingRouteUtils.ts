@@ -107,6 +107,15 @@ export const primaryLoadingWebapp = (
   return 'quiz';
 };
 
+export const primaryLoadingRoute = (
+  search: string,
+  foundPairs: LoadingDeepLinkPair[],
+): string => {
+  const webapp = primaryLoadingWebapp(search, foundPairs);
+  return LOADING_DEEP_LINK_PAIRS.find((p) => p.webapp === webapp)?.route
+    ?? '/convolution/tutorial';
+};
+
 export const isViewerLoginRoute = (pathname: string): boolean =>
   pathname === '/login' || pathname.endsWith('/login');
 

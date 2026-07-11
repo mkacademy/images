@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { NavigateOptions, useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import * as styles from '../styles/loading.module.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchData, setCurPage } from '../library/Thunks';
@@ -9,6 +9,7 @@ import {
   LOADING_DEEP_LINK_PAIRS,
   deepLinkExtraParams,
   parseLoadingTreeFlags,
+  primaryLoadingRoute,
   primaryLoadingWebapp,
   resolveViewerDeepLinkSearch,
 } from '../loadingRouteUtils';
@@ -171,38 +172,12 @@ const Loading: React.FC = () => {
     const proceed = () => {
       if (hasNavigated.current) return;
 
-      if (foundPairs.length > 0) {
-        dispatch(finalizePostHydrationSettings());
-        const currentUrl = `${location.pathname}${location.search}`;
-        const target = buildConvolutionNavigateTo(
-          foundPairs[0].route,
-          undefined,
-          stickyFsq,
-          { ldr: currentUrl, ...deepLinkExtraParams(location.search) },
-        );
-        if (!target) {
-          warnConvolutionCsFsqConflict(dispatch);
-          return;
-        }
-
-        const options: NavigateOptions = {
-          replace: true,
-          state: {
-            selectedT: params.tutorial !== undefined ? parseInt(params.tutorial, 10) : -1,
-            selectedC: params.course !== undefined ? parseInt(params.course, 10) : -1,
-            selectedQ: params.quiz !== undefined ? parseInt(params.quiz, 10) : -1,
-          },
-        };
-
-        hasNavigated.current = true;
-        navigate(target, options);
-        return;
-      }
-
       dispatch(finalizePostHydrationSettings());
+      const resolvedSearch = resolveViewerDeepLinkSearch(location.search);
       const currentUrl = `${location.pathname}${location.search}`;
+      const route = primaryLoadingRoute(resolvedSearch, foundPairs);
       const target = buildConvolutionNavigateTo(
-        '/convolution/tutorial',
+        route,
         undefined,
         stickyFsq,
         { ldr: currentUrl, ...deepLinkExtraParams(location.search) },
@@ -215,7 +190,11 @@ const Loading: React.FC = () => {
       hasNavigated.current = true;
       navigate(target, {
         replace: true,
-        state: { selectedT: -1, selectedC: -1, selectedQ: -1 },
+        state: {
+          selectedT: params.tutorial !== undefined ? parseInt(params.tutorial, 10) : -1,
+          selectedC: params.course !== undefined ? parseInt(params.course, 10) : -1,
+          selectedQ: params.quiz !== undefined ? parseInt(params.quiz, 10) : -1,
+        },
       });
     };
 
