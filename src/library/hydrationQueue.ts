@@ -8,7 +8,6 @@ import { resetHydrationQueries } from '../store/slices/sessionSlice';
 import { cpanelMessage, viewRequest } from '../store/slices/viewSlice';
 import {
   flushHydrationStoreBuffer,
-  resetHydrationStoreBuffer,
 } from './hydrationPayloadBuffer';
 import {
   getHydrationCpanelMessage,
@@ -29,7 +28,7 @@ const HYDRATION_BATCH_SIZE = 10;
 
 type QueryFetcher = () => ReturnType<typeof anonymousFetch>;
 
-type HydrationFetchSpec = {
+export type HydrationFetchSpec = {
   fetcher: QueryFetcher;
   hydrationSeekIds: number[];
 };
@@ -118,7 +117,7 @@ const resetHydrationQueueState = (): void => {
   hydrationCancelled = false;
   resetLegSessionState();
   bypassShouldHydrateSession = false;
-  resetHydrationStoreBuffer();
+  flushHydrationStoreBuffer();
   clearActiveWebapp();
   bindHydrationAttemptScope(null);
 };

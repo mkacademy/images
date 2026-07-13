@@ -11,6 +11,7 @@ import { RootState } from '../store';
 import Comments from '../components/views/Comments';
 import { clearContentTypeSelected } from '../store/slices/settingsSlice';
 import { useHydrateContainer } from '../Hooks/useHydrateContainer';
+import { useImageHydration } from '../Hooks/useImageHydration';
 import { usePncEmptyMessage } from '../Hooks/usePncEmptyMessage';
 
 interface TutorialReadOnlyProps {
@@ -27,6 +28,7 @@ const TutorialReadOnly: React.FC<TutorialReadOnlyProps> = ({ setWebApp, noTutori
   const emptyMessage = usePncEmptyMessage();
 
   useHydrateContainer('tutorial', bannerId, selectedBannerIndex > -1 && !noTutorials);
+  useImageHydration('tutorial', bannerId, selectedBannerIndex > -1 && !noTutorials);
 
   useEffect(() => {
     setWebApp('tutorial');

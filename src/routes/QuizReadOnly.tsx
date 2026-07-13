@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { clearContentTypeSelected } from '../store/slices/settingsSlice';
 import { useHydrateContainer } from '../Hooks/useHydrateContainer';
+import { useImageHydration } from '../Hooks/useImageHydration';
 import { usePncEmptyMessage } from '../Hooks/usePncEmptyMessage';
 
 interface QuizReadOnlyProps {
@@ -28,6 +29,7 @@ const QuizReadOnly: React.FC<QuizReadOnlyProps> = ({ setWebApp, noQuizzes }) => 
   const emptyMessage = usePncEmptyMessage();
 
   useHydrateContainer('quiz', bannerId, selectedBannerIndex > -1 && !noQuizzes);
+  useImageHydration('quiz', bannerId, selectedBannerIndex > -1 && !noQuizzes);
 
   useEffect(() => {
     setWebApp('quiz');

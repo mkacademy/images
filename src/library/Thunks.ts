@@ -102,11 +102,13 @@ export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayl
 export type DehydratedRowsFetchArg = {
     fetcher: () => Promise<ResultPayload>;
     hydrationSeekIds?: number[];
+    /** When true, skips main hydration queue lifecycle (used by ImageHydration serial runner). */
+    skipQueueLifecycle?: boolean;
 };
 
 export const deHydratedRowsDataFetcher = createAsyncThunk<void, DehydratedRowsFetchArg, { rejectValue: string; state: RootState }>(
     'row/untabledDataFetcher',
-    async ({ fetcher, hydrationSeekIds }, { rejectWithValue, dispatch, getState }) => {
+    async ({ fetcher, hydrationSeekIds, skipQueueLifecycle }, { rejectWithValue, dispatch, getState }) => {
         let settleError: string | undefined;
         try {
             const { payload: data, parent: fromEntity, entity: toEntity, isAppend, keywords } = await fetcher();
@@ -137,8 +139,10 @@ export const deHydratedRowsDataFetcher = createAsyncThunk<void, DehydratedRowsFe
             if (hydrationSeekIds?.length) {
                 markHydrationAttemptedSeekIds(hydrationSeekIds);
             }
-            onHydrationQueryComplete(dispatch, getState, settleError);
-            onHydrationSessionIdle(dispatch, getState);
+            if (!skipQueueLifecycle) {
+                onHydrationQueryComplete(dispatch, getState, settleError);
+                onHydrationSessionIdle(dispatch, getState);
+            }
         }
     }
 );

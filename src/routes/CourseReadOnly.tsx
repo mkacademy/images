@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../store';
 import { clearContentTypeSelected } from '../store/slices/settingsSlice';
 import { useHydrateContainer } from '../Hooks/useHydrateContainer';
+import { useImageHydration } from '../Hooks/useImageHydration';
 import { usePncEmptyMessage } from '../Hooks/usePncEmptyMessage';
 
 interface CourseReadOnlyProps {
@@ -29,6 +30,7 @@ const CourseReadOnly: React.FC<CourseReadOnlyProps> = ({ setWebApp, noCourses })
   const emptyMessage = usePncEmptyMessage();
 
   useHydrateContainer('course', bannerId, selectedBannerIndex > -1 && !noCourses);
+  useImageHydration('course', bannerId, selectedBannerIndex > -1 && !noCourses);
 
   useEffect(() => {
     setWebApp('course');
