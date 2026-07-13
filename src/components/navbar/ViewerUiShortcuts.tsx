@@ -8,7 +8,7 @@ import { clearEscrow } from '../../store/slices/viewSlice';
 import { clearData as clearReducers } from '../../store/slices/rowSlice';
 import * as styles from '../../styles/shortcuts.module.css';
 import ViewerNavigation from './ViewerNavigation';
-import { isViewerLoadingRoute, isViewerLoginRoute, isViewerNotFoundRoute } from '../../loadingRouteUtils';
+import { isViewerLoadingRoute, isViewerLoginRoute, isViewerNotFoundRoute, isViewerUnknownRoute } from '../../loadingRouteUtils';
 
 const account = new URL('../../Images/user.png', import.meta.url).href;
 const exit = new URL('../../Images/3094700.png', import.meta.url).href;
@@ -29,6 +29,7 @@ const ViewerUiShortcuts: React.FC<ViewerUiShortcutsProps> = ({ convCss = 'carder
   if (
     isViewerLoginRoute(pathname) ||
     isViewerNotFoundRoute(pathname, search) ||
+    isViewerUnknownRoute(pathname) ||
     isViewerLoadingRoute(pathname, search)
   ) {
     return null;

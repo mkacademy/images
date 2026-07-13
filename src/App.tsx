@@ -7,6 +7,7 @@ import { store } from './store';
 import LoginForm from './routes/LoginForm';
 import Loading from './routes/Loading';
 import ConvolutionsViewer from './routes/ConvolutionsViewer';
+import NotFound from './components/views/NotFound';
 import ErrorModal from './components/modals/Error';
 import ViewerUiShortcuts from './components/navbar/ViewerUiShortcuts';
 import ViewerStatusBar from './components/navbar/ViewerStatusBar';
@@ -34,6 +35,7 @@ function App() {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/" element={<Loading />} />
           <Route path="/convolution/*" element={<ConvolutionsViewer />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <ViewerStatusBar />
         <ErrorModal />

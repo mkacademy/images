@@ -7,6 +7,7 @@ import {
   isViewerLoadingRoute,
   isViewerLoginRoute,
   isViewerNotFoundRoute,
+  isViewerUnknownRoute,
 } from '../../loadingRouteUtils';
 import * as styles from '../../styles/roletoggler.module.css';
 
@@ -44,6 +45,7 @@ const ViewerStatusBar: React.FC = () => {
   if (
     isViewerLoginRoute(pathname) ||
     isViewerNotFoundRoute(pathname, search) ||
+    isViewerUnknownRoute(pathname) ||
     isViewerLoadingRoute(pathname, search) ||
     !convCss
   ) {

@@ -130,6 +130,16 @@ export const isViewerLoadingRoute = (pathname: string, search: string): boolean 
 export const isViewerNotFoundRoute = (pathname: string, search: string): boolean =>
   isViewerLoadingPath(pathname) && !hasLoadingDeepLinkParams(resolveViewerDeepLinkSearch(search));
 
+/** `/convolution` or `/convolution/*` — the read-only content viewer. */
+export const isViewerConvolutionRoute = (pathname: string): boolean =>
+  pathname === '/convolution' || pathname.startsWith('/convolution/');
+
+/** Any path that matches none of the app's routes (`/`, `/login`, `/convolution/*`) — dial 404 screen. */
+export const isViewerUnknownRoute = (pathname: string): boolean =>
+  !isViewerLoadingPath(pathname) &&
+  !isViewerLoginRoute(pathname) &&
+  !isViewerConvolutionRoute(pathname);
+
 export const isOnLoadingScreen = (): boolean => {
   if (typeof window === 'undefined') return false;
   const { pathname } = window.location;
