@@ -3,9 +3,8 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { clearEscrow } from './viewSlice';
 import { hydrateData } from '../../library/actions';
 import { clearData } from './rowSlice';
-import { authenticate, deHydratedRowsDataFetcher, fetchData } from '../../library/Thunks';
+import { authenticate, deHydratedRowsDataFetcher } from '../../library/Thunks';
 import { DataRow } from '../../types/cpanel';
-import { resolveAppIndexFromExecutedQueryRoutes } from '../../library/ThunksUtils';
 import { ParentData } from './viewSlice';
 
 export interface SessionState {
@@ -30,16 +29,12 @@ export interface SessionState {
   userid: number | undefined;
   roles: string[] | undefined;
   roleIds: number[] | undefined;
-  /** When true for an app index, fetchData ignores cached counts/queries and fetches fresh. */
-  isCleared: Record<string, boolean>;
   singleItemForms?: Record<string, boolean>;
   allowMimeOnlyImageurlOverrideOnUpdateSteps: boolean;
 }
 
 const getCurRoutes = (app: string) => orderedWebappRoutes(Tree.entities, app);
-const initialCleared = { [1]: true, [2]: true, [3]: true, [4]: true, [5]: true, [6]: true, };
 const initialState: SessionState = {
-  isCleared: initialCleared,
   hydrationQueries: 0,
   userid: undefined,
   curApp: 1,
@@ -97,14 +92,10 @@ const sessionSlice = createSlice({
         state.curRoutes = curRoutes;
         state.curApp = curApp;
       }
-      const previousDefaultTake = state.defaultTake;
       (Object.keys(action.payload) as Array<keyof InitializedLoadingPayload>).forEach((key) => {
         const value = action.payload[key];
         if (value !== null && value !== undefined) state[key] = value;
       });
-      if (state.defaultTake !== previousDefaultTake) {
-        state.isCleared = initialCleared;
-      }
       state.roleIndex = newRoleIndex;
     },
     mutateCurApp: (state, action: PayloadAction<string>) => {
@@ -118,7 +109,6 @@ const sessionSlice = createSlice({
     },
     signedOut: (state) => {
       const { isAppend } = state;
-      state.isCleared = initialCleared;
       state.userid = undefined;
       state.curMailer = -1;
       state.roleIds = undefined;
@@ -166,13 +156,6 @@ const sessionSlice = createSlice({
       .addCase(hydrateData, (state, action) => {
         state.hydrationQueries += action.payload;
         state.allowMimeOnlyImageurlOverrideOnUpdateSteps = false;
-      })
-      .addCase(fetchData.fulfilled, (state, action) => {
-        const { webapp, isMinimumFeatureMode } = action.meta.arg;
-        const curApp = isMinimumFeatureMode
-          ? resolveAppIndexFromExecutedQueryRoutes(action.payload) ?? getCurAppIndex(webapp)[0]
-          : getCurAppIndex(webapp)[0];
-        if (curApp) state.isCleared[curApp] = false;
       })
       .addCase(deHydratedRowsDataFetcher.pending, (state) => {
         state.allowMimeOnlyImageurlOverrideOnUpdateSteps = false;

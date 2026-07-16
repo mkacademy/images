@@ -9,7 +9,7 @@ import { markHydrationAttemptedSeekIds, onHydrationQueryComplete, onHydrationSes
 import { InitializedLoadingPayload } from "../store/slices/sessionSlice";
 import { CustomJwtPayload, AuthPayload } from "./types";
 import { RootState } from "../store";
-import { anonymousFetch, authenticatedFetch, FetchDataPayload, Executedquery, validateThenDispatch, buildRecordStateProps, extractIDsAtRequest, getAccountRecords, getAnonymousRecords } from "./ThunksUtils";
+import { FetchDataPayload, Executedquery, validateThenDispatch, buildRecordStateProps, extractIDsAtRequest, getAccountRecords, getAnonymousRecords } from "./ThunksUtils";
 import { clearIDsAtRequest, registerIDsAtRequest } from "../store/slices/statsSlice";
 
 
@@ -102,7 +102,6 @@ export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayl
 export type DehydratedRowsFetchArg = {
     fetcher: () => Promise<ResultPayload>;
     hydrationSeekIds?: number[];
-    /** When true, skips main hydration queue lifecycle (used by ImageHydration serial runner). */
     skipQueueLifecycle?: boolean;
 };
 
@@ -128,7 +127,6 @@ export const deHydratedRowsDataFetcher = createAsyncThunk<void, DehydratedRowsFe
                     data: corData[from],
                     interaction: true,
                 },
-                handles: corData[RECORDS],
             });
         }
         catch (error) {
@@ -170,7 +168,6 @@ export const fetchData = createAsyncThunk<
         const {
             curApp,
             curToken,
-            isCleared,
             fetchRole,
             isIncognito,
             defaultTake,
@@ -207,8 +204,8 @@ export const fetchData = createAsyncThunk<
                     requestTake: defaultTake,
                     convolution: unzippedAppName,
                     formatter: unzippedAppConvolution,
-                    counts: isCleared[unzippedApp] ? {} : counts,
-                    executedQueries: isCleared[unzippedApp] ? {} : _inputsPayloads,
+                    counts:  {},
+                    executedQueries: {},
                     path: ToolKit.authenticatedRecordsUrl,
                 }
                 : {
@@ -218,8 +215,8 @@ export const fetchData = createAsyncThunk<
                     requestTake: defaultTake,
                     convolution: unzippedAppName,
                     formatter: unzippedAppConvolution,
-                    counts: isCleared[unzippedApp] ? {} : counts,
-                    executedQueries: isCleared[unzippedApp] ? {} : _inputsPayloads,
+                    counts: {},
+                    executedQueries: {},
                     path: ToolKit.anonymousRecordsUrl,
                 };
 
