@@ -3,7 +3,7 @@ import '../../../styles/indicators.module.css';
 import * as quizStyles from '../../../styles/quiz.module.css';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Attempt, dismissFollowupOption, setFollowupId } from '../../../store/slices/quizSlice';
+import { setFollowupId } from '../../../store/slices/quizSlice';
 import { Pennant, SlideItem } from '../../../store/slices/courseSlice';
 import { RootState } from '../../../store/types';
 import { getOptionsFromSlideItems, computeRanCombs, filterCombinationsForRandomizedType } from '../../../library/QuizUtils';
@@ -40,7 +40,7 @@ interface FollowupProps {
   submittedOptionIds: string[];
   chooser: (params: { ids: string[]; isShow: boolean }) => void;
   selector: (params: { ids: number[] }) => void;
-  dismisser: (params: { id: number; isShow: boolean; choice?: Record<string, Attempt>; isDismissed?: boolean; ids?: number[] }) => void;
+  dismisser: (params: { id: number; isShow: boolean; isDismissed?: boolean; ids?: number[] }) => void;
 }
 const optionsContainerCss = "ms-md-3 ms-sm-3 ps-md-5 ps-sm-3";
 const isHighlight = `highligh-question ${styleProps.highlighQuestion}`;
@@ -109,7 +109,6 @@ const Followup: React.FC<FollowupProps> = ({
         id: latestQuestionId,
         isShow: latestIsShow,
         isDismissed: latestIsDismissed,
-        choice: { [identifier]: { [identifier]: choice.current[identifier] } },
       });
     };
   }, [dismisser, identifier]);
@@ -119,7 +118,7 @@ const Followup: React.FC<FollowupProps> = ({
     e.preventDefault();
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
-    setTimeout(() => dismisser({ id: questionId, isShow: dismissed, choice: { [identifier]: { [identifier]: choice.current[identifier] } } }));
+    setTimeout(() => dismisser({ id: questionId, isShow: dismissed }));
   };
 
   const questionSelector = (e: React.MouseEvent<Element>) => {
@@ -151,16 +150,6 @@ const Followup: React.FC<FollowupProps> = ({
     e.preventDefault();
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
-    const currentValue = choice.current[identifier] ?? null;
-    const isEqual =
-      (attemptedValue == null || attemptedValue === '') &&
-        (currentValue == null || currentValue === '')
-        ? true
-        : attemptedValue === currentValue;
-        const choiceToDismiss: Record<string, Attempt> = isEqual ? { [identifier]: { [identifier]: null } }
-        : { [identifier]: { [identifier]: choice.current[identifier] } };
-    if (isEqual) dispatch(dismissFollowupOption({ choice: choiceToDismiss }));
-    else dispatch(dismissFollowupOption({ choice: choiceToDismiss }));
     setHasUnsavedChange(false);
   };
 

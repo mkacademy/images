@@ -1,7 +1,7 @@
 import { Carousel } from "react-bootstrap";
 import '../../../styles/indicators.module.css';
 import * as quizStyles from '../../../styles/quiz.module.css';
-import { dismissOption, setFollowupId } from "../../../store/slices/quizSlice";
+import { setFollowupId } from "../../../store/slices/quizSlice";
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import LinkifiedText from '../../LinkifiedText';
 import { placeholder } from "../../../utils";
@@ -157,17 +157,6 @@ const Question: React.FC<QuestionProps> = ({
     e.preventDefault();
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
-    const currentValue = choice.current[identifier] ?? null;
-    const isEqual =
-      (attemptedValue == null || attemptedValue === '') &&
-        (currentValue == null || currentValue === '')
-        ? true
-        : attemptedValue === currentValue;
-    const choiceToDismiss: Record<string, Attempt> = isEqual ? { [identifier]: { [identifier]: null } }
-      : { [identifier]: { [identifier]: choice.current[identifier] } };
-    if (isEqual) dispatch(dismissOption({ choice: choiceToDismiss }));
-    else dispatch(dismissOption({ choice: choiceToDismiss }));
-    // After persisting via dismisser, treat state as synced again
     setHasUnsavedChange(false);
   };
 

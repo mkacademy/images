@@ -8,9 +8,6 @@ import { _500 as NotFound } from '../../views/404';
 import useMediaQuery from '../../../Hooks/useQueryMedia';
 import {
   toggleQuiz,
-  dismissQuiz,
-  dismissChoice,
-  dismissQuestion,
   setFollowupId,
 } from '../../../store/slices/quizSlice';
 import { RootState } from '../../../store';
@@ -18,7 +15,6 @@ import { Banner, Pennant } from '../../../store/slices/courseSlice';
 import * as _404styles from '../../../styles/404.module.css';
 import * as quizStyles from '../../../styles/quiz.module.css';
 import { Attempt } from '../../../store/slices/quizSlice';
-import { QuizRootTreeSelection } from '../../../library/actions';
 import { useApplyRouterSelections, useClearFsqOnEscapeWhenUnselected, useExitExpandedOnEscape } from '../../../Hooks/useShortcuts';
 
 const styleProps = {
@@ -135,27 +131,6 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
   const handleToggleQuiz = useCallback((payload: { selectedId?: number, canToggle?: boolean }) =>
     dispatch(toggleQuiz(payload)), [dispatch]);
 
-  const handleHighlightQuiz = useCallback((params: { ids: number[] }) => {
-    onRouterSelection?.();
-    dispatch(QuizRootTreeSelection({ ids: params.ids, isHighlighted: undefined }));
-  }, [dispatch, onRouterSelection]);
-
-  const handleDismissQuestion = useCallback((params: HandleDismissParams) => {
-    const ids = params.ids ?? [params.id];
-    const { choice, isShow, isDismissed } = params;
-    if (ids.length === 0) return;
-    if (selected > -1) {
-      dispatch(dismissQuestion({ ids, isShow, isDismissed }));
-      dispatch(dismissChoice({ choice, isDismissed }));
-    }
-  }, [dispatch, selected, followupId]);
-
-  const handleDismissQuiz = useCallback((params: HandleDismissParams) => {
-    const ids = params.ids ?? [params.id];
-    const { isShow, isDismissed } = params;
-    dispatch(dismissQuiz({ ids, isShow, isDismissed }));
-  }, [dispatch]);
-
   if (noQuizzes) return null;
 
   return (
@@ -167,8 +142,8 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
             positionY={positionY}
             total={slides.length}
             toggler={handleToggleQuiz}
-            dismisser={handleDismissQuiz}
-            selector={handleHighlightQuiz}
+            dismisser={() => {}}
+            selector={() => {}}
             isShow={dismissed}
           />
           <div
@@ -183,7 +158,7 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
                   dismissed={dismissed}
                   pennants={quiz.pennants}
                   onRouterSelection={onRouterSelection}
-                  handleDismissQuestion={handleDismissQuestion}
+                  handleDismissQuestion={() => {}}
                 />
               ) : (
                 <div className={`${styleProps["notFound"]} ${styleProps["bigger"]}`}>
@@ -200,7 +175,7 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
                     visible={followupPanelProps.visible}
                     quizPennants={quiz.pennants}
                     onRouterSelection={onRouterSelection}
-                    handleDismissQuestion={handleDismissQuestion}
+                    handleDismissQuestion={() => {}}
                   />
                 ) : (
                   <div className={`${styleProps["notFound"]} ${styleProps["bigger"]}`}>
@@ -223,8 +198,8 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
                 isShow={dismissed}
                 positionY={positionY}
                 toggler={handleToggleQuiz}
-                dismisser={handleDismissQuiz}
-                selector={handleHighlightQuiz}
+                dismisser={() => {}}
+                selector={() => {}}
                 leftQuote={screen > 2 ? i % 2 !== 0 : false}
                 total={banners.filter(({ bannerId }) => bannerId === id).length}
               />

@@ -1,7 +1,6 @@
 import { isPersistableOrdinal, sanitizeStringKeyOrdinalBatch, type OwnershipPayload } from "./actions";
 import { Metadata } from "../types/cpanel";
 import { Handler } from "../store/slices/errorSlice";
-import type { OutgoingMessage, OutgoingType } from "../store/slices/commsSlice";
 import { contiguousOrdinalPred, getToken, orderPredicate, toOwnershipIdSet } from "./sliceUtils";
 import {
   altGroupRangeReorderSegment,
@@ -262,11 +261,8 @@ export interface CommsModifiedOrdinals {
 export type CommsModifiedOrdinalLane = keyof CommsModifiedOrdinals;
 
 export interface CommsState {
-  tutors: Tutor[];
   outgoing: OutgoingMessage[];
   incoming: IncomingMessage[];
-  startId: CommsStartId;
-  modifiedOrdinals: CommsModifiedOrdinals;
 }
 
 /** Matches `commsKeyNodes` / `expandCommsOutlineRange` composite keys. */
@@ -776,30 +772,5 @@ export type CommunicationReply = {
   status: string;
 };
 
-function commsOutlineRowsForLane(
-  comms: CommsState,
-  lane: keyof CommsStartId,
-): ReadonlyArray<{ id: number; type: string }> {
-  if (lane === 'tutorOutline') return comms.tutors;
-  if (lane === 'outgoingOutline') return comms.outgoing;
-  if (lane === 'incomingOutline') return comms.incoming;
-  return [];
-}
 
-export function commsOutlineRangeHasDifferentTypes(
-  comms: CommsState,
-  lane: keyof CommsStartId,
-  keys: string[],
-): boolean {
-  const rows = commsOutlineRowsForLane(comms, lane);
-  if (rows.length === 0) return false;
-  const typeByKey = new Map<string, string>(rows.map((r) => [`${r.id}${r.type}`, r.type]));
-  const seen = new Set<string>();
-  for (const k of keys) {
-    const t = typeByKey.get(k);
-    if (t === undefined) continue;
-    seen.add(t);
-    if (seen.size > 1) return true;
-  }
-  return false;
-}
+

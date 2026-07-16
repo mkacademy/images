@@ -4,16 +4,10 @@ import { useLocation } from 'react-router-dom';
 import { RootState } from '../../../store/types';
 import {
   toggleCourse,
-  dismissCourse,
-  dismissSlide,
   SlideItem,
   Banner,
   SlideGroup,
   SlideGroupItem,
-  highlightSlideBreathSelection,
-  highlightCoversBreathSelection,
-  dimissMainslide,
-  dismissChapter,
 } from '../../../store/slices/courseSlice';
 import Pennant from './Pennant';
 import SlideShow from './SlideShow';
@@ -112,8 +106,8 @@ const Course: React.FC<CourseProps> = ({ noCourses }) => {
             positionY={positionY}
             selector={(payload) => dispatch(CourseRootTreeSelection(payload))}
             chooser={(payload) => dispatch(CoursePennantTreeSelection(payload))}
-            discarder={(payload: { id: number; isShow?: boolean }) => dispatch(dismissChapter({ ids: [payload.id] }))}
-            dismisser={(payload: { id: number; isShow?: boolean }) => dispatch(dismissCourse({ ids: [payload.id], isShow: payload.isShow }))}
+            discarder={() => {}}
+            dismisser={() => {}}
             toggler={(payload) => dispatch(toggleCourse(payload))}
             pennants={[pennant, ...pennant.pennants?.map(p => ({
               ...p,
@@ -134,10 +128,10 @@ const Course: React.FC<CourseProps> = ({ noCourses }) => {
                   slides={visibles}
                   isShow={dismised}
                   leftIMG={screen > 2 ? k % 2 !== 0 : false}
-                  discarder={(payload: { id: number; slideIndex: number }) => dispatch(dismissSlide({ items: [payload] }))}
-                  dismisser={(payload: { id: number; isShow?: boolean }) => dispatch(dimissMainslide({ ids: [payload.id], isShow: payload.isShow }))}
-                  chooser={(payload) => dispatch(highlightSlideBreathSelection(payload))}
-                  selector={(payload) => dispatch(highlightCoversBreathSelection(payload))}
+                  discarder={() => {}}
+                  dismisser={() => {}}
+                  chooser={() => {}}
+                  selector={() => {}}
                 />
               );
             })
@@ -156,7 +150,7 @@ const Course: React.FC<CourseProps> = ({ noCourses }) => {
             positionY={positionY}
             selector={(payload) => dispatch(CourseRootTreeSelection(payload))}
             chooser={(payload) => dispatch(CoursePennantTreeSelection(payload))}
-            dismisser={(payload: { id: number; isShow?: boolean }) => dispatch(dismissCourse({ ids: [payload.id], isShow: payload.isShow }))}
+            dismisser={() => {}}
             toggler={(payload) => dispatch(toggleCourse(payload))}
             leftQuote={screen > 2 ? i % 2 !== 0 : false}
             pennants={[pennant, ...pennant.pennants?.map(p => ({

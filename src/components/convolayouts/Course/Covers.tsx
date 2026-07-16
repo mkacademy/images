@@ -1,6 +1,6 @@
 import React, { RefObject } from 'react';
 import { useDispatch } from 'react-redux';
-import { Banner as CourseBannerType, highlightCoversBreathSelection, SlideGroupItem, toggleCourse } from '../../../store/slices/courseSlice';
+import { Banner as CourseBannerType, SlideGroupItem, toggleCourse } from '../../../store/slices/courseSlice';
 import Cover from './Cover';
 import * as styles from '../../../styles/404.module.css';
 import { _500 as Notfound } from '../../../components/views/404';
@@ -62,9 +62,8 @@ const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers, dismi
             slide={slide}
             key={cover.id}
             leftIMG={i % 2 !== 0}
-            selector={(payload: { ids: number[] }) => {
+            selector={() => {
               onRouterSelection?.();
-              dispatch(highlightCoversBreathSelection(payload));
             }}
           />
         })

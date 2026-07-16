@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  highlightSlideBreathSelection,
   resetChapters,
   resolveSlidesForChapterInSelectedCourse,
   setChaptersViaPennantId,
@@ -103,9 +102,8 @@ const Chapters: React.FC<ChaptersProps> = ({
     dispatch(CoursePennantTreeSelection(payload));
   };
 
-  const slideSelector = (slideIndex: number) => (payload: { ids: number[] }) => {
+  const slideSelector = () => {
     onRouterSelection?.();
-    dispatch(highlightSlideBreathSelection({ ...payload, slideIndex }));
   };
 
 
@@ -153,7 +151,7 @@ const Chapters: React.FC<ChaptersProps> = ({
                   key={`${row.slideIndex}-${row.item.id}`}
                   leftIMG={i % 2 !== 0}
                   dismisser={() => null}
-                  selector={slideSelector(row.slideIndex)}
+                  selector={slideSelector}
                 />
               );
             })

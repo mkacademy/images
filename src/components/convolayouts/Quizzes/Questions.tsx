@@ -5,7 +5,6 @@ import { Banner, SlideGroup, SlideGroupItem } from '../../../store/slices/course
 import { getChoices } from '../../../library/quizAttemptManager';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { highlightAttemptBreathSelection } from '../../../store/slices/quizSlice';
 import { QuizQuestionTreeSelection } from '../../../library/actions';
 import { HandleDismissParams } from './Screen';
 
@@ -37,7 +36,6 @@ const Questions: React.FC<QuestionsProps> = ({
 
   const handleHighlightAttempt = useCallback((params: { ids: string[] }) => {
     onRouterSelection?.();
-    dispatch(highlightAttemptBreathSelection({ ids: params.ids }));
   }, [dispatch, onRouterSelection]);
 
   const handleHighlightQuestion = useCallback((params: { ids: number[] }) => {

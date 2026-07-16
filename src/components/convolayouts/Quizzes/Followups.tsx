@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import Followup from './Followup';
 import { RootState } from '../../../store';
 import { Banner, Pennant, SlideItem } from '../../../store/slices/courseSlice';
-import { Submition, highlightAttemptBreathSelection } from '../../../store/slices/quizSlice';
+import { Submition } from '../../../store/slices/quizSlice';
 import { QuizQuestionTreeSelection } from '../../../library/actions';
 import { getChoices } from '../../../library/quizAttemptManager';
 import { HandleDismissParams } from './Screen';
@@ -41,7 +41,6 @@ const Followups: React.FC<FollowupsProps> = ({
 
   const handleHighlightAttempt = useCallback((params: { ids: string[]; isShow: boolean }) => {
     onRouterSelection?.();
-    dispatch(highlightAttemptBreathSelection({ ids: params.ids, isShow: params.isShow }));
   }, [dispatch, onRouterSelection]);
 
   const handleHighlightQuestion = useCallback((params: { ids: number[] }) => {

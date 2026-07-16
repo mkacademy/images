@@ -6,9 +6,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   Content,
   toggleTutorial,
-  dismissTutorial,
   Banner as BannerType,
-  highlightContentBreathSelection,
 } from '../../../store/slices/tutorialSlice';
 import { RootState } from '../../../store/types';
 import { _500 as NotFound } from '../../views/404';
@@ -90,7 +88,7 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
               onRouterSelection?.();
               dispatch(TutorialRootTreeSelection(payload));
             }}
-            dismisser={(payload: { id: number; isShow?: boolean }) => dispatch(dismissTutorial({ ids: [payload.id], isShow: payload.isShow }))}
+            dismisser={() => {}}
             toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleTutorial(payload))}
           />
           {visible.length > 0 ? (
@@ -105,10 +103,9 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
                 }}
                 isShow={dismissed}
                 leftIMG={i % 2 !== 0}
-                dismisser={(payload: { id: number }) => dispatch(dismissTutorial({ ids: [payload.id] }))}
+                dismisser={() => {}}
                 selector={(payload: { ids: number[] }) => {
                   onRouterSelection?.();
-                  dispatch(highlightContentBreathSelection(payload));
                 }}
               />
             ))
@@ -134,7 +131,7 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
               onRouterSelection?.();
               dispatch(TutorialRootTreeSelection(payload));
             }}
-            dismisser={(payload: { id: number; isShow?: boolean }) => dispatch(dismissTutorial({ ids: [payload.id], isShow: payload.isShow }))}
+            dismisser={() => {}}
             toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleTutorial(payload))}
           />
         ))

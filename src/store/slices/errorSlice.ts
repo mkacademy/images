@@ -8,7 +8,6 @@ import {
 } from '../../library/actions';
 import { createSlice, Draft, PayloadAction } from '@reduxjs/toolkit';
 import { signedOut } from '../slices/sessionSlice';
-import { updateCommunicationStatus } from './commsSlice';
 
 
 export interface Handler {
@@ -147,22 +146,6 @@ export const errorSlice = createSlice({
       })
       .addCase(authenticate.rejected, (state, action) => {
         return errorSlice.caseReducers.prependError(state, { ...action, payload: action.payload as string });
-      })
-      .addCase(updateCommunicationStatus, (state, action) => {
-        const { parentId } = action.payload;
-        let keyword: string | null = null;
-        for (const handlerArray of Object.values(state.handles)) {
-          const handler = handlerArray.find((h: Handler) => h.id === parentId);
-          if (handler) {
-            keyword = handler.keyword;
-            break;
-          }
-        }
-        if (keyword)
-          state.warnings = state.warnings.map((warning) => {
-            const idPattern = new RegExp(`\\b${parentId}\\b`, 'g');
-            return warning.replace(idPattern, keyword);
-          });
       })
   }
 });

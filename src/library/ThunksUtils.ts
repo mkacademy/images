@@ -3,7 +3,7 @@ import { createSelector, Dispatch } from '@reduxjs/toolkit';
 import { fetchedHandles, Handler } from '../store/slices/errorSlice';
 import { Content, setTutorials, Banner as TutorialBanner } from '../store/slices/tutorialSlice';
 import { Banner, setCourses, SlideGroup } from '../store/slices/courseSlice';
-import { IncomingMessage, OutgoingMessage, setIncomings, setOutgoings, setTutors, Tutor } from '../store/slices/commsSlice';
+import { IncomingMessage, OutgoingMessage, setIncomings, setOutgoings } from '../store/slices/commsSlice';
 import { ToolKit, RECORDS, getCurAppName, getSimplePageIndexFromSearch, orderedWebappRoutes, Tree, timeout, getCurAppIndex } from '../utils';
 import { ResultPayload, ROW_APPEND_QUERY_TYPE } from '../store/slices/rowSlice';
 import { getCounts, getExecutedQueries } from '../store/slices/statsSlice';
@@ -437,7 +437,7 @@ export interface FetchedData {
     banners?: Banner[] | TutorialBanner[];
     counts: Record<string, Record<string, number>>;
     executedQueries?: Record<string, Executedquery>;
-    content?: SlideGroup[] | Content[][] | OutgoingMessage[] | IncomingMessage[] | Tutor[] | Record<string, Record<string, CpanelRow[]>>;
+    content?: SlideGroup[] | Content[][] | OutgoingMessage[] | IncomingMessage[] | Record<string, Record<string, CpanelRow[]>>;
 }
 
 export interface QuizResponse {
@@ -545,69 +545,27 @@ export const validateThenDispatch = ({
     const routeReasons: string[] = [];
     let abortRemainingFetchSequence = false;
 
-    if (isQuizResponse(response)) {
-        console.log("is_quiz_response");
-        const [app, _] = getCurAppIndex('quiz');
-        if (!app) throw new Error('Invalid app index');
-        const pageroute = selectedRoutes[app];
-        dispatch(setQuizzes(response));
-        dispatch(fetchedHandles(response.handlers ?? emptyHandlers));
-        applyInsertStats(dispatch, { screen: 'quiz', query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
-        if (fetchSequence && !hasRouteSliceData(response, pageroute, 'quiz', routeReasons)) abortRemainingFetchSequence = true;
-
-    }
-    else if (isCourseResponse(response)) {
-        console.log("is_course_response");
-        const [app, _] = getCurAppIndex('course');
-        if (!app) throw new Error('Invalid app index');
-        const pageroute = selectedRoutes[app];
-        dispatch(setCourses(response));
-        dispatch(fetchedHandles(response.handlers ?? emptyHandlers));
-        applyInsertStats(dispatch, { screen: 'course', query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
-        if (fetchSequence && !hasRouteSliceData(response, pageroute, 'course', routeReasons)) abortRemainingFetchSequence = true;
-    }
-    else if (isTutorialResponse(response)) {
-        console.log("is_tutorial_response");
-        const [app, _] = getCurAppIndex('tutorial');
-        if (!app) throw new Error('Invalid app index');
-        const pageroute = selectedRoutes[app];
-        dispatch(setTutorials(response));
-        dispatch(fetchedHandles(response.handlers ?? emptyHandlers));
-        applyInsertStats(dispatch, { screen: 'tutorial', query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
-        if (fetchSequence && !hasRouteSliceData(response, pageroute, 'tutorial', routeReasons)) abortRemainingFetchSequence = true;
-    }
-    else if (isCountsResponse(response)) {
-        console.log("is_counts_response");
-        if (fetchSequence) abortRemainingFetchSequence = true;
-    }
-    else {
-        if (content && Array.isArray(content) && content.length > 0) {
-            if (isArrayOfType(content, isTutor)) {
-                console.log("is_tutors_response");
-                dispatch(setTutors(content));
-                dispatch(fetchedHandles(getHandlesFromTutors(content)));
-                applyInsertStats(dispatch, { screen: 'tutors', query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
-            }
-            else if (isArrayOfType(content, isOutgoingMessage)) {
-                console.log("is_outgoing_response");
-                const filtered = filterCommsByDeepLinkTreeIds(content);
-                dispatch(fetchedHandles(handlers ?? emptyHandlers));
-                dispatch(setOutgoings(withReciepients({ response: filtered, handlers: handlers ?? emptyHandlers })));
-                applyInsertStats(dispatch, { screen: 'outgoing', query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
-            }
-            else if (isArrayOfType(content, isIncomingMessage)) {
-                console.log("is_incoming_response");
-                dispatch(setIncomings(filterCommsByDeepLinkTreeIds(content)));
-                applyInsertStats(dispatch, { screen: 'incoming', query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
-            }
-
-        } else {
-            console.log("is_empty_response");
-            if (routeReasons.length > 0) logGuardInvalidReasons(`has_route_slice_data_${getCurAppName(curApp)}`, routeReasons, response);
-            applyInsertStats(dispatch, { screen: getCurAppName(curApp), query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
-            if (fetchSequence && routeReasons.length > 0) abortRemainingFetchSequence = true;
+    if (content && Array.isArray(content) && content.length > 0) {
+        if (isArrayOfType(content, isOutgoingMessage)) {
+            console.log("is_outgoing_response");
+            const filtered = filterCommsByDeepLinkTreeIds(content);
+            dispatch(fetchedHandles(handlers ?? emptyHandlers));
+            dispatch(setOutgoings(withReciepients({ response: filtered, handlers: handlers ?? emptyHandlers })));
+            applyInsertStats(dispatch, { screen: 'outgoing', query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
         }
+        else if (isArrayOfType(content, isIncomingMessage)) {
+            console.log("is_incoming_response");
+            dispatch(setIncomings(filterCommsByDeepLinkTreeIds(content)));
+            applyInsertStats(dispatch, { screen: 'incoming', query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
+        }
+
+    } else {
+        console.log("is_empty_response");
+        if (routeReasons.length > 0) logGuardInvalidReasons(`has_route_slice_data_${getCurAppName(curApp)}`, routeReasons, response);
+        applyInsertStats(dispatch, { screen: getCurAppName(curApp), query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
+        if (fetchSequence && routeReasons.length > 0) abortRemainingFetchSequence = true;
     }
+
     if (abortRemainingFetchSequence) abortFetchSequence();
 
     const isLastFetchInSequence =
@@ -616,36 +574,13 @@ export const validateThenDispatch = ({
 
 }
 
-const getHandleName = (type: string): string => {
-    switch (type) {
-        case B:
-            return "HandlesBosses";
-        case M:
-            return "HandlesMinions";
-        case U:
-            return "HandlesUnderbosses";
-    }
-    return "";
-};
 
-const getHandlesFromTutors = (tutors: Tutor[]): Record<string, Handler[]> => {
-    return tutors.reduce((acc: Record<string, Handler[]>, cur: Tutor) => {
-        acc[getHandleName(cur.type)] = [...(acc[getHandleName(cur.type)] ?? []), { id: cur.id, keyword: cur.title }];
-        return acc;
-    }, {} as Record<string, Handler[]>);
-};
+
+
 const isArrayOfType = <T>(arr: unknown[], typeGuard: (item: unknown) => item is T): arr is T[] => {
     return Array.isArray(arr) && arr.every((item) => typeGuard(item));
 };
-// Add type guards before the useCommunications function
-const isTutor = (item: unknown): item is Tutor => {
-    if (typeof item !== 'object' || item === null) return false;
-    const o = item as Record<string, unknown>;
-    // Tutor has email and status as number, but no mailer property
-    return typeof o.email === 'string' &&
-        typeof o.status === 'number' &&
-        !('mailer' in o);
-};
+
 
 const isOutgoingMessage = (item: unknown): item is OutgoingMessage => {
     if (typeof item !== 'object' || item === null) return false;
@@ -885,60 +820,6 @@ const hasQuizSubmissions = (response: FetchedData, reasons?: string[]): boolean 
     return hasSubmissions;
 };
 
-/** Deep per-route slice check — used to decide if we should abort the fetch sequence. */
-const hasRouteSliceData = (
-    response: FetchedData,
-    route: string | undefined,
-    app: string,
-    reasons?: string[],
-): boolean => {
-    if (!route) return true;
-
-    switch (app) {
-        case 'tutorial':
-            switch (route) {
-                case 'foundationfilters':
-                    return hasTutorialBanners(response, reasons);
-                case 'filtersinstructions':
-                    return hasTutorialContent(response, reasons, true);
-                default:
-                    return true;
-            }
-        case 'course':
-            switch (route) {
-                case 'foundationsifters':
-                    return hasCourseBanners(response, reasons);
-                case 'siftersfilters':
-                    return hasBannersWithNonEmptyPennants(response, reasons);
-                case 'siftersinstructions':
-                    return hasNonEmptyContent(response, reasons);
-                case 'filtersinstructions':
-                    return hasContentSlidesNonEmpty(response, reasons);
-                default:
-                    return true;
-            }
-        case 'quiz':
-            switch (route) {
-                case 'foundationdashboards':
-                    return hasQuizzes(response, reasons);
-                case 'dashboardssifters':
-                    return hasCourseBanners(response, reasons);
-                case 'dashboardsfilters':
-                    return hasQuizSubmissions(response, reasons);
-                case 'siftersfilters':
-                    return hasBannersWithNonEmptyPennants(response, reasons);
-                case 'siftersinstructions':
-                    return hasNonEmptyContent(response, reasons);
-                case 'filtersinstructions':
-                    return hasContentSlidesNonEmpty(response, reasons);
-                default:
-                    return true;
-            }
-        default:
-            return true;
-    }
-};
-
 // Soft type guards for skeleton responses — distinguish app shape, not route depth.
 const isQuizResponse = (response: FetchedData): response is QuizResponse => {
     const reasons: string[] = [];
@@ -973,23 +854,5 @@ const isTutorialResponse = (response: FetchedData): response is TutorialResponse
     const ok = okBanners && okContent;
     if (!ok) logGuardInvalidReasons('is_tutorial_response', reasons, response);
     return ok;
-};
-
-const isCpanelResponse = (response: FetchedData): response is CpanelResponse => {
-    return 'content' in response &&
-        typeof response.content === 'object' &&
-        response.content !== null &&
-        !Array.isArray(response.content) &&
-        Object.keys(response.content).length > 0; // Record<string, Record<string, CpanelRow[]>> with actual records
-};
-
-const isCountsResponse = (response: FetchedData): response is FetchedData => {
-    return 'counts' in response &&
-        typeof response.counts === 'object' &&
-        response.counts !== null &&
-        !Array.isArray(response.counts) &&
-        !Array.isArray(response.content) &&
-        typeof response.content === 'object'
-        && Object.keys(response.content).length === 0; // Only counts, no content or empty content
 };
 
