@@ -15,8 +15,6 @@ import {
   mergePennants,
   orderPredicate,
 } from "./sliceUtils";
-import {
-  getAttempts, getFocuses } from "./quizAttemptManager";
 import type { RandomizedType } from "./randomizedQuery";
 
 export interface Submition {
@@ -69,8 +67,6 @@ export interface Quiz {
 export interface QuizState {
   selected: number;
   noQuizzes: boolean;
-  focus: Record<string, boolean>;
-  attempt: { [x: string]: Attempt };
   combinations: string[][][];
   followupId: number | undefined;
   followupCombinations: Record<number, string[][]>;
@@ -210,35 +206,13 @@ export const filterCombinationsForRandomizedType = (
 export const computeRanCombs = (
   combinations: string[][],
   randomizedType: RandomizedType,
-  submittedOptionIds: string[],
-  attemptOptionId: string | null | undefined,
 ): number[] => {
   const displayCombinations = filterCombinationsForRandomizedType(combinations, randomizedType);
   if (displayCombinations.length === 0) return [];
 
   const targetCount = Math.min(3, displayCombinations.length);
 
-  const submittedSet = new Set(submittedOptionIds);
-  const hasSubmission = submittedSet.size > 0;
-  const matchingIndices = hasSubmission
-    ? displayCombinations
-      .map((combo, i) => (combo.some((id) => submittedSet.has(id)) ? i : -1))
-      .filter((i) => i >= 0)
-    : [];
-
   const randoms: number[] = [];
-  if (matchingIndices.length > 0) {
-    const attemptFirstIndex =
-      attemptOptionId != null && attemptOptionId !== ''
-        ? displayCombinations.findIndex((combo) => combo.includes(attemptOptionId))
-        : -1;
-    const firstIndex =
-      attemptFirstIndex >= 0
-        ? attemptFirstIndex
-        : matchingIndices[(Math.random() * matchingIndices.length) | 0];
-    randoms.push(firstIndex);
-  }
-
   while (randoms.length < targetCount) {
     const pick = (Math.random() * displayCombinations.length) | 0;
     if (!randoms.includes(pick)) randoms.push(pick);
@@ -505,8 +479,6 @@ export const applySetQuizzes = (state: QuizState, payload: SetQuizzesPayload) =>
 
   state.quizzes = newQuizzesState;
   state.noQuizzes = newNoQuizzes;
-  state.focus = getFocuses(newQuizzesState);
-  state.attempt = getAttempts(newQuizzesState);
 };
 
 

@@ -2,14 +2,10 @@ import React, { useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import Followup from './Followup';
 import { RootState } from '../../../store';
-import { Banner, Pennant, SlideItem } from '../../../store/slices/courseSlice';
-import { Submition } from '../../../store/slices/quizSlice';
-import { getChoices } from '../../../library/quizAttemptManager';
+import { Pennant, SlideItem } from '../../../store/slices/courseSlice';
 
 interface FollowupsProps {
-  parent: Banner;
   visible: Pennant[];
-  quizPennants: Submition[];
   onRouterSelection?: () => void;
 }
 
@@ -22,42 +18,17 @@ const getPennantSlideItems = (content: RootState['quiz']['content'], pennantId: 
 };
 
 const Followups: React.FC<FollowupsProps> = ({
-  parent,
   visible,
-  quizPennants,
   onRouterSelection,
 }) => {
   const dispatch = useDispatch();
-  const focus = useSelector((state: RootState) => state.quiz.focus);
   const content = useSelector((state: RootState) => state.quiz.content);
-  const attempt = useSelector((state: RootState) => state.quiz.attempt);
   const followupCombinations = useSelector((state: RootState) => state.quiz.followupCombinations);
-
-  const handleHighlightAttempt = useCallback(() => {
-    onRouterSelection?.();
-  }, [dispatch, onRouterSelection]);
 
   const handleHighlightQuestion = useCallback(() => {
     onRouterSelection?.();
   }, [dispatch, onRouterSelection]);
 
-  const getSubmittedOptionIdsForPennant = useCallback((pennantId: number, quizId: number): string[] => {
-    const ids = new Set<string>();
-    const attemptForPennant = attempt[`choice${pennantId}`];
-    if (attemptForPennant) {
-      const pred = (v: string | null | undefined): v is string => v != null && v !== '';
-      Object.values(attemptForPennant).filter(pred).forEach((v) => ids.add(v));
-    }
-    const pred = (p: Submition) => p.bannerId === quizId;
-    quizPennants
-      .filter(pred)
-      .map(getChoices)
-      .forEach((choices) => {
-        const pred = (v: string | null | undefined): v is string => v != null && v !== '';
-        Object.values(choices).flat().filter(pred).forEach((v) => ids.add(v));
-      });
-    return Array.from(ids);
-  }, [attempt, quizPennants]);
 
   return (
     <React.Fragment>
@@ -66,13 +37,9 @@ const Followups: React.FC<FollowupsProps> = ({
           <Followup
             key={followup.id}
             pennant={followup}
-            chooser={handleHighlightAttempt}
             selector={handleHighlightQuestion}
-            focus={focus[`choice${followup.id}`]}
             combs={followupCombinations[followup.id] ?? []}
             slideItems={getPennantSlideItems(content, followup.id)}
-            attemptValue={attempt[`choice${followup.id}`]?.[`choice${followup.id}`]}
-            submittedOptionIds={getSubmittedOptionIdsForPennant(followup.id, parent.bannerId ?? -1)}
           />
         );
       })}

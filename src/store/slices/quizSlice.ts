@@ -20,7 +20,6 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import {
   textsMerger,
 } from '../../library/sliceUtils';
-import { getAttempts } from '../../library/quizAttemptManager';
 import {
   updateQuizzes,
   updateCourses,
@@ -45,8 +44,6 @@ const initialState: QuizState = {
   content: [],
   banners: [],
   quizzes: [],
-  attempt: {},
-  focus: {},
 };
 
 const quizSlice = createSlice({
@@ -113,7 +110,6 @@ const quizSlice = createSlice({
         // Update banners using courseReducer
         const { banners } = applyCourseReducer(state, action);
         state.banners = banners || state.banners;
-        state.attempt = getAttempts(nState);
       })
       .addCase(updateCourses, (state, action) => {
         const { banners } = applyCourseReducer(state, action);

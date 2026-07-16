@@ -32,11 +32,8 @@ const styleProps = {
 
 interface QuestionProps {
   slide: Banner;
-  focus?: boolean;
   combs?: string[][];
-  attempt?: string | null;
   choices: SlideGroup | undefined;
-  submittedOptionIds?: string[];
 }
 
 const optionsContainerCss = "ms-md-3 ms-sm-3 ps-md-5 ps-sm-3";
@@ -44,11 +41,8 @@ const isHighlight = `highligh-question ${styleProps.highlighQuestion}`;
 const contCss = `question-container ${styleProps.questionContainer} mt-sm-5`;
 
 const Question: React.FC<QuestionProps> = ({
-  focus,
   choices,
-  attempt,
   combs: combinations = [],
-  submittedOptionIds = [],
   slide: { id: questionId = -1, quote = "", isHighlighted = false, isDismissed = false },
 }) => {
   const dispatch = useDispatch();
@@ -56,7 +50,7 @@ const Question: React.FC<QuestionProps> = ({
   const isMaximumFeatures = useSelector((state: RootState) =>
     !state.settings.isUnzipCourses && !state.settings.isUnzipQuizzes && !state.settings.isUnzipTutorials);
   const randomizedType = useSelector((state: RootState) => state.settings.randomizedType);
-  const choice = useRef<Record<string, string | null>>({ [identifier]: attempt ?? null });
+  const choice = useRef<Record<string, string | null>>({ [identifier]: null });
   const latestMetaRef = useRef({ identifier, isDismissed, questionId });
   const contClass = isHighlighted ? (isHighlight + ' ' + contCss) : contCss;
   const processedOptions = useMemo(() => getOptionsFromSlideGroup(choices), [choices]);
@@ -67,23 +61,19 @@ const Question: React.FC<QuestionProps> = ({
   const [ranCombs, setRanCombs] = useState<number[]>([]);
   const dismissClickedRef = useRef(false);
   const optionsContainerRef = useRef<HTMLDivElement>(null);
-  const [hasUnsavedChange, setHasUnsavedChange] = useState(false);
 
  
 
   useEffect(() => {
-    choice.current = { [identifier]: attempt ?? null };
+    choice.current = { [identifier]: null };
     // Whenever the persisted attempt changes, the UI is in sync again
-    setHasUnsavedChange(false);
-  }, [identifier, attempt]);
+  }, [identifier]);
   useEffect(() => {
     setRanCombs(computeRanCombs(
       combinations,
       randomizedType,
-      submittedOptionIds,
-      attempt?.[identifier],
     ));
-  }, [combinations, randomizedType, submittedOptionIds, attempt, identifier]);
+  }, [combinations, randomizedType, identifier]);
 
   const dismissHandler = (e: React.MouseEvent) => {
     dismissClickedRef.current = true;
@@ -101,9 +91,6 @@ const Question: React.FC<QuestionProps> = ({
       e.preventDefault();
     }
   };
-
-  const isFocused = focus ? ` highlighted ${styleProps.highlighted}` : "";
-  const checkmarkCss = focus ? `checkmark ${styleProps.checkmark} ${styleProps.highlighted}` : `checkmark ${styleProps.checkmark}`;
 
   // Always keep latest metadata and auth in refs without triggering renders
   latestMetaRef.current = { identifier, isDismissed, questionId };
@@ -124,29 +111,16 @@ const Question: React.FC<QuestionProps> = ({
   }, []);
 
   const submittionSelector = (e: React.MouseEvent) => {
-    const payload = { ids: ["choice" + questionId], isShow: !isFocused };
     e.nativeEvent.stopImmediatePropagation();
     e.stopPropagation();
     e.preventDefault();
   };
-
-  const attemptedValue = attempt ?? null;
-  const hasSubmission = attemptedValue != null && attemptedValue !== '';
-  const hasUnsyncedSubmissionChange = hasSubmission && hasUnsavedChange;
 
   const toggleChoiceHandler = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
-    setHasUnsavedChange(false);
   };
-
-  const hasUnsyncedSubmissionChangeClass = hasUnsyncedSubmissionChange ?
-    styleProps.clearChoiceBtnNeedsResubmit : styleProps.clearChoiceBtnSubmitted;
-  const clearChoiceBtnStateClass =
-    hasSubmission
-      ? hasUnsyncedSubmissionChangeClass
-      : '';
   const openFollowupsHandler = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -157,7 +131,7 @@ const Question: React.FC<QuestionProps> = ({
   return (
     <div {...layoutCellPointerHandlers(questionSelector)} className={contClass}>
       <span
-        className={`clearChoiceBtn ${styleProps.clearChoiceBtn} ${clearChoiceBtnStateClass}`}
+        className={`clearChoiceBtn ${styleProps.clearChoiceBtn}`}
         onClick={toggleChoiceHandler}
       >
         o
@@ -178,9 +152,9 @@ const Question: React.FC<QuestionProps> = ({
             <LinkifiedText text={quote} />
           </b>
         </div>
-        <div ref={optionsContainerRef} className={optionsContainerCss + isFocused} id="options">
+        <div ref={optionsContainerRef} className={optionsContainerCss} id="options">
           <Carousel
-            key={`${attempt ?? ''}-${randomizedType}`}
+            key={`${randomizedType}`}
             indicatorLabels={ranCombs.map(() => 'carousel-indicator')}
             controls={false}
             interval={null}
@@ -206,17 +180,14 @@ const Question: React.FC<QuestionProps> = ({
                         value={id}
                         type="radio"
                         name={identifier}
-                        defaultChecked={attempt === id}
                         onChange={(e) => {
                           const newValue = e.target.value;
                           choice.current[e.target.name] = newValue;
-                          // Mark as needing resubmission if there's an existing submission and user picked a different option
-                          setHasUnsavedChange(hasSubmission && newValue !== attemptedValue);
                           const inputs = optionsContainerRef.current?.querySelectorAll<HTMLInputElement>(`input[name="${identifier}"]`) ?? [];
                           inputs.forEach((input) => { input.checked = input === e.target; });
                         }}
                       />
-                      <span className={checkmarkCss}></span>
+                      <span className={styleProps.checkmark}></span>
                     </label>
                   );
                 })}

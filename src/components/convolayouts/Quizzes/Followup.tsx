@@ -32,12 +32,8 @@ const styleProps = {
 
 interface FollowupProps {
   pennant: Pennant;
-  focus?: boolean;
-  attemptValue?: string | null;
   combs?: string[][];
   slideItems: SlideItem[];
-  submittedOptionIds: string[];
-  chooser: (params: { ids: string[]; isShow: boolean }) => void;
   selector: (params: { ids: number[] }) => void;
 }
 const optionsContainerCss = "ms-md-3 ms-sm-3 ps-md-5 ps-sm-3";
@@ -46,12 +42,8 @@ const contCss = `question-container ${styleProps.questionContainer} mt-sm-5`;
 
 const Followup: React.FC<FollowupProps> = ({
   pennant,
-  focus,
   slideItems,
   combs = [],
-  attemptValue,
-  submittedOptionIds,
-  chooser,
   selector,
 }) => {
   const { id: questionId = -1, quote = "", isHighlighted = false, isDismissed = false } = pennant;
@@ -59,7 +51,7 @@ const Followup: React.FC<FollowupProps> = ({
   const isMaximumFeatures = useSelector((state: RootState) =>
     !state.settings.isUnzipCourses && !state.settings.isUnzipQuizzes && !state.settings.isUnzipTutorials);
   const randomizedType = useSelector((state: RootState) => state.settings.randomizedType);
-  const choice = useRef<Record<string, string | null>>({ [identifier]: attemptValue ?? null });
+  const choice = useRef<Record<string, string | null>>({ [identifier]: null });
   const latestMetaRef = useRef({ identifier, isDismissed, questionId });
   const contClass = isHighlighted ? (isHighlight + ' ' + contCss) : contCss;
   const processedOptions = useMemo(() => getOptionsFromSlideItems(slideItems), [slideItems]);
@@ -70,21 +62,17 @@ const Followup: React.FC<FollowupProps> = ({
   const [ranCombs, setRanCombs] = useState<number[]>([]);
   const dismissClickedRef = useRef(false);
   const optionsContainerRef = useRef<HTMLDivElement>(null);
-  const [hasUnsavedChange, setHasUnsavedChange] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
-    choice.current = { [identifier]: attemptValue ?? null };
-    setHasUnsavedChange(false);
-  }, [identifier, attemptValue]);
+    choice.current = { [identifier]: null };
+  }, [identifier]);
 
   useEffect(() => {
     setRanCombs(computeRanCombs(
       combs,
       randomizedType,
-      submittedOptionIds,
-      attemptValue,
     ));
-  }, [combs, randomizedType, submittedOptionIds, attemptValue]);
+  }, [combs, randomizedType]);
 
   latestMetaRef.current = { identifier, isDismissed, questionId };
 
@@ -117,26 +105,16 @@ const Followup: React.FC<FollowupProps> = ({
     }
   };
 
-  const isFocused = focus ? ` highlighted ${styleProps.highlighted}` : "";
-  const checkmarkCss = focus ? `checkmark ${styleProps.checkmark} ${styleProps.highlighted}` : `checkmark ${styleProps.checkmark}`;
-
   const submittionSelector = (e: React.MouseEvent) => {
-    const payload = { ids: ["choice" + questionId], isShow: !isFocused };
     e.nativeEvent.stopImmediatePropagation();
-    setTimeout(() => chooser(payload));
     e.stopPropagation();
     e.preventDefault();
   };
-
-  const attemptedValue = attemptValue ?? null;
-  const hasSubmission = attemptedValue != null && attemptedValue !== '';
-  const hasUnsyncedSubmissionChange = hasSubmission && hasUnsavedChange;
 
   const toggleChoiceHandler = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
-    setHasUnsavedChange(false);
   };
 
   const exitFollowupsHandler = (e: React.MouseEvent) => {
@@ -146,15 +124,10 @@ const Followup: React.FC<FollowupProps> = ({
     dispatch(setFollowupId(undefined));
   };
 
-  const clearChoiceBtnStateClass =
-    hasSubmission
-      ? (hasUnsyncedSubmissionChange ? styleProps.clearChoiceBtnNeedsResubmit : styleProps.clearChoiceBtnSubmitted)
-      : '';
-
   return (
     <div {...layoutCellPointerHandlers(questionSelector)} className={contClass}>
       <span
-        className={`clearChoiceBtn ${styleProps.clearChoiceBtn} ${clearChoiceBtnStateClass}`}
+        className={`clearChoiceBtn ${styleProps.clearChoiceBtn}`}
         onClick={toggleChoiceHandler}
       >
         o
@@ -177,9 +150,9 @@ const Followup: React.FC<FollowupProps> = ({
             <LinkifiedText text={quote} />
           </b>
         </div>
-        <div ref={optionsContainerRef} className={optionsContainerCss + isFocused} id="options">
+        <div ref={optionsContainerRef} className={optionsContainerCss} id="options">
           <Carousel
-            key={`${attemptValue ?? ''}-${randomizedType}`}
+            key={`${randomizedType}`}
             indicatorLabels={ranCombs.map(() => 'carousel-indicator')}
             controls={false}
             interval={null}
@@ -205,16 +178,14 @@ const Followup: React.FC<FollowupProps> = ({
                         value={id}
                         type="radio"
                         name={identifier}
-                        defaultChecked={attemptValue === id}
                         onChange={(e) => {
                           const newValue = e.target.value;
                           choice.current[e.target.name] = newValue;
-                          setHasUnsavedChange(hasSubmission && newValue !== attemptedValue);
                           const inputs = optionsContainerRef.current?.querySelectorAll<HTMLInputElement>(`input[name="${identifier}"]`) ?? [];
                           inputs.forEach((input: HTMLInputElement) => { input.checked = input === e.target; });
                         }}
                       />
-                      <span className={checkmarkCss}></span>
+                      <span className={styleProps.checkmark}></span>
                     </label>
                   );
                 })}
