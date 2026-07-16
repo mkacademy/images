@@ -27,7 +27,6 @@ interface ViewerNavigationProps {
 const ViewerNavigation: React.FC<ViewerNavigationProps> = ({ convCss = 'carders' }) => {
   const { pathname, search } = useLocation();
   const dispatch = useDispatch<AppDispatch>();
-  const fsq = useSelector((state: RootState) => state.settings.fsq);
   const isUnzipCourses = useSelector((state: RootState) => state.settings.isUnzipCourses);
   const isUnzipQuizzes = useSelector((state: RootState) => state.settings.isUnzipQuizzes);
   const isUnzipTutorials = useSelector((state: RootState) => state.settings.isUnzipTutorials);
@@ -53,7 +52,6 @@ const ViewerNavigation: React.FC<ViewerNavigationProps> = ({ convCss = 'carders'
     return null;
   }
 
-  const stickyFsq = { fsq: fsq > 0 ? fsq : 10 };
   const cssClass = `${styles.shortcut} ${styles[convCss] ?? ''}`;
   const container = `${styles['shortcut-Container']} ${styles[convCss] ?? ''}`;
   const isTutorial = pathname.includes('/tutorial');
@@ -69,7 +67,7 @@ const ViewerNavigation: React.FC<ViewerNavigationProps> = ({ convCss = 'carders'
     })();
 
   const convolutionLinkProps = (route: string) => {
-    const target = buildConvolutionNavigateTo(route, undefined, stickyFsq, {
+    const target = buildConvolutionNavigateTo(route, undefined, {
       ldr,
       ...linkParams,
     });

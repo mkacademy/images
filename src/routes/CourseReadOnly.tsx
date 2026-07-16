@@ -7,9 +7,8 @@ import { CourseGlobal } from '../components/views/wrappers/courseGlobal';
 import Comments from '../components/views/Comments';
 import * as pennantStyles from '../styles/course.module.css';
 import * as styles from '../styles/404.module.css';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { clearContentTypeSelected } from '../store/slices/settingsSlice';
 import { useHydrateContainer } from '../Hooks/useHydrateContainer';
 import { useImageHydration } from '../Hooks/useImageHydration';
 import { usePncEmptyMessage } from '../Hooks/usePncEmptyMessage';
@@ -20,7 +19,6 @@ interface CourseReadOnlyProps {
 }
 
 const CourseReadOnly: React.FC<CourseReadOnlyProps> = ({ setWebApp, noCourses }) => {
-  const dispatch = useDispatch();
   const selectedBannerIndex = useSelector((state: RootState) => state.course.selected);
   const chapters = useSelector((state: RootState) => state.course.chapters);
   const banners = useSelector((state: RootState) => state.course.banners);
@@ -34,8 +32,7 @@ const CourseReadOnly: React.FC<CourseReadOnlyProps> = ({ setWebApp, noCourses })
 
   useEffect(() => {
     setWebApp('course');
-    dispatch(clearContentTypeSelected('course'));
-  }, [setWebApp, dispatch]);
+  }, [setWebApp]);
 
   return (
     <CourseGlobal>

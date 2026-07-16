@@ -655,8 +655,10 @@ export type HydrationSessionOptions = {
   maxQueriesPerLeg: number;
 };
 
-export const resolveHydrationSessionOptions = (getState: () => RootState): HydrationSessionOptions => ({
-  maxQueriesPerLeg: normalizeQueryLimit(getState().settings.queryLimit),
+const DEFAULT_QUERY_LIMIT = 50;
+
+export const resolveHydrationSessionOptions = (_getState: () => RootState): HydrationSessionOptions => ({
+  maxQueriesPerLeg: normalizeQueryLimit(DEFAULT_QUERY_LIMIT),
 });
 
 export const estimateInitialLegCount = (
@@ -692,16 +694,10 @@ export const withAttemptedSeekExclusion = (
 ): GenericDiscriminatorPredicate[] =>
   discriminator.map((pred) => (item) => pred(item) && !attemptedSeekIds.has(item.id));
 
-export const abortIfHydrationDisabled = (getState: () => RootState): boolean => {
-  if (!getState().settings.shouldHydrate) {
-    console.log('hydration aborted: shouldHydrate is false');
-    return true;
-  }
-  return false;
-};
+export const abortIfHydrationDisabled = (_getState: () => RootState): boolean => false;
 
 export type HandleHydrationLogicOptions = {
-  /** Manual cpanel Hydrate button — ignores `settings.shouldHydrate`. */
+  /** Manual cpanel Hydrate button — ignores the shouldHydrate gate. */
   bypassShouldHydrate?: boolean;
 };
 

@@ -7,9 +7,8 @@ import ArticleNavFooter from '../components/convolutions/ArticleNavFooter';
 import Comments from '../components/views/Comments';
 import * as courseStyles from '../styles/course.module.css';
 import * as _404styles from '../styles/404.module.css';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { clearContentTypeSelected } from '../store/slices/settingsSlice';
 import { useHydrateContainer } from '../Hooks/useHydrateContainer';
 import { useImageHydration } from '../Hooks/useImageHydration';
 import { usePncEmptyMessage } from '../Hooks/usePncEmptyMessage';
@@ -20,7 +19,6 @@ interface QuizReadOnlyProps {
 }
 
 const QuizReadOnly: React.FC<QuizReadOnlyProps> = ({ setWebApp, noQuizzes }) => {
-  const dispatch = useDispatch();
   const selectedBannerIndex = useSelector((state: RootState) => state.quiz.selected);
   const followupId = useSelector((state: RootState) => state.quiz.followupId);
   const banners = useSelector((state: RootState) => state.quiz.quizzes);
@@ -33,8 +31,7 @@ const QuizReadOnly: React.FC<QuizReadOnlyProps> = ({ setWebApp, noQuizzes }) => 
 
   useEffect(() => {
     setWebApp('quiz');
-    dispatch(clearContentTypeSelected('quiz'));
-  }, [setWebApp, dispatch]);
+  }, [setWebApp]);
 
   return (
     <CourseGlobal>

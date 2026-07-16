@@ -6,10 +6,9 @@ import { ArticleSelector } from '../components/convolutions/ViewSelector';
 import ArticleNavFooter from '../components/convolutions/ArticleNavFooter';
 import * as courseStyles from '../styles/course.module.css';
 import { CourseGlobal } from '../components/views/wrappers/courseGlobal';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { RootState } from '../store';
 import Comments from '../components/views/Comments';
-import { clearContentTypeSelected } from '../store/slices/settingsSlice';
 import { useHydrateContainer } from '../Hooks/useHydrateContainer';
 import { useImageHydration } from '../Hooks/useImageHydration';
 import { usePncEmptyMessage } from '../Hooks/usePncEmptyMessage';
@@ -20,7 +19,6 @@ interface TutorialReadOnlyProps {
 }
 
 const TutorialReadOnly: React.FC<TutorialReadOnlyProps> = ({ setWebApp, noTutorials }) => {
-  const dispatch = useDispatch();
   const selectedBannerIndex = useSelector((state: RootState) => state.tutorial.selected);
   const banners = useSelector((state: RootState) => state.tutorial.banners);
   const bannerId = banners[selectedBannerIndex]?.id ?? -1;
@@ -32,8 +30,7 @@ const TutorialReadOnly: React.FC<TutorialReadOnlyProps> = ({ setWebApp, noTutori
 
   useEffect(() => {
     setWebApp('tutorial');
-    dispatch(clearContentTypeSelected('tutorial'));
-  }, [setWebApp, dispatch]);
+  }, [setWebApp]);
 
   return (
     <CourseGlobal>
