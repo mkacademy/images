@@ -5,7 +5,6 @@ import { toggleTutorial } from '../store/slices/tutorialSlice';
 import { toggleCourse } from '../store/slices/courseSlice';
 import { toggleQuiz } from '../store/slices/quizSlice';
 import { AppDispatch } from '../store';
-import { recordKeyboardShortcutFromChord } from '../library/ShortcutRecording';
 import { isFsqEligiblePathname, stripFsqFromSearch } from '../library/convolutionNavSearch';
 
 const IGNORE_ESC_IN = 'input, textarea, select, [contenteditable="true"]';
@@ -23,7 +22,6 @@ export function useExitExpandedOnEscape(isExpanded: boolean, onExit: () => void)
       const el = event.target as HTMLElement | null;
       if (el?.closest(IGNORE_ESC_IN)) return;
       event.preventDefault();
-      recordKeyboardShortcutFromChord(dispatch, 'Escape');
       onExitRef.current();
     };
     window.addEventListener('keydown', handler);
@@ -49,7 +47,6 @@ export function useClearFsqOnEscapeWhenUnselected(isUnselected: boolean): void {
       if (nextSearch === false) return;
 
       event.preventDefault();
-      recordKeyboardShortcutFromChord(dispatch, 'Escape');
       navigate({ pathname, search: nextSearch }, { replace: true });
     };
     window.addEventListener('keydown', handler);
@@ -88,7 +85,6 @@ export function useChapterEscape(
       const el = event.target as HTMLElement | null;
       if (el?.closest(IGNORE_ESC_IN)) return;
       event.preventDefault();
-      recordKeyboardShortcutFromChord(dispatch, 'Escape');
       if (isChapterOpenRef.current) onCloseRef.current();
       else onExitRef.current();
     };

@@ -1,6 +1,5 @@
 
 import { Metadata } from "../types/cpanel";
-import { Handler } from "../store/slices/errorSlice";
 import { contiguousOrdinalPred, getToken, orderPredicate } from "./sliceUtils";
 import {
   altGroupRangeReorderSegment,
@@ -611,25 +610,6 @@ export const inBanners: Record<IncomingType & IncommingStates, string> = {
 };
 
 export const avatars: Record<TutorType, string> = { [B]: bossImg, [M]: minionImg, [U]: underbossImg };
-
-export const withReciepients = (payload: { response: OutgoingMessage[]; handlers: Record<string, Handler[]> }) => {
-  const { response, handlers } = payload;
-  const getRecipients = ({ type, targets = [] }: { type: OutgoingType; targets?: (string | number)[] }) => {
-    const route = outRoutes[type];
-    let handlesKey: string;
-    if (route?.startsWith('bosses')) handlesKey = 'handlesBosses';
-    else if (route?.startsWith('minions')) handlesKey = 'handlesMinions';
-    else if (route?.startsWith('underbosses')) handlesKey = 'handlesUnderbosses';
-    else handlesKey = route ?? '';
-    return (handlers[handlesKey] ?? [])
-      .filter(({ id }) => targets.includes(id))
-      .map(({ keyword }) => keyword);
-  };
-  return response.map((outgoing: OutgoingMessage) => ({
-    reciepients: getRecipients(outgoing),
-    ...outgoing,
-  }));
-};
 
 export type CommunicationReply = {
   parentId: number;

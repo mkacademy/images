@@ -1,20 +1,18 @@
 import { jwtDecode } from 'jwt-decode';
 import { createSelector, Dispatch } from '@reduxjs/toolkit';
-import { fetchedHandles, Handler } from '../store/slices/errorSlice';
-import { Content, setTutorials, Banner as TutorialBanner } from '../store/slices/tutorialSlice';
-import { Banner, setCourses, SlideGroup } from '../store/slices/courseSlice';
+import { Content,  Banner as TutorialBanner } from '../store/slices/tutorialSlice';
+import { Banner, SlideGroup } from '../store/slices/courseSlice';
 import { IncomingMessage, OutgoingMessage, setIncomings, setOutgoings } from '../store/slices/commsSlice';
 import { ToolKit, RECORDS, getCurAppName, getSimplePageIndexFromSearch, orderedWebappRoutes, Tree, timeout, getCurAppIndex } from '../utils';
 import { ResultPayload, ROW_APPEND_QUERY_TYPE } from '../store/slices/rowSlice';
 import { getCounts, getExecutedQueries } from '../store/slices/statsSlice';
-import { Quiz, setQuizzes } from '../store/slices/quizSlice';
+import { Quiz } from '../store/slices/quizSlice';
 import { CpanelRow } from '../types/cpanel';
 import { viewRequestFetching } from '../store/slices/viewSlice';
 import { applyInsertStats } from '../store/thunks/applyInsertStats';
 import { emptySelectedRoute } from '../store/slices/searchSlice';
 import { RootState } from '../store';
 import { StatsMiddlewareState } from '../store/types';
-import { B, M, U, withReciepients } from '../library/commsUtils';
 import { QueryParams } from './types';
 import { buildRecordStateProps, type StatsPayload } from './requestIdsUtils';
 import { getDeepLinkTreeIds, resolveViewerDeepLinkSearch } from '../loadingRouteUtils';
@@ -433,46 +431,12 @@ export const authenticatedFetch = async (query: QueryParams): Promise<ResultPayl
 export interface FetchedData {
     quizzes?: Quiz[];
     totals?: Record<string, number>;
-    handlers?: Record<string, Handler[]>;
     banners?: Banner[] | TutorialBanner[];
     counts: Record<string, Record<string, number>>;
     executedQueries?: Record<string, Executedquery>;
     content?: SlideGroup[] | Content[][] | OutgoingMessage[] | IncomingMessage[] | Record<string, Record<string, CpanelRow[]>>;
 }
-
-export interface QuizResponse {
-    counts: Record<string, Record<string, number>>;
-    handlers: Record<string, Handler[]>;
-    totals: Record<string, number>;
-    content: SlideGroup[];
-    banners: Banner[];
-    quizzes: Quiz[];
-}
-
-export interface CourseResponse {
-    banners: Banner[];
-    content: SlideGroup[];
-    totals: Record<string, number>;
-    handlers: Record<string, Handler[]>;
-    counts: Record<string, Record<string, number>>;
-}
-
-export interface TutorialResponse {
-    content: Content[][];
-    banners: TutorialBanner[];
-    totals: Record<string, number>;
-    handlers: Record<string, Handler[]>;
-    counts: Record<string, Record<string, number>>;
-}
-
-export interface CpanelResponse {
-    content: Record<string, Record<string, CpanelRow[]>>;
-    counts: Record<string, Record<string, number>>;
-    totals: Record<string, number>;
-    handlers: Record<string, Handler[]>;
-}
 const emptyTotals = {} as Record<string, number>;
-const emptyHandlers = {} as Record<string, Handler[]>;
 
 const filterCommsByDeepLinkTreeIds = <T extends { id: number }>(messages: T[]): T[] => {
     if (typeof window === 'undefined') return messages;
@@ -481,30 +445,6 @@ const filterCommsByDeepLinkTreeIds = <T extends { id: number }>(messages: T[]): 
     if (allowedIds.size === 0) return messages;
     return messages.filter((message) => allowedIds.has(message.id));
 };
-
-export interface validatedSkeletonsResponse {
-    response: FetchedData;
-    screen: string;
-}
-
-export const validateSkeletonsThenDispatch = (response: FetchedData): validatedSkeletonsResponse => {
-    if (isQuizResponse(response)) {
-        console.log("is_quiz_skeletons_response");
-        return { response, screen: 'quiz' };
-    }
-    else if (isCourseResponse(response)) {
-        console.log("is_course_skeletons_response");
-        return { response, screen: 'course' };
-    }
-    else if (isTutorialResponse(response)) {
-        console.log("is_tutorial_skeletons_response");
-        return { response, screen: 'tutorial' };
-    }
-    else {
-        console.log("invalid_skeletons_response");
-        return { response, screen: 'invalid' };
-    }
-}
 
 interface validateThenDispatchPayload {
     query: Record<string, Record<string, Executedquery>>;
@@ -541,7 +481,7 @@ export const validateThenDispatch = ({
         quiz: { selected: quizSelected, banners: quizBanners, quizzes },
         tutorial: { selected: tutorialSelected, banners: tutorialBanners },
     }
-    const { content, counts, totals, handlers } = response;
+    const { content, counts, totals } = response;
     const routeReasons: string[] = [];
     let abortRemainingFetchSequence = false;
 
@@ -549,8 +489,7 @@ export const validateThenDispatch = ({
         if (isArrayOfType(content, isOutgoingMessage)) {
             console.log("is_outgoing_response");
             const filtered = filterCommsByDeepLinkTreeIds(content);
-            dispatch(fetchedHandles(handlers ?? emptyHandlers));
-            dispatch(setOutgoings(withReciepients({ response: filtered, handlers: handlers ?? emptyHandlers })));
+            dispatch(setOutgoings(filtered));
             applyInsertStats(dispatch, { screen: 'outgoing', query, counts, totals: totals ?? emptyTotals, state: statsState, requestId });
         }
         else if (isArrayOfType(content, isIncomingMessage)) {
@@ -609,250 +548,8 @@ const logGuardInvalidReasons = (guardName: string, reasons: string[], response: 
     console.log(`${guardName}: invalid`, { reasons, keys });
 };
 
-const hasQuizzes = (response: FetchedData, reasons?: string[]): boolean => {
-    if (typeof response !== 'object' || response === null) {
-        reasons?.push('response is null or not an object');
-        return false;
-    }
-    const o = response as unknown as Record<string, unknown>;
-    if (!('quizzes' in o)) {
-        reasons?.push("missing key 'quizzes'");
-        return false;
-    }
-    if (!Array.isArray(o.quizzes)) {
-        reasons?.push("'quizzes' is not an array");
-        return false;
-    }
-    if (o.quizzes.length <= 0) {
-        reasons?.push("'quizzes' array is empty");
-        return false;
-    }
-    return true;
-};
 
-const hasCourseBanners = (response: FetchedData, reasons?: string[]): boolean => {
-    if (typeof response !== 'object' || response === null) {
-        reasons?.push('response is null or not an object');
-        return false;
-    }
-    const o = response as unknown as Record<string, unknown>;
-    if (!('banners' in o)) {
-        reasons?.push("missing key 'banners'");
-        return false;
-    }
-    if (!Array.isArray(o.banners)) {
-        reasons?.push("'banners' is not an array");
-        return false;
-    }
-    if (o.banners.length <= 0) {
-        reasons?.push("'banners' array is empty");
-        return false;
-    }
 
-    // Course banners have pennants array on the first banner.
-    const first = o.banners[0];
-    if (typeof first !== 'object' || first === null) {
-        reasons?.push("'banners[0]' is not an object");
-        return false;
-    }
-    if (!('pennants' in (first as Record<string, unknown>))) {
-        reasons?.push("'banners[0]' missing key 'pennants'");
-        return false;
-    }
-    return true;
-};
 
-const hasCourseContent = (response: FetchedData, reasons?: string[], requireNonEmpty = false): boolean => {
-    if (typeof response !== 'object' || response === null) {
-        reasons?.push('response is null or not an object');
-        return false;
-    }
-    const o = response as unknown as Record<string, unknown>;
-    if (!('content' in o)) {
-        if (requireNonEmpty) reasons?.push("missing key 'content'");
-        return !requireNonEmpty;
-    }
-    if (!Array.isArray(o.content)) {
-        reasons?.push("'content' is not an array");
-        return false;
-    }
 
-    if (o.content.length === 0) {
-        if (requireNonEmpty) reasons?.push("'content' array is empty");
-        return !requireNonEmpty;
-    }
-
-    const first = o.content[0];
-    if (Array.isArray(first)) {
-        reasons?.push("'content[0]' is an array (expected object with 'slides')");
-        return false;
-    }
-    if (typeof first !== 'object' || first === null) {
-        reasons?.push("'content[0]' is not an object (expected object with 'slides')");
-        return false;
-    }
-    if (!('slides' in (first as Record<string, unknown>))) {
-        reasons?.push("'content[0]' missing key 'slides'");
-        return false;
-    }
-    return true;
-};
-
-const hasTutorialBanners = (response: FetchedData, reasons?: string[]): boolean => {
-    if (typeof response !== 'object' || response === null) {
-        reasons?.push('response is null or not an object');
-        return false;
-    }
-    const o = response as unknown as Record<string, unknown>;
-    if (!('banners' in o)) {
-        reasons?.push("missing key 'banners'");
-        return false;
-    }
-    if (!Array.isArray(o.banners)) {
-        reasons?.push("'banners' is not an array");
-        return false;
-    }
-    if (o.banners.length <= 0) {
-        reasons?.push("'banners' array is empty");
-        return false;
-    }
-
-    const first = o.banners[0];
-    if (typeof first !== 'object' || first === null) {
-        reasons?.push("'banners[0]' is not an object");
-        return false;
-    }
-    if ('pennants' in (first as Record<string, unknown>)) {
-        reasons?.push("'banners[0]' has key 'pennants' (expected to be absent)");
-        return false;
-    }
-    return true;
-};
-
-const hasTutorialContent = (response: FetchedData, reasons?: string[], requireNonEmpty = false): boolean => {
-    if (typeof response !== 'object' || response === null) {
-        reasons?.push('response is null or not an object');
-        return false;
-    }
-    const o = response as unknown as Record<string, unknown>;
-    if (!('content' in o)) {
-        if (requireNonEmpty) reasons?.push("missing key 'content'");
-        return !requireNonEmpty;
-    }
-    if (!Array.isArray(o.content)) {
-        reasons?.push("'content' is not an array");
-        return false;
-    }
-
-    if (o.content.length === 0) {
-        if (requireNonEmpty) reasons?.push("'content' array is empty");
-        return !requireNonEmpty;
-    }
-
-    if (!Array.isArray(o.content[0])) {
-        reasons?.push("'content[0]' is not an array (expected Content[][] shape)");
-        return false;
-    }
-    return true;
-};
-
-const hasNonEmptyContent = (response: FetchedData, reasons?: string[]): boolean => {
-    if (typeof response !== 'object' || response === null) {
-        reasons?.push('response is null or not an object');
-        return false;
-    }
-    const o = response as unknown as Record<string, unknown>;
-    if (!('content' in o)) {
-        reasons?.push("missing key 'content'");
-        return false;
-    }
-    if (!Array.isArray(o.content)) {
-        reasons?.push("'content' is not an array");
-        return false;
-    }
-    if (o.content.length <= 0) {
-        reasons?.push("'content' array is empty");
-        return false;
-    }
-    return true;
-};
-
-const hasBannersWithNonEmptyPennants = (response: FetchedData, reasons?: string[]): boolean => {
-    if (!hasCourseBanners(response, reasons)) return false;
-    const banners = (response as unknown as Record<string, unknown>).banners as unknown[];
-    const hasPennants = banners.some((banner) => {
-        if (typeof banner !== 'object' || banner === null) return false;
-        const pennants = (banner as Record<string, unknown>).pennants;
-        return Array.isArray(pennants) && pennants.length > 0;
-    });
-    if (!hasPennants) reasons?.push('no banner has non-empty pennants');
-    return hasPennants;
-};
-
-const hasContentSlidesNonEmpty = (response: FetchedData, reasons?: string[]): boolean => {
-    if (!hasNonEmptyContent(response, reasons)) return false;
-    const content = (response as unknown as Record<string, unknown>).content as unknown[];
-    const hasSlides = content.some((group) => {
-        if (typeof group !== 'object' || group === null || Array.isArray(group)) return false;
-        const slides = (group as Record<string, unknown>).slides;
-        return Array.isArray(slides) && slides.length > 0;
-    });
-    if (!hasSlides) reasons?.push('no content group has non-empty slides');
-    return hasSlides;
-};
-
-const hasQuizSubmissions = (response: FetchedData, reasons?: string[]): boolean => {
-    if (typeof response !== 'object' || response === null) {
-        reasons?.push('response is null or not an object');
-        return false;
-    }
-    const o = response as unknown as Record<string, unknown>;
-    if (!('quizzes' in o) || !Array.isArray(o.quizzes)) {
-        reasons?.push("missing or invalid 'quizzes' for submissions check");
-        return false;
-    }
-    const hasSubmissions = o.quizzes.some((quiz) => {
-        if (typeof quiz !== 'object' || quiz === null) return false;
-        const pennants = (quiz as Record<string, unknown>).pennants;
-        return Array.isArray(pennants) && pennants.length > 0;
-    });
-    if (!hasSubmissions) reasons?.push('no quiz has non-empty pennants (submissions)');
-    return hasSubmissions;
-};
-
-// Soft type guards for skeleton responses — distinguish app shape, not route depth.
-const isQuizResponse = (response: FetchedData): response is QuizResponse => {
-    const reasons: string[] = [];
-    if (typeof response !== 'object' || response === null) {
-        reasons.push('response is null or not an object');
-    }
-    else {
-        const o = response as unknown as Record<string, unknown>;
-        if (!('quizzes' in o)) reasons.push("missing key 'quizzes'");
-        else if (!Array.isArray(o.quizzes)) reasons.push("'quizzes' is not an array");
-        else if (o.quizzes.length <= 0) reasons.push("'quizzes' array is empty");
-    }
-
-    const ok = reasons.length === 0;
-    if (!ok) logGuardInvalidReasons('is_quiz_response', reasons, response);
-    return ok;
-};
-
-const isCourseResponse = (response: FetchedData): response is CourseResponse => {
-    const reasons: string[] = [];
-    const okBanners = hasCourseBanners(response, reasons);
-    const okContent = hasCourseContent(response, reasons);
-    const ok = okBanners && okContent;
-    if (!ok) logGuardInvalidReasons('is_course_response', reasons, response);
-    return ok;
-};
-
-const isTutorialResponse = (response: FetchedData): response is TutorialResponse => {
-    const reasons: string[] = [];
-    const okBanners = hasTutorialBanners(response, reasons);
-    const okContent = hasTutorialContent(response, reasons);
-    const ok = okBanners && okContent;
-    if (!ok) logGuardInvalidReasons('is_tutorial_response', reasons, response);
-    return ok;
-};
 

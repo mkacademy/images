@@ -1,7 +1,6 @@
 import type { AppDispatch } from '../store';
 import type { MetadataPayload } from './actions';
 import type { ResultPayload } from '../store/slices/rowSlice';
-import { fetchedHandles, type Handler } from '../store/slices/errorSlice';
 import {
   applyHydrateMetadata,
   applyHydrateRows,
@@ -12,7 +11,6 @@ const HYDRATION_STORE_FLUSH_MS = 1000;
 
 let rowsBuffer = new Map<string, ResultPayload>();
 let metadataBuffer = new Map<string, MetadataPayload>();
-let handlesBuffer: Record<string, Handler[]> = {};
 let flushTimeout: ReturnType<typeof setTimeout> | null = null;
 let dispatchRef: AppDispatch | null = null;
 
@@ -36,17 +34,8 @@ const mergeMetadata = (existing: MetadataPayload, incoming: MetadataPayload): Me
   data: [...existing.data, ...incoming.data],
 });
 
-const mergeHandles = (
-  target: Record<string, Handler[]>,
-  incoming: Record<string, Handler[]>,
-): void => {
-  for (const [route, handlers] of Object.entries(incoming)) {
-    target[route] = [...(target[route] ?? []), ...handlers];
-  }
-};
-
 const hasBufferedItems = (): boolean =>
-  rowsBuffer.size > 0 || metadataBuffer.size > 0 || Object.keys(handlesBuffer).length > 0;
+  rowsBuffer.size > 0 || metadataBuffer.size > 0;
 
 const scheduleFlush = (): void => {
   if (flushTimeout) return;
@@ -69,8 +58,6 @@ export const enqueueHydrationStoreUpdate = (update: HydrationStoreUpdate): void 
     existingMetadata ? mergeMetadata(existingMetadata, update.metadata) : update.metadata,
   );
 
-  if (update.handles) mergeHandles(handlesBuffer, update.handles);
-
   scheduleFlush();
 };
 
@@ -88,13 +75,9 @@ export const flushHydrationStoreBuffer = (): void => {
   for (const metadata of metadataBuffer.values()) {
     applyHydrateMetadata(dispatchRef, metadata);
   }
-  if (Object.keys(handlesBuffer).length > 0) {
-    dispatchRef(fetchedHandles(handlesBuffer));
-  }
 
   rowsBuffer = new Map();
   metadataBuffer = new Map();
-  handlesBuffer = {};
 };
 
 /** Clears pooled payloads without writing them to the store. */
@@ -105,5 +88,4 @@ export const resetHydrationStoreBuffer = (): void => {
   }
   rowsBuffer = new Map();
   metadataBuffer = new Map();
-  handlesBuffer = {};
 };

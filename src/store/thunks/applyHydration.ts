@@ -16,7 +16,6 @@ import {
 import type { Metadata } from '../../types/cpanel';
 import type { ResultPayload } from '../slices/rowSlice';
 import type { RootState } from '../index';
-import { fetchedHandles } from '../slices/errorSlice';
 
 /** Applies hydrated row payloads to PNC slices (replaces DismissalsManager hydrateRows). */
 export function applyHydrateRows(
@@ -128,7 +127,6 @@ export function applyHydrateMetadata(
 export type HydrationStoreUpdate = {
   rows: ResultPayload;
   metadata: MetadataPayload;
-  handles?: Parameters<typeof fetchedHandles>[0];
 };
 
 /** Applies a pooled hydration update directly to the store. */
@@ -138,7 +136,4 @@ export function applyHydrationStoreUpdate(
 ): void {
   applyHydrateRows(dispatch, update.rows);
   applyHydrateMetadata(dispatch, update.metadata);
-  if (update.handles && Object.keys(update.handles).length > 0) {
-    dispatch(fetchedHandles(update.handles));
-  }
 }

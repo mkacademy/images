@@ -1,6 +1,6 @@
 import { Dispatch } from 'redux';
 import { RootState } from '../store/index';
-import { fetchedHandles, Handler } from '../store/slices/errorSlice';
+import { Handler } from '../store/slices/errorSlice';
 import { globalVars, getInteractionIDs, getPlural, Tree, capitalizeFirstLetter } from '../utils';
 import { DataRow } from '../types/cpanel';
 import { Quiz } from '../store/slices/quizSlice';
@@ -33,7 +33,6 @@ export default function createValidTexts({
   dispatch,
 }: CreateValidTextsParams): DataRow[] {
   const validTexts: DataRow[] = [];
-  const handlesObj: Record<string, Handler[]>[] = [];
   const appRoute = from + to;
   const { globallyUniqueIDs } = globalVars;
   const { addCount } = state.session;
@@ -43,7 +42,7 @@ export default function createValidTexts({
   const { parentID, childID } = getInteractionIDs(from, to);
   const predicate = ({ isHighlighted }: { isHighlighted: boolean }) => isHighlighted;
 
-  const createValidTexts = (IDs?: number[], maxOrdinals?: number[], handlers?: Record<string, Handler[]>) => {
+  const createValidTexts = (IDs?: number[], maxOrdinals?: number[]) => {
     const nextOrdinal = 1 + (maxOrdinals?.reduce((max, maxOrdinal) => Math.max(max, maxOrdinal), -1) ?? -1);
     const metadatas = Array.from({ length: childIds ?? addCount }).map(
       (_, i) => ({
@@ -55,13 +54,6 @@ export default function createValidTexts({
     );
     const mockedResults = mockedData?.(metadatas, connections as string[]) ?? [];
     validTexts.push(...mockedResults as DataRow[]);
-    if (handlers) handlesObj.push(handlers);
-    else {
-      const root = childID?.replace("Id", "") ?? "";
-      const handle = capitalizeFirstLetter(getPlural(root));
-      const object: Record<string, Handler[]> = { ['handles' + handle]: validTexts.map(handleRoot(root)) }
-      handlesObj.push(object);
-    }
   };
 
   const createCourseLikeRouteValidTexts = (
@@ -82,7 +74,7 @@ export default function createValidTexts({
           const { slides, ...thumbs } = content[index];
           return Object.values(thumbs).reduce((max, thumb) => Math.max(max, thumb.ordinal), -1);
         });
-        createValidTexts(IDs, maxOrdinals, { handlesSifters });
+        createValidTexts(IDs, maxOrdinals);
       } else {
         const indeces = IDs.map((id) => banners.findIndex((banner) => banner.id === id));
         const maxOrdinals = indeces
@@ -90,7 +82,7 @@ export default function createValidTexts({
           .map((index) =>
             banners[index].pennants.reduce((max, pennant) => Math.max(max, pennant.ordinal), -1)
           );
-        createValidTexts(IDs, maxOrdinals, { handlesSifters });
+        createValidTexts(IDs, maxOrdinals);
       }
       return true;
     }
@@ -123,7 +115,6 @@ export default function createValidTexts({
             return sameBanner.pennants.filter((pennant) => pennant.ordinal === slideGroupItem.ordinal);
           })
           .filter(noDuplicates);
-      const handlesFilters = selected.map(handlePred);
       const indeces = selected.map((pennant) => {
         const index = content.findIndex((slideGroup) => slideGroup?.slides.some((slide) => slide[0]?.bannerId === pennant.id));
         if (index === -1) return undefined;
@@ -131,7 +122,7 @@ export default function createValidTexts({
         return slideIndex !== undefined && slideIndex !== -1 ? [index, slideIndex] : undefined;
       }).filter((indices): indices is [number, number] => indices !== undefined);
       const maxOrdinals = indeces.map(([groupIndex, slideIndex]) => content[groupIndex]?.slides[slideIndex]?.reduce((max, slide) => Math.max(max, slide.ordinal), -1) ?? -1);
-      createValidTexts(selected.map(idPred), maxOrdinals, { handlesFilters });
+      createValidTexts(selected.map(idPred), maxOrdinals);
       return true;
     }
     return false;
@@ -148,10 +139,9 @@ export default function createValidTexts({
       else if (appRoute === "filtersinstructions") {
         const { banners, content } = state.tutorial;
         const IDs = banners.filter(predicate).map(idPred);
-        const handlesFilters = banners.filter(predicate).map(handlePred);
         const indeces = IDs.map((id) => content.findIndex((slides) => slides.some((slide) => slide.bannerId === id)));
         const maxOrdinals = indeces.filter((index) => index !== -1).map((index) => content[index].reduce((max, slide) => Math.max(max, slide.ordinal), -1));
-        createValidTexts(IDs, maxOrdinals, { handlesFilters });
+        createValidTexts(IDs, maxOrdinals);
       }
       break;
     }
@@ -177,18 +167,16 @@ export default function createValidTexts({
       }
       else if (appRoute === "dashboardssifters") {
         const { quizzes, banners } = state.quiz;
-        const handlesSifters = quizzes.filter(predicate).map(handlePred);
         const IDs = quizzes.filter(predicate).map(idPred);
         const groupedBanners = quizzes.map((quiz) => banners.filter((banner) => banner.id === quiz.bannerId));
         const maxOrdinals = groupedBanners.map((group) => group.reduce((max, banner) => Math.max(max, banner.ordinal), -1));
-        createValidTexts(IDs, maxOrdinals, { handlesSifters });
+        createValidTexts(IDs, maxOrdinals);
       } else if (appRoute === "dashboardsfilters") {
         const { quizzes, banners } = state.quiz;
-        const handlesFilters = quizzes.filter(predicate).map(handlePred);
         const IDs = quizzes.filter(predicate).map(idPred);
         const groupedBanners = quizzes.map((quiz) => banners.filter((banner) => banner.id === quiz.bannerId));
         const maxOrdinals = groupedBanners.map((group) => group.reduce((max, banner) => Math.max(max, banner.ordinal), -1));
-        createValidTexts(IDs, maxOrdinals, { handlesFilters });
+        createValidTexts(IDs, maxOrdinals);
       } else {
         const { banners, content } = state.quiz;
         createCourseLikeRouteValidTexts(appRoute, banners, content);
@@ -198,8 +186,6 @@ export default function createValidTexts({
     default:
       break;
   }
-  if (dispatch && handlesObj.length > 0)
-    dispatch(fetchedHandles(handlesObj.pop()!));
 
   return formatter?.(validTexts)?.map(({ checked = false, frozen, id, ...theRest }: { checked?: boolean; frozen?: boolean; id?: string | number; }) => ({
     id: typeof id === 'number' ? id : Number(id) || 0,
