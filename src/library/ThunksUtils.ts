@@ -11,22 +11,6 @@ import { RootState } from '../store';
 import { QueryParams } from './types';
 import { getDeepLinkTreeIds, resolveViewerDeepLinkSearch } from '../loadingRouteUtils';
 
-export {
-    bannerPred,
-    pennantTutorialBannerPred,
-    buildChapterPennantFallback,
-    quizBannerPred,
-    quizPred,
-    bannerOrTutorialBannerOrQuizPred,
-    highBannerPred,
-    transformCourseSlideGroups,
-    transformQuizSlideGroups,
-    buildRecordStateProps,
-    extractIDsAtRequest,
-    type RecordStateProps,
-    type StatsPayload,
-} from './requestIdsUtils';
-
 const expireMessage = 'Token has expired, sign out and sign in again';
 
 interface RecordParams {

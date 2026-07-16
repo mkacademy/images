@@ -4,7 +4,6 @@ import { createSearchParams, Link, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { signOut } from '../../utils';
-import { clearEscrow } from '../../store/slices/viewSlice';
 import { clearData as clearReducers } from '../../store/slices/rowSlice';
 import * as styles from '../../styles/shortcuts.module.css';
 import ViewerNavigation from './ViewerNavigation';
@@ -43,7 +42,6 @@ const ViewerUiShortcuts: React.FC<ViewerUiShortcutsProps> = ({ convCss = 'carder
     if (!authenticated) return;
     e.preventDefault();
     dispatch(clearReducers());
-    dispatch(clearEscrow());
     dispatch({ type: signOut(pauseFetchers) });
   };
 

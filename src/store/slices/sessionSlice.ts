@@ -1,11 +1,9 @@
 import { Tree, getCurAppIndex, getCurAppName, orderedWebappRoutes } from '../../utils';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { clearEscrow } from './viewSlice';
 import { hydrateData } from '../../library/actions';
 import { clearData } from './rowSlice';
 import { authenticate, deHydratedRowsDataFetcher } from '../../library/Thunks';
 import { DataRow } from '../../types/cpanel';
-import { ParentData } from './viewSlice';
 
 export interface SessionState {
   curApp: number;
@@ -66,13 +64,7 @@ export interface InitializedLoadingPayload extends Partial<SessionState> {
   rootIDS?: string[];
   operation?: string;
   isExtractAlgo?: boolean;
-  parentData?: ParentData;
   insertedRows?: DataRow[];
-}
-
-const updateCurRoutes = (curApp: number): { curRoutes: string[]; curApp: number } => {
-  const curRoutes = getCurRoutes(getCurAppName(curApp));
-  return { curRoutes, curApp };
 }
 
 const sessionSlice = createSlice({
@@ -87,11 +79,6 @@ const sessionSlice = createSlice({
         action.payload.fetchRole && state.roles
           ? state.roles.findIndex((role) => role === action.payload.fetchRole)
           : action.payload.roleIndex ?? state.roleIndex;
-      if (action.payload?.parentData?.curApp && action.payload.parentData.curApp !== state.curApp) {
-        const { curRoutes, curApp } = updateCurRoutes(action.payload.parentData.curApp);
-        state.curRoutes = curRoutes;
-        state.curApp = curApp;
-      }
       (Object.keys(action.payload) as Array<keyof InitializedLoadingPayload>).forEach((key) => {
         const value = action.payload[key];
         if (value !== null && value !== undefined) state[key] = value;
@@ -132,10 +119,7 @@ const sessionSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(clearEscrow, (state) => {
-        console.log('clear_Session_Url');
-      })
-      .addCase(clearData, (state) => {
+      .addCase(clearData, () => {
         console.log('clear_Session');
       })
       .addCase(authenticate.pending, (state) => {

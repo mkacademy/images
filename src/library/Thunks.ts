@@ -3,7 +3,6 @@ import { getCurAppIndex, signOut, userroles, timeout, getGraphqlResolver, redire
 import { resolveViewerDeepLinkSearch } from "../loadingRouteUtils";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { EntityTypeMap, ResultPayload, clearData as clearReducers } from "../store/slices/rowSlice";
-import { clearEscrow } from "../store/slices/viewSlice";
 import { enqueueHydrationStoreUpdate } from "./hydrationPayloadBuffer";
 import { markHydrationAttemptedSeekIds, onHydrationQueryComplete, onHydrationSessionIdle } from "./hydrationQueue";
 import { InitializedLoadingPayload } from "../store/slices/sessionSlice";
@@ -54,7 +53,6 @@ export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayl
                 const roleIndex = roles.findIndex((r: string) => r === userroles[baseRoleIndex]);
                 console.log("authenticate_roles", roles);
                 dispatch(clearReducers());
-                dispatch(clearEscrow());
                 dispatch({ type: signOut(pauseFetchers) });
                 redirectUrl(ingredients);
                 const session = {
