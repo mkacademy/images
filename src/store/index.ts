@@ -1,4 +1,4 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, type ThunkDispatch, type UnknownAction } from '@reduxjs/toolkit';
 import sessionReducer from './slices/sessionSlice';
 import commsReducer from './slices/commsSlice';
 import statsReducer from './slices/statsSlice';
@@ -42,4 +42,5 @@ bindHydrationPayloadDispatch(store.dispatch);
 bindHydrationQueueDispatch(store.dispatch);
 
 export type RootState = ReturnType<typeof store.getState>;
-export type AppDispatch = typeof store.dispatch;
+/** Explicit ThunkDispatch: custom middleware typing otherwise collapses to Dispatch<UnknownAction>. */
+export type AppDispatch = ThunkDispatch<RootState, unknown, UnknownAction>;

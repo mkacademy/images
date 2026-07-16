@@ -19,7 +19,6 @@ import {
   toggleUnzipCourses,
   toggleUnzipQuizzes,
   toggleUnzipTutorials,
-  finalizePostHydrationSettings,
   unzipCoursesTypeSelected,
   unzipTutorialsTypeSelected,
   unzipQuizzesTypeSelected,
@@ -32,14 +31,12 @@ import { parseRandomizedQueryParam } from '../library/randomizedQuery';
 
 const MIN_LOADING_DELAY_MS = 2_000;
 const MAX_LOADING_WAIT_MS = 30_000;
-const DEFAULT_VIEWER_FSQ = 10;
 
 const Loading: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const isNotUnzipping = useSelector((state: RootState) => state.settings.isNotUnzipping);
-  const fsq = useSelector((state: RootState) => state.settings.fsq);
   const noTutorials = useSelector((state: RootState) => state.tutorial.noTutorials);
   const noCourses = useSelector((state: RootState) => state.course.noCourses);
   const noQuizzes = useSelector((state: RootState) => state.quiz.noQuizzes);
@@ -133,7 +130,7 @@ const Loading: React.FC = () => {
     dispatch(completedUnzipping(true));
     setCurPage(0);
     dispatch(
-      fetchData(
+      fetchData(   
         buildFetchDataPayload(
           { isUnzipCourses: hasCourse, isUnzipQuizzes: hasQuiz, isUnzipTutorials: hasTutorial },
           {
@@ -167,19 +164,15 @@ const Loading: React.FC = () => {
     if (!hasTreeParams && foundPairs.length === 0) return;
     if (hasNavigated.current) return;
 
-    const stickyFsq = { fsq: fsq > 0 ? fsq : DEFAULT_VIEWER_FSQ };
-
     const proceed = () => {
       if (hasNavigated.current) return;
 
-      dispatch(finalizePostHydrationSettings());
       const resolvedSearch = resolveViewerDeepLinkSearch(location.search);
       const currentUrl = `${location.pathname}${location.search}`;
       const route = primaryLoadingRoute(resolvedSearch, foundPairs);
       const target = buildConvolutionNavigateTo(
         route,
         undefined,
-        stickyFsq,
         { ldr: currentUrl, ...deepLinkExtraParams(location.search) },
       );
       if (!target) {
@@ -230,7 +223,6 @@ const Loading: React.FC = () => {
     dispatch,
     foundPairs,
     params,
-    fsq,
     contentAlreadyLoaded,
     hasTreeParams,
     isNotUnzipping,

@@ -1,44 +1,15 @@
-import { createSelector } from '@reduxjs/toolkit';
+
 import type { NavigateFunction } from 'react-router-dom';
 import type { AppDispatch } from '../store';
 import { prependWarning } from '../store/slices/errorSlice';
-import { fsqSelected } from '../store/slices/settingsSlice';
-import { fsqAliases } from '../utils';
 
 /** Viewer nav: fsq is always appended (uncoupled from shouldHydrate). */
 export type StickyFsqOptions = {
   fsq: number;
 };
 
-type StickyFsqState = { settings: { fsq: number } };
-
-const selectFsq = (state: StickyFsqState) => state.settings.fsq;
-
-export const stickyFsqFromState = createSelector(
-  [selectFsq],
-  (fsq): StickyFsqOptions => ({ fsq }),
-);
-
-export const getDefaultFsqGreaterThanOne = (): number =>
-  Number(Object.keys(fsqAliases).find((key) => Number(key) > 1));
-
-/** Viewer: fetch-sequence is active whenever fsq > 1 (hydration stays on). */
-export const isFetchSequenceConfigured = (fsq: number): boolean => fsq > 1;
-
-export const toggleFetchSequenceConfiguration = (
-  dispatch: AppDispatch,
-  { fsq }: StickyFsqOptions,
-): void => {
-  if (isFetchSequenceConfigured(fsq)) {
-    dispatch(fsqSelected(1));
-    return;
-  }
-  dispatch(fsqSelected(getDefaultFsqGreaterThanOne()));
-};
-
 export const rebuildConvolutionSearch = (
   currentSearch: string,
-  stickyFsq: StickyFsqOptions,
 ): string | undefined | null => {
   const raw = currentSearch.startsWith('?') ? currentSearch.slice(1) : currentSearch;
   const params = new URLSearchParams(raw);
@@ -49,7 +20,6 @@ export const rebuildConvolutionSearch = (
   });
   return buildConvolutionNavSearch(
     csEncoded,
-    stickyFsq,
     Object.keys(extraParams).length > 0 ? extraParams : undefined,
   );
 };
@@ -59,10 +29,9 @@ export const syncConvolutionUrlFsq = (
   navigate: NavigateFunction,
   pathname: string,
   currentSearch: string,
-  stickyFsq: StickyFsqOptions,
 ): boolean => {
   if (!isFsqEligiblePathname(pathname)) return true;
-  const search = rebuildConvolutionSearch(currentSearch, stickyFsq);
+  const search = rebuildConvolutionSearch(currentSearch);
   if (search === null) {
     warnConvolutionCsFsqConflict(dispatch);
     return false;
@@ -94,18 +63,14 @@ const parseGoBackUrl = (goBackUrl: string): ConvolutionNavigateTo => {
 const wouldAppendCs = (csEncoded?: string, extraParams?: Record<string, string>) =>
   Boolean(csEncoded) || extraParams?.cs !== undefined;
 
-const wouldAppendFsq = (
-  { fsq }: StickyFsqOptions,
-  extraParams?: Record<string, string>,
-) => fsq > 0 || extraParams?.fsq !== undefined;
+const wouldAppendFsq = (extraParams?: Record<string, string>) => extraParams?.fsq !== undefined;
 
 /** `cs` and `fsq` are mutually exclusive in convolution query strings. */
 export const isConvolutionNavCancelled = (
   csEncoded?: string,
-  stickyFsq: StickyFsqOptions = { fsq: 10 },
   extraParams?: Record<string, string>,
 ): boolean =>
-  wouldAppendCs(csEncoded, extraParams) && wouldAppendFsq(stickyFsq, extraParams);
+  wouldAppendCs(csEncoded, extraParams) && wouldAppendFsq(extraParams);
 
 export const CONVOLUTION_CS_FSQ_CONFLICT_MESSAGE =
   'Navigation cancelled: saved search (cs) and fetch sequence (fsq) cannot both appear in the query string.';
@@ -116,15 +81,13 @@ export const warnConvolutionCsFsqConflict = (dispatch: AppDispatch) => {
 
 export const buildConvolutionNavSearch = (
   csEncoded?: string,
-  stickyFsq: StickyFsqOptions = { fsq: 10 },
   extraParams?: Record<string, string>,
 ): string | undefined | null => {
-  if (isConvolutionNavCancelled(csEncoded, stickyFsq, extraParams)) return null;
+  if (isConvolutionNavCancelled(csEncoded, extraParams)) return null;
 
   const params = new URLSearchParams();
   if (csEncoded) params.set('cs', csEncoded);
   // Viewer always appends fsq (uncoupled from shouldHydrate).
-  if (stickyFsq.fsq > 0) params.set('fsq', String(stickyFsq.fsq));
   if (extraParams) {
     for (const [key, value] of Object.entries(extraParams)) {
       params.set(key, value);
@@ -137,33 +100,11 @@ export const buildConvolutionNavSearch = (
 export const buildConvolutionNavigateTo = (
   pathname: string,
   csEncoded?: string,
-  stickyFsq?: StickyFsqOptions,
   extraParams?: Record<string, string>,
 ): ConvolutionNavigateTo | null => {
-  const search = buildConvolutionNavSearch(csEncoded, stickyFsq, extraParams);
+  const search = buildConvolutionNavSearch(csEncoded, extraParams);
   if (search === null) return null;
   return { pathname, search };
-};
-
-/** Settings exit: merge sticky fsq only on PnC routes; all other go-back URLs are preserved as-is. */
-export const resolveSettingsExitTarget = (
-  goBackUrl: string,
-  stickyFsq: StickyFsqOptions,
-): ConvolutionNavigateTo | null => {
-  const url = new URL(goBackUrl, 'http://local');
-  if (!isFsqEligiblePathname(url.pathname)) return parseGoBackUrl(goBackUrl);
-
-  const csEncoded = url.searchParams.get('cs') ?? undefined;
-  const extraParams: Record<string, string> = {};
-  url.searchParams.forEach((value, key) => {
-    if (key !== 'cs' && key !== 'fsq') extraParams[key] = value;
-  });
-  return buildConvolutionNavigateTo(
-    url.pathname,
-    csEncoded,
-    stickyFsq,
-    Object.keys(extraParams).length > 0 ? extraParams : undefined,
-  );
 };
 
 export const navigateConvolutionOrWarn = (
@@ -171,10 +112,9 @@ export const navigateConvolutionOrWarn = (
   navigate: NavigateFunction,
   pathname: string,
   csEncoded?: string,
-  stickyFsq?: StickyFsqOptions,
   extraParams?: Record<string, string>,
 ): boolean => {
-  const target = buildConvolutionNavigateTo(pathname, csEncoded, stickyFsq, extraParams);
+  const target = buildConvolutionNavigateTo(pathname, csEncoded, extraParams);
   if (!target) {
     warnConvolutionCsFsqConflict(dispatch);
     return false;

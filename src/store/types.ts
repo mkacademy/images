@@ -10,7 +10,7 @@ import { CommsState } from './slices/commsSlice';
 import { SettingsState } from './slices/settingsSlice';
 import { StatsState } from './slices/statsSlice';
 import { CommentsState } from './slices/commentsSlice';
-import { store } from './index';
+import type { ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
 
 export interface RootState {
   session: SessionState;
@@ -26,7 +26,8 @@ export interface RootState {
   comments: CommentsState;
 }
 
-export type AppDispatch = typeof store.dispatch;
+/** Matches store/index AppDispatch — thunk-capable for async actions. */
+export type AppDispatch = ThunkDispatch<RootState, unknown, UnknownAction>;
 
 export interface StatsMiddlewareState {
   session: {

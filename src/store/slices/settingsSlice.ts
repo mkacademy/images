@@ -143,7 +143,6 @@ export interface SettingsState {
   isExportComments: boolean;
   shouldHydrate: boolean;
   queryLimit: number;
-  fsq: number;
   includeBase64: boolean;
   /** Seconds between fMP4 snapshot captures in Settings → ColTen. */
   snapshotIntervalSec: number;
@@ -267,7 +266,6 @@ const initialSettings: SettingsState = {
   isExportComments: false,
   shouldHydrate: true,
   queryLimit: 50,
-  fsq: 10,
   includeBase64: true,
   snapshotIntervalSec: 1,
   randomizedType: 'both',
@@ -306,12 +304,6 @@ export const settingsSlice = createSlice({
     },
     clearContentTypeSelected: (state, action: PayloadAction<string>) => {
       state.clearContentType = action.payload;
-    },
-    finalizePostHydrationSettings: (state) => {
-      state.fsq = 10;
-    },
-    fsqSelected: (state, action: PayloadAction<number>) => {
-      state.fsq = action.payload;
     },
     randomizedTypeSelected: (state, action: PayloadAction<SettingsState['randomizedType']>) => {
       state.randomizedType = action.payload;
@@ -376,8 +368,6 @@ export const {
   completedUnzipping,
   clearContentTypeSelected,
   addUnzippedTrees,
-  finalizePostHydrationSettings,
-  fsqSelected,
   randomizedTypeSelected,
 } = settingsSlice.actions;
 
