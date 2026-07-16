@@ -9,43 +9,17 @@ import {
   orderPredicate,
   sorter,
   tutorialBannerDedupKey,
-  ownershipUpdator,
-  toOwnershipIdSet,
 } from './sliceUtils';
-import { isPersistableOrdinal, sanitizeNumericOrdinalBatch, type OwnershipPayload } from './actions';
-
-/** Per-highlight-lane anchor for Shift+single-id highlight tracking (see `RangeSelectionOrReorderManger`). */
-export interface TutorialStartId {
-  tutorialBreath: number | null;
-  tutorialDepth: number | null;
-  contentBreath: number | null;
-}
-
-export const createTutorialStartIdInitial = (): TutorialStartId => ({
-  tutorialBreath: null,
-  tutorialDepth: null,
-  contentBreath: null,
-});
-
-/** One batch of id → new `ordinal` values recorded after a reorder action. */
-export type TutorialModifiedOrdinalBatch = Record<number, number>;
 
 /**
  * Tracks ordinal edits from UI reorder reducers: item kind → parent banner id (-1 if absent) →
  * append-only batches of { entityId → new ordinal }.
  */
-export interface TutorialModifiedOrdinals {
-  banner?: Record<number, TutorialModifiedOrdinalBatch[]>;
-  content?: Record<number, TutorialModifiedOrdinalBatch[]>;
-}
-
 export interface TutorialState {
   selected: number;
   noTutorials: boolean;
   content: Content[][];
   banners: Banner[];
-  startId: TutorialStartId;
-  modifiedOrdinals: TutorialModifiedOrdinals;
 }
 
 export interface Banner {
@@ -281,21 +255,6 @@ export const tutorialSlideExists = (
     row.some((slide) => slide.id === id && slide.bannerId === bannerId),
   );
 
-function recordModifiedOrdinalBatches(
-  modifiedOrdinals: TutorialModifiedOrdinals,
-  kind: keyof TutorialModifiedOrdinals,
-  batchesByBannerKey: Map<number, Record<number, number>>,
-) {
-  if (batchesByBannerKey.size === 0) return;
-  const branch = modifiedOrdinals[kind] ?? (modifiedOrdinals[kind] = {});
-  for (const [bannerKey, batch] of batchesByBannerKey) {
-    const sanitized = sanitizeNumericOrdinalBatch(batch);
-    if (Object.keys(sanitized).length === 0) continue;
-    const list = branch[bannerKey] ?? (branch[bannerKey] = []);
-    list.push(sanitized);
-  }
-}
-
 /** Assign unique contiguous ordinals across all tutorial content rows (flat order). */
 export function assignTutorialContentContiguousOrdinals(
   content: WritableContentArray[],
@@ -510,141 +469,4 @@ export type TutorialReOrderSelectionPayload = {
   ids: number[];
   direction: boolean;
   groupReorder?: boolean;
-};
-
-export const applyReOrderTutorialSelection = (
-  state: TutorialState,
-  payload: TutorialReOrderSelectionPayload,
-) => {
-  const { ids, direction, groupReorder } = payload;
-  if (ids.length < 2) return;
-  const byId = new Map(state.banners.map((b) => [b.id, b]));
-  if (!ids.every((id) => byId.has(id))) return;
-  const beforeOrdinals = new Map(state.banners.map((b) => [b.id, b.ordinal]));
-  if (groupReorder) {
-    const idSet = new Set(ids);
-    const fullSorted = [...state.banners].sort((a, b) => ordinalForReorder(a) - ordinalForReorder(b));
-    const range = findContiguousSortedRange(fullSorted, (b) => idSet.has(b.id), idSet.size);
-    if (!range) return;
-    const segment = fullSorted.slice(range.lo, range.hi + 1);
-    const newSeg = altGroupRangeReorderSegment(segment, (b) => !!b.isHighlighted);
-    if (!newSeg) return;
-    const newFull = [...fullSorted.slice(0, range.lo), ...newSeg, ...fullSorted.slice(range.hi + 1)];
-    assignDenseOrdinalsZeroBased(newFull);
-  } else {
-    applyOrdinalRangeReorder(state.banners, ids, direction);
-  }
-  const sortedBanners = sorter([...state.banners]) as WritableBanner[];
-  assignDenseOrdinalsZeroBased(sortedBanners);
-  state.banners = contiguousOrdinalBannersPred(sortedBanners) as WritableBanner[];
-  const batchesByBannerKey = new Map<number, Record<number, number>>();
-  for (const banner of state.banners) {
-    const prev = beforeOrdinals.get(banner.id);
-    if (prev !== undefined && prev !== banner.ordinal && isPersistableOrdinal(banner.ordinal)) {
-      const bannerKey = banner.bannerId ?? -1;
-      const batch = batchesByBannerKey.get(bannerKey) ?? {};
-      batch[banner.id] = banner.ordinal;
-      batchesByBannerKey.set(bannerKey, batch);
-    }
-  }
-  recordModifiedOrdinalBatches(state.modifiedOrdinals, 'banner', batchesByBannerKey);
-};
-
-export const applyReOrderContentSelection = (
-  state: TutorialState,
-  payload: TutorialReOrderSelectionPayload,
-) => {
-  const { ids, direction, groupReorder } = payload;
-  if (ids.length < 2) return;
-  const row = findTutorialContentRow(state.content, ids[0]);
-  if (!row) return;
-  const rowIds = ids.filter((id) => row.some((slide) => slide.id === id));
-  if (rowIds.length < 2) return;
-  const beforeOrdinals = new Map(row.map((slide) => [slide.id, slide.ordinal]));
-  if (groupReorder) {
-    const idSet = new Set(rowIds);
-    const fullSorted = [...row].sort((a, b) => ordinalForReorder(a) - ordinalForReorder(b));
-    const range = findContiguousSortedRange(fullSorted, (s) => idSet.has(s.id), idSet.size);
-    if (!range) return;
-    const segment = fullSorted.slice(range.lo, range.hi + 1);
-    const newSeg = altGroupRangeReorderSegment(segment, (s) => !!s.isHighlighted);
-    if (!newSeg) return;
-    const newFull = [...fullSorted.slice(0, range.lo), ...newSeg, ...fullSorted.slice(range.hi + 1)];
-    assignDenseOrdinalsZeroBased(newFull);
-  } else {
-    applyOrdinalRangeReorder(row, rowIds, direction);
-  }
-  const rowIndex = state.content.findIndex((r) => r === row);
-  if (rowIndex === -1) return;
-  sorter(row);
-  assignDenseOrdinalsZeroBased(row);
-  state.content = assignTutorialContentContiguousOrdinals(state.content);
-  const finalRow = state.content[rowIndex];
-  const bannerKey = finalRow[0]?.bannerId ?? -1;
-  const batch: Record<number, number> = {};
-  for (const slide of finalRow) {
-    const prev = beforeOrdinals.get(slide.id);
-    if (prev !== undefined && prev !== slide.ordinal && isPersistableOrdinal(slide.ordinal)) {
-      batch[slide.id] = slide.ordinal;
-    }
-  }
-  if (Object.keys(batch).length > 0) {
-    recordModifiedOrdinalBatches(state.modifiedOrdinals, 'content', new Map([[bannerKey, batch]]));
-  }
-};
-
-export const applyMergeTutorialFetchSkeletonsFulfilled = (
-  state: TutorialState,
-  response: { banners?: Banner[]; content?: Content[][] },
-) => {
-  const { banners: incomingBanners, content: incomingContent } = response;
-
-  if (incomingBanners) {
-    for (const banner of incomingBanners) {
-      if (!state.banners.some((b) => tutorialBannerDedupKey(b) === tutorialBannerDedupKey(banner))) {
-        state.banners.push(banner);
-      }
-    }
-  }
-
-  if (incomingContent) {
-    for (const row of incomingContent) {
-      for (const slide of row) {
-        if (tutorialSlideExists(state.content, slide.id, slide.bannerId)) {
-          continue;
-        }
-        const groupIndex = state.content.findIndex(
-          (r) => r[0]?.bannerId === slide.bannerId
-        );
-        if (groupIndex > -1) {
-          state.content[groupIndex].push(slide);
-        } else {
-          state.content.push([slide]);
-        }
-      }
-    }
-  }
-
-  if (state.banners.length > 0) {
-    const visibles = state.banners.filter(({ isDismissed }) => !isDismissed);
-    state.noTutorials = visibles.length === 0;
-  }
-
-  if (state.content.length > 0) {
-    state.content = assignTutorialContentContiguousOrdinals(state.content);
-  }
-};
-
-export const applyUpdateOwnership = (state: TutorialState, { ids, owner, route }: OwnershipPayload): void => {
-  const idSet = toOwnershipIdSet(ids);
-  if (idSet.size === 0) return;
-
-  switch (route.toLowerCase()) {
-    case 'foundationfilters':
-      state.banners = state.banners.map(ownershipUpdator(idSet, owner)).sort(orderPredicate);
-      break;
-    case 'filtersinstructions':
-      state.content = state.content.map((rows) => rows.map(ownershipUpdator(idSet, owner)));
-      break;
-  }
 };

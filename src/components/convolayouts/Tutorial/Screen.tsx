@@ -11,7 +11,6 @@ import {
 import { RootState } from '../../../store/types';
 import { _500 as NotFound } from '../../views/404';
 import * as styles from '../../../styles/404.module.css';
-import { TutorialRootTreeSelection } from '../../../library/actions';
 import { useApplyRouterSelections, useClearFsqOnEscapeWhenUnselected, useExitExpandedOnEscape } from '../../../Hooks/useShortcuts';
 interface ScreenProps {
   noTutorials: boolean;
@@ -84,9 +83,8 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
             quote={banner.quote || ''}
             isHighlighted={banner.isHighlighted}
             total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
-            selector={(payload: { ids: number[] }) => {
+            selector={() => {
               onRouterSelection?.();
-              dispatch(TutorialRootTreeSelection(payload));
             }}
             dismisser={() => {}}
             toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleTutorial(payload))}
@@ -127,9 +125,8 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
             quote={banner.quote || ''}
             isHighlighted={banner.isHighlighted}
             total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
-            selector={(payload: { ids: number[] }) => {
+            selector={() => {
               onRouterSelection?.();
-              dispatch(TutorialRootTreeSelection(payload));
             }}
             dismisser={() => {}}
             toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleTutorial(payload))}

@@ -18,14 +18,10 @@ import type {
 import {
   applySetTutorials,
   assignTutorialContentContiguousOrdinals,
-  createTutorialStartIdInitial,
 } from '../../library/TutorialUtils';
 
 export type {
-  TutorialModifiedOrdinalBatch,
-  TutorialModifiedOrdinals,
   TutorialClearSelectedErasePayload,
-  TutorialStartId,
   TutorialState,
   Banner,
   Content,
@@ -35,7 +31,6 @@ export type {
 } from '../../library/TutorialUtils';
 
 export {
-  createTutorialStartIdInitial,
   ordinalForReorder,
   findTutorialContentRow,
   applyOrdinalRangeReorder,
@@ -43,8 +38,6 @@ export {
 } from '../../library/TutorialUtils';
 
 const initialState: TutorialState = {
-  startId: createTutorialStartIdInitial(),
-  modifiedOrdinals: {},
   noTutorials: true,
   selected: -1,
   content: [],

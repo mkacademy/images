@@ -1,7 +1,7 @@
-import { isPersistableOrdinal, sanitizeStringKeyOrdinalBatch, type OwnershipPayload } from "./actions";
+
 import { Metadata } from "../types/cpanel";
 import { Handler } from "../store/slices/errorSlice";
-import { contiguousOrdinalPred, getToken, orderPredicate, toOwnershipIdSet } from "./sliceUtils";
+import { contiguousOrdinalPred, getToken, orderPredicate } from "./sliceUtils";
 import {
   altGroupRangeReorderSegment,
   assignDenseOrdinalsZeroBased,
@@ -297,107 +297,6 @@ export function applyCommsAltGroupLaneReorder<
     .sort(orderPredicate)
     .map((row, index, array) => contiguousOrdinalPred(row, index, array));
 }
-
-export function appendCommsReorderOrdinalBatches(
-  modifiedOrdinals: CommsModifiedOrdinals,
-  lane: CommsModifiedOrdinalLane,
-  rows: Array<{ id: number; type: string; ordinal: number }>,
-  beforeOrdinals: Map<string, number>,
-): void {
-  const batchesByType = new Map<string, CommsModifiedOrdinalBatch>();
-  for (const row of rows) {
-    const key = commsOutlineKey(row);
-    const prev = beforeOrdinals.get(key);
-    if (prev !== undefined && prev !== row.ordinal && isPersistableOrdinal(row.ordinal)) {
-      const typeKey = row.type;
-      const batch = batchesByType.get(typeKey) ?? {};
-      batch[key] = row.ordinal;
-      batchesByType.set(typeKey, batch);
-    }
-  }
-  if (batchesByType.size === 0) return;
-  const branch = modifiedOrdinals[lane] ?? (modifiedOrdinals[lane] = {});
-  for (const [typeKey, batch] of batchesByType) {
-    const sanitized = sanitizeStringKeyOrdinalBatch(batch);
-    if (Object.keys(sanitized).length === 0) continue;
-    const list = branch[typeKey] ?? (branch[typeKey] = []);
-    list.push(sanitized);
-  }
-}
-
-export const applyTutorsModified = (
-  tutors: Tutor[],
-  agreements: string[] | undefined,
-  abilities: string[] | undefined,
-): Tutor[] =>
-  tutors
-    .map((tutor) =>
-      tutor.isAble.isModified === true &&
-        abilities?.find((id) => id === tutor.id.toString())
-        ? {
-          ...tutor,
-          isAble: {
-            isModified: false,
-            state: tutor.isAble.state,
-          },
-        }
-        : tutor
-    )
-    .map((tutor) =>
-      tutor.isActive.isModified === true &&
-        agreements?.find((id) => id === tutor.id.toString())
-        ? {
-          ...tutor,
-          isActive: {
-            isModified: false,
-            state: tutor.isActive.state,
-          },
-        }
-        : tutor
-    );
-
-export const applySetSelectedTutors = (
-  tutors: Tutor[],
-  payload: TutorSelectedPayload,
-): Tutor[] => {
-  const { id, isActive, isAble } = payload;
-  if (isActive === undefined && isAble === undefined) {
-    return tutors.map((tutor) =>
-      tutor.id === id
-        ? { ...tutor, checked: !tutor.checked }
-        : { ...tutor, checked: false }
-    );
-  }
-  if (isActive && isActive.state !== null) {
-    const { state: status, isModified } = isActive;
-    return tutors.map((tutor) =>
-      tutor.id === id
-        ? {
-          ...tutor,
-          isActive: {
-            state: !status,
-            isModified: !isModified,
-          },
-        }
-        : tutor
-    );
-  }
-  if (isAble && isAble.state !== null) {
-    const { state: status, isModified } = isAble;
-    return tutors.map((tutor) =>
-      tutor.id === id
-        ? {
-          ...tutor,
-          isAble: {
-            state: !status,
-            isModified: !isModified,
-          },
-        }
-        : tutor
-    );
-  }
-  return tutors;
-};
 
 export const mergeOutgoingMessages = (
   existing: OutgoingMessage[],
@@ -712,40 +611,6 @@ export const inBanners: Record<IncomingType & IncommingStates, string> = {
 };
 
 export const avatars: Record<TutorType, string> = { [B]: bossImg, [M]: minionImg, [U]: underbossImg };
-
-const INCOMING_MESSAGE_TYPES = new Set<string>([FF, FI, FS, FD]);
-
-const updateCommsMessageOwnership = <T extends IncomingMessage | OutgoingMessage>(
-  message: T,
-  idSet: Set<number>,
-  messageType: string,
-  owner: boolean,
-): T => {
-  if (message.type !== messageType || !idSet.has(message.id)) return message;
-  const metadata: Metadata[] = message.metadata?.length
-    ? message.metadata.map((entry) => ({ ...entry, owner }))
-    : [{ owner, ordinal: 0 }];
-  return { ...message, metadata };
-};
-
-export const applyUpdateCommsOwnership = (state: CommsState, { ids, owner, route }: OwnershipPayload): void => {
-  const messageType = Object.entries(typesToRoutes).find(([, approute]) => approute === route.toLowerCase())?.[0];
-  if (!messageType) return;
-
-  const idSet = toOwnershipIdSet(ids);
-  if (idSet.size === 0) return;
-
-  if (INCOMING_MESSAGE_TYPES.has(messageType)) {
-    state.incoming = state.incoming.map((message) =>
-      updateCommsMessageOwnership(message, idSet, messageType, owner),
-    );
-    return;
-  }
-
-  state.outgoing = state.outgoing.map((message) =>
-    updateCommsMessageOwnership(message, idSet, messageType, owner),
-  );
-};
 
 export const withReciepients = (payload: { response: OutgoingMessage[]; handlers: Record<string, Handler[]> }) => {
   const { response, handlers } = payload;

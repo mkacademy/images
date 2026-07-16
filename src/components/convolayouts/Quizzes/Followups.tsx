@@ -4,7 +4,6 @@ import Followup from './Followup';
 import { RootState } from '../../../store';
 import { Banner, Pennant, SlideItem } from '../../../store/slices/courseSlice';
 import { Submition } from '../../../store/slices/quizSlice';
-import { QuizQuestionTreeSelection } from '../../../library/actions';
 import { getChoices } from '../../../library/quizAttemptManager';
 import { HandleDismissParams } from './Screen';
 
@@ -39,13 +38,12 @@ const Followups: React.FC<FollowupsProps> = ({
   const attempt = useSelector((state: RootState) => state.quiz.attempt);
   const followupCombinations = useSelector((state: RootState) => state.quiz.followupCombinations);
 
-  const handleHighlightAttempt = useCallback((params: { ids: string[]; isShow: boolean }) => {
+  const handleHighlightAttempt = useCallback(() => {
     onRouterSelection?.();
   }, [dispatch, onRouterSelection]);
 
-  const handleHighlightQuestion = useCallback((params: { ids: number[] }) => {
+  const handleHighlightQuestion = useCallback(() => {
     onRouterSelection?.();
-    dispatch(QuizQuestionTreeSelection({ ids: params.ids }));
   }, [dispatch, onRouterSelection]);
 
   const getSubmittedOptionIdsForPennant = useCallback((pennantId: number, quizId: number): string[] => {

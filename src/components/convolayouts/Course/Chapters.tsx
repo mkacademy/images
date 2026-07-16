@@ -13,7 +13,6 @@ import { _500 as Notfound } from '../../../components/views/404';
 import { SlideType } from '../Tutorial/Content';
 import Slide from '../Tutorial/Slide';
 import ChapterBanner from './Banner';
-import { CoursePennantTreeSelection } from '../../../library/actions';
 import { RootState } from '../../../store/types';
 import { countSlideItemsByBannerId } from '../../../library/CourseUtils';
 
@@ -97,9 +96,8 @@ const Chapters: React.FC<ChaptersProps> = ({
       },
     [course, dispatch]
   );
-  const pennantSelector = (payload: { ids: number[] }) => {
+  const pennantSelector = () => {
     onRouterSelection?.();
-    dispatch(CoursePennantTreeSelection(payload));
   };
 
   const slideSelector = () => {

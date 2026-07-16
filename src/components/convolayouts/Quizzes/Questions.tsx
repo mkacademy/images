@@ -5,7 +5,6 @@ import { Banner, SlideGroup, SlideGroupItem } from '../../../store/slices/course
 import { getChoices } from '../../../library/quizAttemptManager';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../../store';
-import { QuizQuestionTreeSelection } from '../../../library/actions';
 import { HandleDismissParams } from './Screen';
 
 interface QuestionsProps {
@@ -38,9 +37,8 @@ const Questions: React.FC<QuestionsProps> = ({
     onRouterSelection?.();
   }, [dispatch, onRouterSelection]);
 
-  const handleHighlightQuestion = useCallback((params: { ids: number[] }) => {
+  const handleHighlightQuestion = useCallback(() => {
     onRouterSelection?.();
-    dispatch(QuizQuestionTreeSelection({ ids: params.ids, }));
   }, [dispatch, onRouterSelection]);
 
   const getSubmittedOptionIdsForQuestion = useCallback((question: Banner): string[] => {

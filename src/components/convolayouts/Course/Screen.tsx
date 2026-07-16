@@ -14,7 +14,6 @@ import SlideShow from './SlideShow';
 import * as styles from '../../../styles/404.module.css';
 import useMediaQuery from '../../../Hooks/useQueryMedia';
 import { _500 as Notfound } from '../../../components/views/404';
-import { CourseRootTreeSelection, CoursePennantTreeSelection } from '../../../library/actions';
 import { useClearFsqOnEscapeWhenUnselected, useExitExpandedOnEscape } from '../../../Hooks/useShortcuts';
 
 interface CourseProps {
@@ -104,8 +103,8 @@ const Course: React.FC<CourseProps> = ({ noCourses }) => {
             key={pennant.id}
             totals={lengths}
             positionY={positionY}
-            selector={(payload) => dispatch(CourseRootTreeSelection(payload))}
-            chooser={(payload) => dispatch(CoursePennantTreeSelection(payload))}
+            selector={() => {}}
+            chooser={() => {}}
             discarder={() => {}}
             dismisser={() => {}}
             toggler={(payload) => dispatch(toggleCourse(payload))}
@@ -148,8 +147,8 @@ const Course: React.FC<CourseProps> = ({ noCourses }) => {
             totals={lengths}
             isShow={dismised}
             positionY={positionY}
-            selector={(payload) => dispatch(CourseRootTreeSelection(payload))}
-            chooser={(payload) => dispatch(CoursePennantTreeSelection(payload))}
+            selector={() => {}}
+            chooser={() => {}}
             dismisser={() => {}}
             toggler={(payload) => dispatch(toggleCourse(payload))}
             leftQuote={screen > 2 ? i % 2 !== 0 : false}

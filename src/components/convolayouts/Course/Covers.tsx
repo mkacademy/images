@@ -6,7 +6,6 @@ import * as styles from '../../../styles/404.module.css';
 import { _500 as Notfound } from '../../../components/views/404';
 import { getSectionClass, SlideType } from '../Tutorial/Content';
 import CoversBanner from '../Tutorial/Banner';
-import { CourseRootTreeSelection } from '../../../library/actions';
 import { prependError } from '../../../store/slices/errorSlice';
 
 interface CoversProps {
@@ -34,9 +33,8 @@ const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers, dismi
           quote={banner.quote || ''}
           isHighlighted={banner.isHighlighted}
           total={total}
-          selector={(payload: { ids: number[] }) => {
+          selector={() => {
             onRouterSelection?.();
-            dispatch(CourseRootTreeSelection(payload));
           }}
           dismisser={() => dispatch(prependError('Chapter mode is enabled, dismiss not allowed'))}
           toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleCourse(payload))}

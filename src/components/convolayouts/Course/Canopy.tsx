@@ -9,7 +9,6 @@ import {
 } from '../../../store/slices/courseSlice';
 import CoversBanner from '../../convolayouts/Tutorial/Banner';
 import Chapters from './Chapters';
-import { CourseRootTreeSelection } from '../../../library/actions';
 import { contentPred as courseContentPred } from './Screen';
 import { LengthItem } from '../Tutorial/Screen';
 import { useApplyRouterSelections, useClearFsqOnEscapeWhenUnselected, useExitExpandedOnEscape } from '../../../Hooks/useShortcuts';
@@ -108,10 +107,7 @@ const Canopy: React.FC<CanopyProps> = ({ noCourses, onRouterSelection }) => {
                         quote={banner.quote || ''}
                         isHighlighted={banner.isHighlighted}
                         total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
-                        selector={(payload: { ids: number[] }) => {
-                            onRouterSelection?.();
-                            dispatch(CourseRootTreeSelection(payload));
-                        }}
+                        selector={() => { }}
                         dismisser={() => dispatch(prependError(' dismiss not allowed in minimum feature mode'))}
                         toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleCourse(payload))}
                     />
