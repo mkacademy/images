@@ -5,14 +5,12 @@ import Content, { getSectionClass, SlideType } from './Content';
 import Snapshot from './Snapshot';
 
 interface SlideProps {
-  isShow: boolean;
   leftIMG: boolean;
   slide: SlideType;
   selector: (payload: { ids: number[] }) => void;
-  dismisser: (payload: { id: number; isShow: boolean }) => void;
 }
 
-const Slide: React.FC<SlideProps> = ({ isShow, leftIMG, selector, dismisser, slide }) => {
+const Slide: React.FC<SlideProps> = ({ leftIMG, selector, slide }) => {
   const isMaximumFeatures = useSelector((state: RootState) =>
     !state.settings.isUnzipCourses && !state.settings.isUnzipQuizzes && !state.settings.isUnzipTutorials);
 
@@ -20,7 +18,6 @@ const Slide: React.FC<SlideProps> = ({ isShow, leftIMG, selector, dismisser, sli
     e.preventDefault();
     e.stopPropagation();
     if (e.nativeEvent) e.nativeEvent.stopImmediatePropagation();
-    setTimeout(() => dismisser({ id: slide.id, isShow }));
   };
 
   const imgcss = getSectionClass(leftIMG);

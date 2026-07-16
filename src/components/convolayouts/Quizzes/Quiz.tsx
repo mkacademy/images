@@ -50,13 +50,10 @@ interface QuizProps {
   total: number;
   title: string;
   quote: string;
-  isShow: boolean;
   leftQuote?: boolean;
   isHighlighted?: boolean;
   positionY?: React.RefObject<number>;
-  selector: (params: { ids: number[] }) => void;
   toggler: (payload: { selectedId?: number, canToggle?: boolean }) => void;
-  dismisser: (params: { id: number; isShow: boolean; choice?: Record<string, Attempt>; isDismissed?: boolean; ids?: number[] }) => void;
 }
 
 const quoteCss = `quote ${styleProps.quote}`;
@@ -69,10 +66,7 @@ const Quiz: React.FC<QuizProps> = ({
   total,
   title,
   quote,
-  isShow,
   toggler,
-  selector,
-  dismisser,
   leftQuote,
   positionY,
   isHighlighted,
@@ -93,14 +87,12 @@ const Quiz: React.FC<QuizProps> = ({
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
     if (!isClickable) onExit();
-    else dismisser({ id, isShow, choice: undefined });
   };
 
   const selectHandler = (e: React.MouseEvent) => {
     e.nativeEvent.stopImmediatePropagation();
     e.stopPropagation();
     e.preventDefault();
-    selector({ ids: [id] });
   };
 
   return (

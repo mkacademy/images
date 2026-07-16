@@ -32,7 +32,6 @@ const styleProps = {
 
 interface FollowupProps {
   pennant: Pennant;
-  dismissed: boolean;
   focus?: boolean;
   attemptValue?: string | null;
   combs?: string[][];
@@ -40,7 +39,6 @@ interface FollowupProps {
   submittedOptionIds: string[];
   chooser: (params: { ids: string[]; isShow: boolean }) => void;
   selector: (params: { ids: number[] }) => void;
-  dismisser: (params: { id: number; isShow: boolean; isDismissed?: boolean; ids?: number[] }) => void;
 }
 const optionsContainerCss = "ms-md-3 ms-sm-3 ps-md-5 ps-sm-3";
 const isHighlight = `highligh-question ${styleProps.highlighQuestion}`;
@@ -48,7 +46,6 @@ const contCss = `question-container ${styleProps.questionContainer} mt-sm-5`;
 
 const Followup: React.FC<FollowupProps> = ({
   pennant,
-  dismissed,
   focus,
   slideItems,
   combs = [],
@@ -56,7 +53,6 @@ const Followup: React.FC<FollowupProps> = ({
   submittedOptionIds,
   chooser,
   selector,
-  dismisser,
 }) => {
   const { id: questionId = -1, quote = "", isHighlighted = false, isDismissed = false } = pennant;
   const identifier = "choice" + questionId;
@@ -64,7 +60,7 @@ const Followup: React.FC<FollowupProps> = ({
     !state.settings.isUnzipCourses && !state.settings.isUnzipQuizzes && !state.settings.isUnzipTutorials);
   const randomizedType = useSelector((state: RootState) => state.settings.randomizedType);
   const choice = useRef<Record<string, string | null>>({ [identifier]: attemptValue ?? null });
-  const latestMetaRef = useRef({ identifier, isShow: dismissed, isDismissed, questionId });
+  const latestMetaRef = useRef({ identifier, isDismissed, questionId });
   const contClass = isHighlighted ? (isHighlight + ' ' + contCss) : contCss;
   const processedOptions = useMemo(() => getOptionsFromSlideItems(slideItems), [slideItems]);
   const displayCombinations = useMemo(
@@ -90,35 +86,25 @@ const Followup: React.FC<FollowupProps> = ({
     ));
   }, [combs, randomizedType, submittedOptionIds, attemptValue]);
 
-  latestMetaRef.current = { identifier, isShow: dismissed, isDismissed, questionId };
+  latestMetaRef.current = { identifier, isDismissed, questionId };
 
   useEffect(() => {
     return () => {
       if (dismissClickedRef.current) return;
       const {
         identifier: idKey,
-        isShow: latestIsShow,
-        isDismissed: latestIsDismissed,
-        questionId: latestQuestionId,
       } = latestMetaRef.current;
       const currentChoice = choice.current?.[idKey];
       const selectedValue = currentChoice ? Object.values(currentChoice).pop() : undefined;
       if (selectedValue == null || selectedValue === '') return;
-      dismisser({
-        ids: [],
-        id: latestQuestionId,
-        isShow: latestIsShow,
-        isDismissed: latestIsDismissed,
-      });
     };
-  }, [dismisser, identifier]);
+  }, [identifier]);
 
   const dismissHandler = (e: React.MouseEvent) => {
     dismissClickedRef.current = true;
     e.preventDefault();
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
-    setTimeout(() => dismisser({ id: questionId, isShow: dismissed }));
   };
 
   const questionSelector = (e: React.MouseEvent<Element>) => {
@@ -218,7 +204,6 @@ const Followup: React.FC<FollowupProps> = ({
                       <input
                         value={id}
                         type="radio"
-                        disabled={dismissed}
                         name={identifier}
                         defaultChecked={attemptValue === id}
                         onChange={(e) => {

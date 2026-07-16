@@ -14,7 +14,6 @@ import { LengthItem } from '../Tutorial/Screen';
 import { useApplyRouterSelections, useClearFsqOnEscapeWhenUnselected, useExitExpandedOnEscape } from '../../../Hooks/useShortcuts';
 import Covers from './Covers';
 import { SlideGroupItem } from '../../../store/slices/courseSlice';
-import { prependError } from '../../../store/slices/errorSlice';
 
 interface CanopyProps {
     noCourses: boolean;
@@ -24,12 +23,11 @@ interface CanopyProps {
 const Canopy: React.FC<CanopyProps> = ({ noCourses, onRouterSelection }) => {
     const positionY = useRef(-1);
     const dispatch = useDispatch();
-    const { pathname, state: routerState } = useLocation();
+    const { state: routerState } = useLocation();
     useApplyRouterSelections(!noCourses, routerState);
     const banners = useSelector((state: RootState) => state.course.banners);
     const content = useSelector((state: RootState) => state.course.content);
     const selected = useSelector((state: RootState) => state.course.selected);
-    const dismissals = useSelector((state: RootState) => state.session.dismissals);
     const chapters = useSelector((state: RootState) => state.course.chapters) ?? [];
 
     useEffect(() => {
@@ -61,11 +59,9 @@ const Canopy: React.FC<CanopyProps> = ({ noCourses, onRouterSelection }) => {
 
     const banner = banners[selected];
     const showChapters = chapters.length > 0;
-    const dismissed = dismissals[pathname] ?? false;
     const match = content.find(courseContentPred(banner));
     const { slides = [], ...covers } = match ?? {};
     const slideGroupItems: SlideGroupItem[] = Object.values(covers);
-    const predicate = ({ isDismissed }: { isDismissed?: boolean }) => isDismissed === dismissed;
     const lengths: LengthItem[] = content.map((group: SlideGroup) => {
         const { slides, ...slideGroupItems } = group;
         return {
@@ -81,14 +77,12 @@ const Canopy: React.FC<CanopyProps> = ({ noCourses, onRouterSelection }) => {
                         <Chapters
                             slides={slides}
                             chapters={chapters}
-                            dismissed={dismissed}
                             onRouterSelection={onRouterSelection}
                         />
                     ) : (
                         <Covers
                             banner={banner}
                             positionY={positionY}
-                            dismissed={dismissed}
                             covers={slideGroupItems}
                             onRouterSelection={onRouterSelection}
                             total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
@@ -96,11 +90,10 @@ const Canopy: React.FC<CanopyProps> = ({ noCourses, onRouterSelection }) => {
                     )}
                 </>
             ) : (
-                banners.filter(predicate).map((banner: CourseBannerType, i: number) => (
+                banners.map((banner: CourseBannerType, i: number) => (
                     <CoversBanner
                         id={banner.id}
                         key={banner.id}
-                        isShow={dismissed}
                         positionY={positionY}
                         leftQuote={i % 2 !== 0}
                         title={banner.title || ''}
@@ -108,7 +101,6 @@ const Canopy: React.FC<CanopyProps> = ({ noCourses, onRouterSelection }) => {
                         isHighlighted={banner.isHighlighted}
                         total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
                         selector={() => { }}
-                        dismisser={() => dispatch(prependError(' dismiss not allowed in minimum feature mode'))}
                         toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleCourse(payload))}
                     />
                 ))

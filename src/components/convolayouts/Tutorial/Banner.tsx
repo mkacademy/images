@@ -12,12 +12,10 @@ interface BannerProps {
   total?: number;
   title: string;
   quote: string;
-  isShow?: boolean;
   leftQuote?: boolean;
   isHighlighted?: boolean;
   positionY?: RefObject<number>;
   toggler: (payload: { selectedId?: number; canToggle?: boolean }) => void;
-  dismisser?: (payload: { id: number; isShow?: boolean }) => void;
   selector: (payload: { ids: number[] }) => void;
 }
 
@@ -26,10 +24,8 @@ const Banner: React.FC<BannerProps> = ({
   total,
   title,
   quote,
-  isShow,
   toggler,
   selector,
-  dismisser,
   leftQuote,
   positionY,
   isHighlighted,
@@ -49,7 +45,6 @@ const Banner: React.FC<BannerProps> = ({
     e.preventDefault();
     e.stopPropagation();
     if (!isClickable) onExit();
-    else dismisser?.({ id, isShow });
   };
 
   const selectHandler = (e: React.MouseEvent) => {

@@ -9,10 +9,8 @@ import { HandleDismissParams } from './Screen';
 
 interface QuestionsProps {
   visible: Banner[];
-  dismissed: boolean;
   pennants: Submition[];
   onRouterSelection?: () => void;
-  handleDismissQuestion: (params: HandleDismissParams) => void;
 }
 
 const contPred =
@@ -22,10 +20,8 @@ const contPred =
 
 const Questions: React.FC<QuestionsProps> = ({
   visible,
-  dismissed,
   pennants,
   onRouterSelection,
-  handleDismissQuestion,
 }) => {
   const dispatch = useDispatch();
   const focus = useSelector((state: RootState) => state.quiz.focus);
@@ -66,10 +62,6 @@ const Questions: React.FC<QuestionsProps> = ({
         <Question
           slide={question}
           key={question.id}
-          isShow={dismissed}
-          dismisser={handleDismissQuestion}
-          chooser={handleHighlightAttempt}
-          selector={handleHighlightQuestion}
           focus={focus[`choice${question.id}`]}
           choices={content.find(contPred(question))}
           combs={combinations[content.findIndex(contPred(question))]}

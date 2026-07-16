@@ -44,13 +44,12 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
   const prevShowFollowupsRef = useRef(false);
   const dispatch = useDispatch();
   const { screen } = useMediaQuery();
-  const { pathname, state: routerState } = useLocation();
+  const { state: routerState } = useLocation();
   useApplyRouterSelections(!noQuizzes, routerState);
   const quizzes = useSelector((state: RootState) => state.quiz.quizzes);
   const banners = useSelector((state: RootState) => state.quiz.banners);
   const selected = useSelector((state: RootState) => state.quiz.selected);
   const followupId = useSelector((state: RootState) => state.quiz.followupId);
-  const dismissed = useSelector((state: RootState) => state.session.dismissals[pathname] ?? false);
 
 
   useEffect(() => {
@@ -84,13 +83,13 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
 
   const quiz = quizzes[selected];
   const slides = banners.filter((banner: Banner) => banner.bannerId === quiz?.id);
-  const visible = slides.filter(({ isDismissed }: Banner) => isDismissed === dismissed);
+  const visible = slides.filter(({ isDismissed }: Banner) => isDismissed === false);
   const parent = banners.find((b: Banner) => b.id === followupId);
   /** Parent banner belongs to the expanded quiz; otherwise follow-up UI still shows empty state. */
   const followupContextValid =
     !!quiz && !!parent && parent.bannerId === quiz.id;
   const followupPennants = followupContextValid ? parent.pennants ?? [] : [];
-  const visibleFollowups = followupPennants.filter((p) => p.isDismissed === dismissed);
+  const visibleFollowups = followupPennants.filter((p) => p.isDismissed === false);
   /** Crossfade + panel track Redux follow-up mode, not only "resolved" parent (fixes empty / edge cases). */
   const inFollowupView = followupId !== undefined && !!quiz;
 
@@ -142,9 +141,6 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
             positionY={positionY}
             total={slides.length}
             toggler={handleToggleQuiz}
-            dismisser={() => {}}
-            selector={() => {}}
-            isShow={dismissed}
           />
           <div
             className={`${quizStyles['quiz-crossfade']} ${
@@ -155,10 +151,8 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
               {visible.length > 0 ? (
                 <Questions
                   visible={visible}
-                  dismissed={dismissed}
                   pennants={quiz.pennants}
                   onRouterSelection={onRouterSelection}
-                  handleDismissQuestion={() => {}}
                 />
               ) : (
                 <div className={`${styleProps["notFound"]} ${styleProps["bigger"]}`}>
@@ -171,11 +165,9 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
                 followupPanelProps.parent && followupPanelProps.visible.length > 0 ? (
                   <Followups
                     parent={followupPanelProps.parent}
-                    dismissed={dismissed}
                     visible={followupPanelProps.visible}
                     quizPennants={quiz.pennants}
                     onRouterSelection={onRouterSelection}
-                    handleDismissQuestion={() => {}}
                   />
                 ) : (
                   <div className={`${styleProps["notFound"]} ${styleProps["bigger"]}`}>
@@ -188,18 +180,15 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
         </React.Fragment>
       ) : (
         quizzes
-          .filter(({ isDismissed }) => isDismissed === dismissed)
+          .filter(({ isDismissed }) => isDismissed === false)
           .map((quiz, i) => {
             const { id } = quiz;
             return (
               <Quiz
                 key={id}
                 {...quiz}
-                isShow={dismissed}
                 positionY={positionY}
-                toggler={handleToggleQuiz}
-                dismisser={() => {}}
-                selector={() => {}}
+                toggler={handleToggleQuiz}  
                 leftQuote={screen > 2 ? i % 2 !== 0 : false}
                 total={banners.filter(({ bannerId }) => bannerId === id).length}
               />

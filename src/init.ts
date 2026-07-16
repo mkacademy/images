@@ -31,9 +31,8 @@ Tree.setEntities(entities)
 
 // Initialize routes after Tree is set up
 const routes = orderEntitiesRootToLeafForWebapp(entities, getCurAppName(1)).map(entity => entity.name)
-store.dispatch(initializedLoading({ 
+store.dispatch(initializedLoading({
   curRoutes: routes,
-  affix: tabluarPrefixes[0],
   defaultTake: 1,
 }))
 

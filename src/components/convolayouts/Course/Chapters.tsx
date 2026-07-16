@@ -22,7 +22,6 @@ export interface ChapterSlideRow {
 }
 
 interface ChaptersProps {
-  dismissed: boolean;
   chapters: number[];
   slides: SlideItem[][];
   onRouterSelection?: () => void;
@@ -33,7 +32,6 @@ const NO_CONTEXT = 'This chapter is not in the selected course';
 const NO_COVER = 'This Chapter has slides, but no covers matches its ordinal, so chapters cannot be linked.';
 const Chapters: React.FC<ChaptersProps> = ({
   slides,
-  dismissed,
   chapters: chapterIndexes,
   onRouterSelection,
 }) => {
@@ -51,11 +49,10 @@ const Chapters: React.FC<ChaptersProps> = ({
       dispatch(resetChapters());
     },
   );
-  const predicate = ({ isDismissed }: { isDismissed?: boolean }) => isDismissed === dismissed;
   const slideCountsByPennantBannerId = useMemo(
     () =>
-      countSlideItemsByBannerId(slides, (item) => item.isDismissed === dismissed),
-    [slides, dismissed]
+      countSlideItemsByBannerId(slides, (item) => item.isDismissed === false),
+    [slides]
   );
   const chapterSlideRows: ChapterSlideRow[] = chapterIndexes.length > 0
     ? (() => {
@@ -66,7 +63,6 @@ const Chapters: React.FC<ChaptersProps> = ({
           slideIndex,
         }))
       ).filter((row) => {
-        if (!predicate(row.item)) return false;
         if (seenSlideIds.has(row.item.id)) return false;
         seenSlideIds.add(row.item.id);
         return true;
@@ -79,7 +75,7 @@ const Chapters: React.FC<ChaptersProps> = ({
   const pennantTotal = selectedPennant
     ? slideCountsByPennantBannerId.get(selectedPennant.id) ?? 0
     : undefined;
-  const allPennants = selectedBanner?.pennants.filter((pennant) => pennant.isDismissed === dismissed) ?? [];
+  const allPennants = selectedBanner?.pennants ?? [];
 
   const pennantChapterWrapperClick = useCallback(
     (pennantId: number): React.MouseEventHandler<HTMLDivElement> =>
@@ -144,11 +140,9 @@ const Chapters: React.FC<ChaptersProps> = ({
               };
               return (
                 <Slide
-                  isShow={true}
                   slide={slide}
                   key={`${row.slideIndex}-${row.item.id}`}
                   leftIMG={i % 2 !== 0}
-                  dismisser={() => null}
                   selector={slideSelector}
                 />
               );

@@ -64,10 +64,6 @@ export const paginationSlice = createSlice({
         ...(incoming && { [incoming]: "foundationinstructions" }),
       };
     },
-    updateCsObj: (state, action: PayloadAction<[number, string] | string>) => {
-      const [app, encodedData] = action.payload as [number, string];
-      state.cs[app] = encodedData;
-    },
     setPagedRoute: (state, action: PayloadAction<[number, string] | string>) => {
       const [app, selected] = action.payload as [number, string];
       state.selectedRoutes[app] = selected;
@@ -82,7 +78,6 @@ export const paginationSlice = createSlice({
 
 export const {
   resetPagination,
-  updateCsObj,
   setPagedRoute,
 } = paginationSlice.actions;
 

@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation } from 'react-router-dom';
 import { RootState } from '../../../store/types';
 import {
   toggleCourse,
@@ -20,15 +19,11 @@ interface CourseProps {
   noCourses: boolean;
 }
 
-const dismissedPred = (dismised: boolean) => (item: { isDismissed?: boolean }) => item.isDismissed === dismised;
-const pennantsPred = (dismised: boolean) => (item: Banner) =>
-  item.isDismissed === dismised || item.pennants?.some(({ isDismissed }) => isDismissed === dismised);
-const slidesPred = (
-  slides: SlideItem[][],
-  dismised: boolean,
-  courseCouplings: Record<number, number[]>,
-) => (item: SlideGroupItem) =>
-  item.isDismissed === dismised || getSlideItems(courseCouplings, item.id, slides).some(dismissedPred(dismised));
+const dismissedPred = (item: { isDismissed?: boolean }) => item.isDismissed === false;
+const pennantsPred = (item: Banner) =>
+  item.pennants?.some(({ isDismissed }) => isDismissed === false);
+const slidesPred = (slides: SlideItem[][], courseCouplings: Record<number, number[]>) => (item: SlideGroupItem) =>
+  getSlideItems(courseCouplings, item.id, slides).some(dismissedPred);
 export const contentPred = (pennant: Banner) => (group: SlideGroup) => group[0]?.bannerId === pennant?.id;
 const getSlideItems = (courseCouplings: Record<number, number[]>, id: number, slides: SlideItem[][]) => {
   const slideIndexes = courseCouplings[id] ?? [];
@@ -53,21 +48,18 @@ const Course: React.FC<CourseProps> = ({ noCourses }) => {
   const positionY = useRef(-1);
   const dispatch = useDispatch();
   const { screen } = useMediaQuery();
-  const { pathname } = useLocation();
 
   const banners = useSelector((state: RootState) => state.course.banners);
   const content = useSelector((state: RootState) => state.course.content);
   const selected = useSelector((state: RootState) => state.course.selected);
   const couplings = useSelector((state: RootState) => state.course.couplings);
-  const dismissals = useSelector((state: RootState) => state.session.dismissals);
 
   const pennant = banners[selected];
-  const dismised = dismissals[pathname] ?? false;
   const match = content.find(contentPred(pennant));
   const { slides = [], ...thumbs } = match ?? {};
   const slideshows = Object.values(thumbs ?? {});
   const courseCouplings = pennant ? (couplings[pennant.id] ?? {}) : {};
-  const visibles = slideshows.filter(slidesPred(slides, dismised, courseCouplings));
+  const visibles = slideshows.filter(slidesPred(slides, courseCouplings));
 
   const lengths =  content.map(totalPred).flat();
 
@@ -112,25 +104,19 @@ const Course: React.FC<CourseProps> = ({ noCourses }) => {
               ...p,
               pennants: [],
               sifterId: p.filterId,
-            }))].filter(dismissedPred(dismised))}
+            }))].filter(dismissedPred)}
           />
           {visibles.length > 0 ? (
             visibles.map((thumb, k) => {
               const i = courseCouplings[thumb.id]?.[0] ?? -1;
               const slideItems = getSlideItems(courseCouplings, thumb.id, slides);
               const slideshow = [{ ...thumb }, ...slideItems];
-              const visibles = slideshow.filter(dismissedPred(dismised));
+              const visibles = slideshow.filter(dismissedPred);
               return (
                 <SlideShow
-                  slideIndex={i}
                   key={thumb.id}
                   slides={visibles}
-                  isShow={dismised}
                   leftIMG={screen > 2 ? k % 2 !== 0 : false}
-                  discarder={() => {}}
-                  dismisser={() => {}}
-                  chooser={() => {}}
-                  selector={() => {}}
                 />
               );
             })
@@ -141,11 +127,10 @@ const Course: React.FC<CourseProps> = ({ noCourses }) => {
           )}
         </React.Fragment>
       ) : (
-        banners.filter(pennantsPred(dismised)).map((pennant, i) => (
+        banners.filter(pennantsPred).map((pennant, i) => (
           <Pennant
             key={pennant.id}
             totals={lengths}
-            isShow={dismised}
             positionY={positionY}
             selector={() => {}}
             chooser={() => {}}
@@ -156,7 +141,7 @@ const Course: React.FC<CourseProps> = ({ noCourses }) => {
               ...p,
               pennants: [],
               sifterId: p.filterId,
-            }))].filter(dismissedPred(dismised))}
+            }))].filter(dismissedPred)}
           />
         ))
       )}

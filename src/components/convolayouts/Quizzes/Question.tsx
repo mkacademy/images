@@ -33,14 +33,10 @@ const styleProps = {
 interface QuestionProps {
   slide: Banner;
   focus?: boolean;
-  isShow: boolean;
   combs?: string[][];
   attempt?: string | null;
   choices: SlideGroup | undefined;
   submittedOptionIds?: string[];
-  selector: (payload: { ids: number[] }) => void;
-  chooser: (payload: { ids: string[]; isShow: boolean }) => void;
-  dismisser: (params: HandleDismissParams) => void;
 }
 
 const optionsContainerCss = "ms-md-3 ms-sm-3 ps-md-5 ps-sm-3";
@@ -49,12 +45,8 @@ const contCss = `question-container ${styleProps.questionContainer} mt-sm-5`;
 
 const Question: React.FC<QuestionProps> = ({
   focus,
-  isShow,
   choices,
-  chooser,
   attempt,
-  selector,
-  dismisser,
   combs: combinations = [],
   submittedOptionIds = [],
   slide: { id: questionId = -1, quote = "", isHighlighted = false, isDismissed = false },
@@ -65,7 +57,7 @@ const Question: React.FC<QuestionProps> = ({
     !state.settings.isUnzipCourses && !state.settings.isUnzipQuizzes && !state.settings.isUnzipTutorials);
   const randomizedType = useSelector((state: RootState) => state.settings.randomizedType);
   const choice = useRef<Record<string, string | null>>({ [identifier]: attempt ?? null });
-  const latestMetaRef = useRef({ identifier, isShow, isDismissed, questionId });
+  const latestMetaRef = useRef({ identifier, isDismissed, questionId });
   const contClass = isHighlighted ? (isHighlight + ' ' + contCss) : contCss;
   const processedOptions = useMemo(() => getOptionsFromSlideGroup(choices), [choices]);
   const displayCombinations = useMemo(
@@ -99,13 +91,11 @@ const Question: React.FC<QuestionProps> = ({
     e.stopPropagation();
     e.nativeEvent.stopImmediatePropagation();
     const choiceToDismiss: Record<string, Attempt> = { [identifier]: { [identifier]: choice.current[identifier] } };
-    setTimeout(() => dismisser({ id: questionId, isShow, choice: choiceToDismiss }));
   };
 
   const questionSelector = (e: React.MouseEvent<Element>) => {
     const clazz = (e?.target as HTMLElement)?.getAttribute("class");
     if (clazz && clazz === contClass) {
-      setTimeout(() => selector({ ids: [questionId] }));
       e.nativeEvent.stopImmediatePropagation();
       e.stopPropagation();
       e.preventDefault();
@@ -116,14 +106,13 @@ const Question: React.FC<QuestionProps> = ({
   const checkmarkCss = focus ? `checkmark ${styleProps.checkmark} ${styleProps.highlighted}` : `checkmark ${styleProps.checkmark}`;
 
   // Always keep latest metadata and auth in refs without triggering renders
-  latestMetaRef.current = { identifier, isShow, isDismissed, questionId };
+  latestMetaRef.current = { identifier, isDismissed, questionId };
 
   useEffect(() => {
     return () => {
       if (dismissClickedRef.current) return;
       const {
         identifier: idKey,
-        isShow: latestIsShow,
         isDismissed: latestIsDismissed,
         questionId: latestQuestionId
       } =
@@ -131,20 +120,12 @@ const Question: React.FC<QuestionProps> = ({
       const currentChoice = choice.current?.[idKey];
       const selectedValue = currentChoice ? Object.values(currentChoice).pop() : undefined;
       if (selectedValue == null || selectedValue === '') return;
-      dismisser({
-        ids: [],
-        id: latestQuestionId,
-        isShow: latestIsShow,
-        isDismissed: latestIsDismissed,
-        choice: { [identifier]: { [identifier]: choice.current[identifier] } },
-      });
     };
   }, []);
 
   const submittionSelector = (e: React.MouseEvent) => {
     const payload = { ids: ["choice" + questionId], isShow: !isFocused };
     e.nativeEvent.stopImmediatePropagation();
-    setTimeout(() => chooser(payload));
     e.stopPropagation();
     e.preventDefault();
   };
@@ -224,7 +205,6 @@ const Question: React.FC<QuestionProps> = ({
                       <input
                         value={id}
                         type="radio"
-                        disabled={isShow}
                         name={identifier}
                         defaultChecked={attempt === id}
                         onChange={(e) => {

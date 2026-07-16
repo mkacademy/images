@@ -1,6 +1,6 @@
 import { Middleware, type Dispatch } from '@reduxjs/toolkit';
 import { bannerRoutes, getCurAppName, pncApps } from '../../utils';
-import { setPagedRoute, updateCsObj } from '../slices/paginationSlice';
+import { setPagedRoute } from '../slices/paginationSlice';
 import { emptySelectedRoute } from '../slices/searchSlice';
 import {
   resetChapters,
@@ -193,10 +193,6 @@ const handleQuizRouteToggle = (
 
 /** Keeps pagination.selectedRoutes in sync when PNC content is opened, closed, or chapter-scoped. */
 const selectedRouteMatcher: Middleware<{}, RootState> = ({ getState, dispatch }) => (next) => (action) => {
-  if (updateCsObj.match(action)) {
-    const { curApp } = getState().session;
-    return next(updateCsObj([curApp, action.payload as string]));
-  }
 
   if (setPagedRoute.match(action)) {
     const result = Array.isArray(action.payload)

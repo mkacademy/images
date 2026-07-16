@@ -41,26 +41,14 @@ const cCss = `flex-center pl-3 pr-3 pt-3 pl-md-5 pr-md-5 pt-lg-0 ${slideStyles.f
 
 interface SlideShowProps {
   slides: SlideGroupItem[];
-  slideIndex: number;
-  isShow: boolean;
   leftIMG: boolean;
-  chooser: (payload: { ids: number[]; slideIndex?: number; isHighlighted?: boolean }) => void;
-  selector: (payload: { ids: number[]; isHighlighted?: boolean }) => void;
-  discarder: (payload: { id: number; slideIndex: number }) => void;
-  dismisser: (payload: { id: number; isShow?: boolean }) => void;
 }
 
 
 
 const SlideShow: React.FC<SlideShowProps> = ({
-  slideIndex,
-  dismisser,
-  discarder,
-  selector,
-  chooser,
   leftIMG,
   slides,
-  isShow,
 }) => {
   const [index, setIndex] = useState(0);
   const curselectedSlide = slides[index];
@@ -78,32 +66,21 @@ const SlideShow: React.FC<SlideShowProps> = ({
       {leftIMG && (
         <Snapshots
           slide={curselectedSlide}
-          slideIndex={slideIndex}
           length={slides.length}
-          dismisser={dismisser}
-          discarder={discarder}
           setIndex={setIndex}
-          isShow={isShow}
           index={index}
         />
       )}
       <Texts
         slide={curselectedSlide}
-        slideIndex={slideIndex}
-        selector={selector}
-        chooser={chooser}
         setIndex={setIndex}
         length={slides.length}
       />
       {!leftIMG && (
         <Snapshots
           slide={curselectedSlide}
-          slideIndex={slideIndex}
           length={slides.length}
-          dismisser={dismisser}
-          discarder={discarder}
           setIndex={setIndex}
-          isShow={isShow}
           index={index}
         />
       )}
@@ -113,22 +90,14 @@ const SlideShow: React.FC<SlideShowProps> = ({
 
 interface SnapshotsProps {
   slide: SlideGroupItem;
-  slideIndex: number;
-  dismisser: (payload: { id: number; isShow?: boolean }) => void;
-  discarder: (payload: { id: number; slideIndex: number }) => void;
   setIndex: (fn: (prev: number) => number) => void;
-  isShow: boolean;
   length: number;
   index: number;
 }
 
 const Snapshots: React.FC<SnapshotsProps> = ({
   slide,
-  slideIndex,
-  dismisser,
-  discarder,
   setIndex,
-  isShow,
   length,
   index,
 }) => {
@@ -136,10 +105,7 @@ const Snapshots: React.FC<SnapshotsProps> = ({
   const dismissHandler = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const payload1 = { id: slide.id, slideIndex };
-    const payload0 = { id: slide.id, isShow };
-    setTimeout(() => dismisser(payload0));
-    setTimeout(() => discarder(payload1));
+    const payload0 = { id: slide.id };
   };
   const totals = `(${index + 1}-${length})`;
   const imagCss0 = `${slideStyles.colSm12} ${slideStyles.colMd12} ${slideStyles.colLg6}`;
@@ -208,28 +174,19 @@ const Snapshots: React.FC<SnapshotsProps> = ({
 
 interface TextsProps {
   slide: SlideGroupItem;
-  slideIndex: number;
   setIndex: (fn: (prev: number) => number) => void;
-  selector: (payload: { ids: number[]; isHighlighted?: boolean }) => void;
-  chooser: (payload: { ids: number[]; slideIndex?: number; isHighlighted?: boolean }) => void;
   length: number;
 }
 
 const Texts: React.FC<TextsProps> = ({
   slide,
-  slideIndex,
-  selector,
   setIndex,
-  chooser,
   length,
 }) => {
   const last = length - 1;
   const selelctHandler = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const payload = { ids: [slide.id], slideIndex };
-    setTimeout(() => selector({ ids: [slide.id] }));
-    setTimeout(() => chooser(payload));
   };
 
   const hasImage = isValidDataUrl(slide.content);

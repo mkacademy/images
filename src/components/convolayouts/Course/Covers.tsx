@@ -6,20 +6,17 @@ import * as styles from '../../../styles/404.module.css';
 import { _500 as Notfound } from '../../../components/views/404';
 import { getSectionClass, SlideType } from '../Tutorial/Content';
 import CoversBanner from '../Tutorial/Banner';
-import { prependError } from '../../../store/slices/errorSlice';
 
 interface CoversProps {
   banner?: CourseBannerType;
   total?: number;
   positionY?: RefObject<number>;
   covers: SlideGroupItem[];
-  dismissed: boolean;
   onRouterSelection?: () => void;
 }
 
-const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers, dismissed, onRouterSelection }) => {
+const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers, onRouterSelection }) => {
   const dispatch = useDispatch();
-  const visibleCovers = covers.filter(({ isDismissed }) => isDismissed === dismissed);
 
   return (
     <>
@@ -27,7 +24,6 @@ const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers, dismi
         <CoversBanner
           id={banner.id}
           key={banner.id}
-          isShow={dismissed}
           positionY={positionY}
           title={banner.title || ''}
           quote={banner.quote || ''}
@@ -36,11 +32,10 @@ const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers, dismi
           selector={() => {
             onRouterSelection?.();
           }}
-          dismisser={() => dispatch(prependError('Chapter mode is enabled, dismiss not allowed'))}
           toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleCourse(payload))}
         />
       )}
-      {visibleCovers.length === 0 ? (
+      {covers.length === 0 ? (
         <section className={getSectionClass(false)}>
           <div className="col-12 d-flex justify-content-center">
             <div className={`${styles["notFound"]} ${styles["bigger"]} d-inline-block`}>
@@ -49,7 +44,7 @@ const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers, dismi
           </div>
         </section>
       ) : (
-        visibleCovers.map((cover, i: number) => {
+        covers.map((cover, i: number) => {
           const slide: SlideType = {
             id: cover.id,
             content: cover.content || '',

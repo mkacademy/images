@@ -25,12 +25,11 @@ export interface LengthItem {
 const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
   const positionY = useRef(-1);
   const dispatch = useDispatch();
-  const { pathname, state: routerState } = useLocation();
+  const { state: routerState } = useLocation();
   useApplyRouterSelections(!noTutorials, routerState);
   const banners = useSelector((state: RootState) => state.tutorial.banners);
   const content = useSelector((state: RootState) => state.tutorial.content);
   const selected = useSelector((state: RootState) => state.tutorial.selected);
-  const dismissals = useSelector((state: RootState) => state.session.dismissals);
 
 
   useEffect(() => {
@@ -59,9 +58,8 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
   if (noTutorials) return null;
 
   const banner = banners[selected];
-  const dismissed = dismissals[pathname] ?? false;
   const defaultItem: Partial<Content> = { bannerId: 0 };
-  const predicate = ({ isDismissed }: { isDismissed?: boolean }) => isDismissed === dismissed;
+  const predicate = ({ isDismissed }: { isDismissed?: boolean }) => isDismissed === false;
   const predicate0 = ([{ bannerId } = defaultItem]: Partial<Content>[]) => bannerId === banner?.id;
   const lengths: LengthItem[] = content.map(([{ bannerId } = defaultItem]: Partial<Content>[], i: number) => ({
     total: content[i].length ?? 0,
@@ -76,17 +74,13 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
         <>
           <Banner
             id={banner.id}
-            isShow={dismissed}
             leftQuote={undefined}
             positionY={positionY}
             title={banner.title || ''}
             quote={banner.quote || ''}
             isHighlighted={banner.isHighlighted}
             total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
-            selector={() => {
-              onRouterSelection?.();
-            }}
-            dismisser={() => {}}
+            selector={() => { onRouterSelection?.(); }}
             toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleTutorial(payload))}
           />
           {visible.length > 0 ? (
@@ -99,12 +93,8 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
                   imageurl: slide.imageurl || '',
                   isHighlighted: slide.isHighlighted || false
                 }}
-                isShow={dismissed}
                 leftIMG={i % 2 !== 0}
-                dismisser={() => {}}
-                selector={(payload: { ids: number[] }) => {
-                  onRouterSelection?.();
-                }}
+                selector={() => { onRouterSelection?.(); }}
               />
             ))
           ) : (
@@ -118,17 +108,13 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
           <Banner
             id={banner.id}
             key={banner.id}
-            isShow={dismissed}
             positionY={positionY}
             leftQuote={i % 2 !== 0}
             title={banner.title || ''}
             quote={banner.quote || ''}
             isHighlighted={banner.isHighlighted}
             total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
-            selector={() => {
-              onRouterSelection?.();
-            }}
-            dismisser={() => {}}
+            selector={() => { onRouterSelection?.(); }}
             toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleTutorial(payload))}
           />
         ))

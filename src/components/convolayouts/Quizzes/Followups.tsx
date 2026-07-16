@@ -5,15 +5,12 @@ import { RootState } from '../../../store';
 import { Banner, Pennant, SlideItem } from '../../../store/slices/courseSlice';
 import { Submition } from '../../../store/slices/quizSlice';
 import { getChoices } from '../../../library/quizAttemptManager';
-import { HandleDismissParams } from './Screen';
 
 interface FollowupsProps {
   parent: Banner;
   visible: Pennant[];
-  dismissed: boolean;
   quizPennants: Submition[];
   onRouterSelection?: () => void;
-  handleDismissQuestion: (params: HandleDismissParams) => void;
 }
 
 const getPennantSlideItems = (content: RootState['quiz']['content'], pennantId: number): SlideItem[] => {
@@ -27,10 +24,8 @@ const getPennantSlideItems = (content: RootState['quiz']['content'], pennantId: 
 const Followups: React.FC<FollowupsProps> = ({
   parent,
   visible,
-  dismissed,
   quizPennants,
   onRouterSelection,
-  handleDismissQuestion,
 }) => {
   const dispatch = useDispatch();
   const focus = useSelector((state: RootState) => state.quiz.focus);
@@ -71,8 +66,6 @@ const Followups: React.FC<FollowupsProps> = ({
           <Followup
             key={followup.id}
             pennant={followup}
-            dismissed={dismissed}
-            dismisser={handleDismissQuestion}
             chooser={handleHighlightAttempt}
             selector={handleHighlightQuestion}
             focus={focus[`choice${followup.id}`]}
