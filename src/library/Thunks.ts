@@ -1,5 +1,5 @@
 import { jwtDecode } from "jwt-decode";
-import { getCurAppIndex, getSimplePageIndexFromSearch, signOut, userroles, timeout, getConvSearch, getGraphqlResolver, redirectUrl, ToolKit, RECORDS } from "../utils";
+import { getCurAppIndex, signOut, userroles, timeout, getGraphqlResolver, redirectUrl, ToolKit, RECORDS } from "../utils";
 import { resolveViewerDeepLinkSearch } from "../loadingRouteUtils";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { EntityTypeMap, ResultPayload, clearData as clearReducers } from "../store/slices/rowSlice";
@@ -9,8 +9,7 @@ import { markHydrationAttemptedSeekIds, onHydrationQueryComplete, onHydrationSes
 import { InitializedLoadingPayload } from "../store/slices/sessionSlice";
 import { CustomJwtPayload, AuthPayload } from "./types";
 import { RootState } from "../store";
-import { FetchDataPayload, Executedquery, validateThenDispatch, buildRecordStateProps, extractIDsAtRequest, getAccountRecords, getAnonymousRecords } from "./ThunksUtils";
-import { clearIDsAtRequest, registerIDsAtRequest } from "../store/slices/statsSlice";
+import { FetchDataPayload, Executedquery, validateThenDispatch, getAccountRecords, getAnonymousRecords } from "./ThunksUtils";
 
 
 export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayload, { rejectValue: string }>(
@@ -152,10 +151,9 @@ export const fetchData = createAsyncThunk<
     { rejectValue: string }
 >(
     'fetchData',
-    async (payload: FetchDataPayload, { rejectWithValue, getState, dispatch, requestId }) => {
+    async (payload: FetchDataPayload, { rejectWithValue, getState, dispatch }) => {
         const state = getState() as RootState;
-        const { counts, executedQueries: inputsPayloads } = state.stats;
-        const { convolution, webapp, fetchSequence } = payload;
+        const { convolution, webapp } = payload;
         const search = resolveViewerDeepLinkSearch(payload.search);
         const {
             isUnzipCourses,
@@ -181,15 +179,11 @@ export const fetchData = createAsyncThunk<
             unzipCoursesType,
             unzipTutorialsType,
             unzipQuizzesType,
-            fetchSequence,
             convolution,
             webapp,
             search,
         };
         const [unzippedApp, unzippedAppName, unzippedAppConvolution] = getUnzippedApp(args);
-        const _inputsPayloads = setSkipOnExecutedQueries(args, defaultTake, inputsPayloads);
-        const recordStateProps = buildRecordStateProps(state, unzippedApp);
-        dispatch(registerIDsAtRequest({ requestId, ids: extractIDsAtRequest(recordStateProps) }));
         try {
             const isAccount = !isIncognito && curToken;
             const params = isAccount
@@ -226,15 +220,10 @@ export const fetchData = createAsyncThunk<
                 : await getAnonymousRecords(params);
             const { executedQueries: query, ...fetchedData } = content ?? { counts: {} };
             validateThenDispatch({
-                fetchSequence: payload.fetchSequence,
                 response: fetchedData,
                 curApp: unzippedApp,
                 dispatch,
-                query,
-                state,
-                requestId,
             });
-            dispatch(clearIDsAtRequest(requestId));
             console.log(content);
             return query || {};
         } catch (error) {
@@ -243,13 +232,6 @@ export const fetchData = createAsyncThunk<
         }
     }
 );
-
-/** Mirrors `getUnzippedApp` unzip branches: enabled + one of incoming/outgoing/both. */
-const isUnzipTypeActive = (isUnzip: boolean, unzipType: string): boolean =>
-    isUnzip &&
-    (unzipType === 'incoming_and_outgoing' ||
-        unzipType === 'incoming' ||
-        unzipType === 'outgoing');
 
 type UnzipFetchArgs = {
     curApp: number;
@@ -262,58 +244,6 @@ type UnzipFetchArgs = {
     unzipCoursesType: string;
     unzipTutorialsType: string;
     unzipQuizzesType: string;
-    fetchSequence?: { index: number; total: number };
-};
-
-let curskip = 0;
-export const getCurSkip = () => curskip;
-const setSkipOnExecutedQueries = (
-    args: UnzipFetchArgs,
-    defaultTake: number,
-    inputsPayloads: Record<string, Record<string, Executedquery>>
-): Record<string, Record<string, Executedquery>> => {
-    const { webapp, search, fetchSequence } = args;
-    const w = webapp.toLowerCase();
-    const applies =
-        (w === 'course' && isUnzipTypeActive(args.isUnzipCourses, args.unzipCoursesType)) ||
-        (w === 'tutorial' && isUnzipTypeActive(args.isUnzipTutorials, args.unzipTutorialsType)) ||
-        (w === 'quiz' && isUnzipTypeActive(args.isUnzipQuizzes, args.unzipQuizzesType));
-    if (fetchSequence || !applies) {
-        const searchRoutes = getConvSearch(search);
-        if (!searchRoutes || Object.keys(searchRoutes).length === 0)
-            return inputsPayloads;
-
-        const out: Record<string, Record<string, Executedquery>> = {};
-        for (const [outerKey, inner] of Object.entries(inputsPayloads)) {
-            out[outerKey] = {};
-            for (const [innerKey, q] of Object.entries(inner))
-                out[outerKey][innerKey] = { ...q };
-        }
-
-        for (const [route, csEntry] of Object.entries(searchRoutes)) {
-            if (!csEntry || typeof csEntry !== 'object' || !('skip' in csEntry)) continue;
-            const skip = (csEntry as { skip: number }).skip;
-            const queryKey = route + RECORDS;
-            for (const outerKey of Object.keys(out)) {
-                if (out[outerKey][queryKey])
-                    out[outerKey][queryKey] = { ...out[outerKey][queryKey], skip };
-            }
-        }
-        if (searchRoutes) console.log("conv_search", searchRoutes, out);
-        return out;
-    }
-    else {
-        curskip = getSimplePageIndexFromSearch(search);
-        const skip = curskip * defaultTake;
-        const out: Record<string, Record<string, Executedquery>> = {};
-        for (const [outerKey, inner] of Object.entries(inputsPayloads)) {
-            out[outerKey] = {};
-            for (const [innerKey, q] of Object.entries(inner))
-                out[outerKey][innerKey] = { ...q, skip };
-        }
-        if (curskip !== 0) console.log("simple_page", curskip, out);
-        return out;
-    }
 };
 
 let curPage = 0;
@@ -323,7 +253,6 @@ const getUnzippedApp = (args: UnzipFetchArgs): [number, string, string] => {
         curApp,
         webapp,
         convolution,
-        fetchSequence,
         isUnzipCourses,
         isUnzipTutorials,
         isUnzipQuizzes,
@@ -332,7 +261,6 @@ const getUnzippedApp = (args: UnzipFetchArgs): [number, string, string] => {
         unzipQuizzesType,
     } = args;
     const _webapp = webapp.toLowerCase();
-    if (fetchSequence) return [curApp, webapp, convolution];
     switch (_webapp) {
 
         case 'course': {

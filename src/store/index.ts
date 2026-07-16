@@ -1,7 +1,6 @@
 import { configureStore, type ThunkDispatch, type UnknownAction } from '@reduxjs/toolkit';
 import sessionReducer from './slices/sessionSlice';
 import commsReducer from './slices/commsSlice';
-import statsReducer from './slices/statsSlice';
 import errorReducer from './slices/errorSlice';
 import courseReducer from './slices/courseSlice';
 import quizReducer from './slices/quizSlice';
@@ -25,7 +24,6 @@ export const store = configureStore({
     quiz: quizReducer,
     view: viewReducer,
     settings: settingsReducer,
-    stats: statsReducer,
     error: errorReducer,
     pagination: paginationReducer,
   },

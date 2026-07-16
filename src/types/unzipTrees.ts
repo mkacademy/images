@@ -1,14 +1,16 @@
+import type { CourseTrees, QuizTrees, TutorialTrees } from '../library/controlPanelUtils';
+
 export interface ItemWithTutorialTrees {
   TreesId: number;
-  Trees: Record<string, unknown>;
+  Trees: TutorialTrees;
 }
 
 export interface ItemWithCourseTrees {
   TreesId: number;
-  Trees: Record<string, unknown>;
+  Trees: CourseTrees;
 }
 
 export interface ItemWithQuizTrees {
   TreesId: number;
-  Trees: Record<string, unknown>;
+  Trees: QuizTrees;
 }

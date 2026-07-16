@@ -39,11 +39,6 @@ export type {
   Pennant,
   CourseState,
   SetCoursesPayload,
-  dismissCoursePayload,
-  dismissSlidePayload,
-  CourseSetSlidesPayload,
-  CourseHighlightSlideBreathSelectionPayload,
-  CourseHighlightCoversBreathSelectionPayload,
 } from '../../library/CourseUtils';
 
 export {

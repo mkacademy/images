@@ -9,7 +9,6 @@ import {
 } from '../../library/commsUtils';
 import { parse, unSignMZip, unSignTZip, unSignQZip } from '../../library/EncodingManagerUtils';
 import { flushCourseTrees, flushQuizTrees, flushTutorialTrees } from '../../library/controlPanelUtilz';
-import { isFetchSequenceRunning } from '../../library/ThunksUtils';
 import type { ItemWithCourseTrees, ItemWithQuizTrees, ItemWithTutorialTrees } from '../../types/unzipTrees';
 import type { IncomingMessage, OutgoingMessage } from '../slices/commsSlice';
 import { setCourses } from '../slices/courseSlice';
@@ -38,13 +37,7 @@ const matchesTargetTree = (messageId: number, targetTreeId: number | undefined):
 const scheduleCompletedUnzippingWhenIdle = (
   dispatch: (action: ReturnType<typeof completedUnzipping>) => void,
 ) => {
-  const attempt = () => {
-    if (isFetchSequenceRunning()) {
-      setTimeout(attempt, UNZIP_COMPLETE_POLL_MS);
-      return;
-    }
-    dispatch(completedUnzipping(true));
-  };
+  const attempt = () => dispatch(completedUnzipping(true));
   setTimeout(attempt, UNZIP_COMPLETE_POLL_MS);
 };
 
@@ -92,8 +85,11 @@ export const unzipMessage = createAsyncThunk(
               sifterTypes.includes(type) &&
               !unzippedTreeIds.includes(id) &&
               matchesTargetTree(id, targetTreeId))
-            .map(({ id, text }: OutgoingMessage) => ({ TreesId: id, ...parse(text, username || '', unSignMZip) }))
-            .map(({ TreesId, Trees }: ItemWithCourseTrees) => ({ TreesId, Trees: Trees ?? {} })),
+            .map(({ id, text }: OutgoingMessage) => ({
+              TreesId: id,
+              ...parse(text, username || '', unSignMZip),
+            } as ItemWithCourseTrees))
+            .map(({ TreesId, Trees }) => ({ TreesId, Trees: Trees ?? {} })),
         );
       }
       if (unzipCoursesType === 'incoming' || unzipCoursesType === 'incoming_and_outgoing') {
@@ -103,8 +99,11 @@ export const unzipMessage = createAsyncThunk(
               type === FS &&
               !unzippedTreeIds.includes(id) &&
               matchesTargetTree(id, targetTreeId))
-            .map(({ id, text }: IncomingMessage) => ({ TreesId: id, ...parse(text, username || '', unSignMZip) }))
-            .map(({ TreesId, Trees }: ItemWithCourseTrees) => ({ TreesId, Trees: Trees ?? {} })),
+            .map(({ id, text }: IncomingMessage) => ({
+              TreesId: id,
+              ...parse(text, username || '', unSignMZip),
+            } as ItemWithCourseTrees))
+            .map(({ TreesId, Trees }) => ({ TreesId, Trees: Trees ?? {} })),
         );
       }
     }
@@ -119,8 +118,11 @@ export const unzipMessage = createAsyncThunk(
               filterTypes.includes(type) &&
               !unzippedTreeIds.includes(id) &&
               matchesTargetTree(id, targetTreeId))
-            .map(({ id, text }: OutgoingMessage) => ({ TreesId: id, ...parse(text, username || '', unSignTZip) }))
-            .map(({ TreesId, Trees }: ItemWithTutorialTrees) => ({ TreesId, Trees: Trees ?? {} })),
+            .map(({ id, text }: OutgoingMessage) => ({
+              TreesId: id,
+              ...parse(text, username || '', unSignTZip),
+            } as ItemWithTutorialTrees))
+            .map(({ TreesId, Trees }) => ({ TreesId, Trees: Trees ?? {} })),
         );
       }
       if (unzipTutorialsType === 'incoming' || unzipTutorialsType === 'incoming_and_outgoing') {
@@ -130,8 +132,11 @@ export const unzipMessage = createAsyncThunk(
               type === FF &&
               !unzippedTreeIds.includes(id) &&
               matchesTargetTree(id, targetTreeId))
-            .map(({ id, text }: IncomingMessage) => ({ TreesId: id, ...parse(text, username || '', unSignTZip) }))
-            .map(({ TreesId, Trees }: ItemWithTutorialTrees) => ({ TreesId, Trees: Trees ?? {} })),
+            .map(({ id, text }: IncomingMessage) => ({
+              TreesId: id,
+              ...parse(text, username || '', unSignTZip),
+            } as ItemWithTutorialTrees))
+            .map(({ TreesId, Trees }) => ({ TreesId, Trees: Trees ?? {} })),
         );
       }
     }
@@ -146,8 +151,11 @@ export const unzipMessage = createAsyncThunk(
               dashboardTypes.includes(type) &&
               !unzippedTreeIds.includes(id) &&
               matchesTargetTree(id, targetTreeId))
-            .map(({ id, text }: OutgoingMessage) => ({ TreesId: id, ...parse(text, username || '', unSignQZip) }))
-            .map(({ TreesId, Trees }: ItemWithQuizTrees) => ({ TreesId, Trees: Trees ?? {} })),
+            .map(({ id, text }: OutgoingMessage) => ({
+              TreesId: id,
+              ...parse(text, username || '', unSignQZip),
+            } as ItemWithQuizTrees))
+            .map(({ TreesId, Trees }) => ({ TreesId, Trees: Trees ?? {} })),
         );
       }
       if (unzipQuizzesType === 'incoming' || unzipQuizzesType === 'incoming_and_outgoing') {
@@ -157,8 +165,11 @@ export const unzipMessage = createAsyncThunk(
               type === FD &&
               !unzippedTreeIds.includes(id) &&
               matchesTargetTree(id, targetTreeId))
-            .map(({ id, text }: IncomingMessage) => ({ TreesId: id, ...parse(text, username || '', unSignQZip) }))
-            .map(({ TreesId, Trees }: ItemWithQuizTrees) => ({ TreesId, Trees: Trees ?? {} })),
+            .map(({ id, text }: IncomingMessage) => ({
+              TreesId: id,
+              ...parse(text, username || '', unSignQZip),
+            } as ItemWithQuizTrees))
+            .map(({ TreesId, Trees }) => ({ TreesId, Trees: Trees ?? {} })),
         );
       }
     }
