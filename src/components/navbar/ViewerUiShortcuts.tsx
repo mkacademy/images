@@ -21,7 +21,6 @@ const ViewerUiShortcuts: React.FC<ViewerUiShortcutsProps> = ({ convCss = 'carder
   const { pathname, search } = useLocation();
   const showCuts = useSelector((state: RootState) => state.session.showShortcuts);
   const authenticated = useSelector((state: RootState) => state.session.authenticated);
-  const pauseFetchers = useSelector((state: RootState) => state.session.pauseFetchers);
 
   if (!showCuts) return null;
 
@@ -42,7 +41,7 @@ const ViewerUiShortcuts: React.FC<ViewerUiShortcutsProps> = ({ convCss = 'carder
     if (!authenticated) return;
     e.preventDefault();
     dispatch(clearReducers());
-    dispatch({ type: signOut(pauseFetchers) });
+    dispatch({ type: signOut() });
   };
 
   return (

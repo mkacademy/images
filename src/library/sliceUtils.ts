@@ -1,6 +1,5 @@
 import type { Draft } from 'immer';
 import { jwtDecode } from 'jwt-decode';
-import { calcBytes, uniqueAliases } from '../utils';
 import { UpdatePayload, MetadataUpdate } from './actions';
 import type { Pennant, SlideItem, Banner as CourseBanner, SlideGroupItem, SlideGroup } from './CourseUtils';
 import { Quiz, Submition } from '../store/slices/quizSlice';
@@ -324,7 +323,7 @@ export const textsMerger = <T extends Mergable>(payload: UpdatePayload[]) => (ro
     ? {
       ...row,
       ...updates,
-      sizeInBytes: calcBytes(row, uniqueAliases),
+      sizeInBytes: 0,
     }
     : { ...row, ...updates }) as Draft<T>;
 };
@@ -349,7 +348,7 @@ export const textsMergerComms = (
     ? {
       ...row,
       ...updates,
-      sizeInBytes: calcBytes(row, uniqueAliases),
+      sizeInBytes: 0,
     }
     : { ...row, ...updates };
 };
@@ -363,7 +362,7 @@ export const idsMerger = (payload: string[], idField: string) => <T extends Merg
       edited: false,
       [idField]: ids[i + 1],
       sizeInBytes:
-        idField === "id" ? calcBytes(row, uniqueAliases) : row.sizeInBytes,
+        idField === "id" ? 0 : row.sizeInBytes,
     } as Draft<T>;
   else return row;
 };
@@ -381,7 +380,7 @@ export const idsMergerComms = (
       ...row,
       id: ids[i + 1],
       modified: false,
-      sizeInBytes: calcBytes(row, uniqueAliases),
+      sizeInBytes: 0,
     };
   else return row;
 };

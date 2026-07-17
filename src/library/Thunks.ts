@@ -13,9 +13,7 @@ import { FetchDataPayload, Executedquery, validateThenDispatch, getAccountRecord
 
 export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayload, { rejectValue: string }>(
     'authenticate',
-    async (payload: AuthPayload, { rejectWithValue, dispatch, getState }) => {
-        const state = getState() as RootState;
-        const { pauseFetchers } = state.session;
+    async (payload: AuthPayload, { rejectWithValue, dispatch }) => {
         const {
             email,
             password,
@@ -52,7 +50,7 @@ export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayl
                 const roleIndex = roles.findIndex((r: string) => r === userroles[baseRoleIndex]);
                 console.log("authenticate_roles", roles);
                 dispatch(clearReducers());
-                dispatch({ type: signOut(pauseFetchers) });
+                dispatch({ type: signOut() });
                 const session = {
                     quota,
                     roles,

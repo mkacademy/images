@@ -1,6 +1,5 @@
 import React from "react";
 import * as styles from "../../styles/notFound.module.css";
-import { getEditorUrl } from "../../utils";
 
 const NotFound: React.FC = () => {
   return (
@@ -38,7 +37,7 @@ const NotFound: React.FC = () => {
           DIAL_STRING_FAILURE: Requested resource is outside our coverage area.
         </div>
 
-        <a href={getEditorUrl()} className={styles["btn"]}>
+        <a href='https://mkacademy.ca' className={styles["btn"]}>
           Return to Main Line
         </a>
       </div>

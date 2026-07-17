@@ -6,7 +6,6 @@ import { ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 import { ROW_APPEND_QUERY_TYPE } from '../store/slices/rowSlice';
 import { hydrateData, hydratedThenFetch } from './actions';
-import { getHydrationDefaultTake, normalizeQueryLimit } from '../utils';
 import { getPlural, convolutionDelay } from '../utils';
 import { prependError } from '../store/slices/errorSlice';
 import { viewRequestFetching, cpanelMessage } from '../store/slices/viewSlice';
@@ -568,6 +567,9 @@ const orderQueries = (queries: QueryParams[]): QueryParams[] => {
   });
 };
 
+/** Max ids/cross-product per hydration query sent to the server. */
+const HYDRATION_QUERY_TAKE = 100;
+
 export const buildOrderedHydrationQueries = (
   state: RootState,
   webapp: string,
@@ -578,13 +580,13 @@ export const buildOrderedHydrationQueries = (
     return discriminator[Math.min(index, discriminator.length - 1)];
   };
   const {
-    session: { isIncognito, isPrivate, fetchRole, curMailer, curToken, defaultTake },
+    session: { isIncognito, isPrivate, fetchRole, curMailer, curToken },
     tutorial,
     course,
     quiz,
   } = state;
   const baseParams: QueryParams = {
-    limit: { take: 10, skip: 0 },
+    limit: { take: HYDRATION_QUERY_TAKE, skip: 0 },
     type: ROW_APPEND_QUERY_TYPE,
     isPrivateView: false,
     hasCounts: false,
@@ -645,8 +647,7 @@ export const buildOrderedHydrationQueries = (
       return [];
   }
 
-  const hydrationTake = getHydrationDefaultTake(defaultTake);
-  return orderQueries(getFixedSizeQueries(queries, hydrationTake));
+  return orderQueries(getFixedSizeQueries(queries, HYDRATION_QUERY_TAKE));
 };
 
 export type DeriveHydrationLegQueries = () => QueryParams[];
@@ -658,7 +659,7 @@ export type HydrationSessionOptions = {
 const DEFAULT_QUERY_LIMIT = 50;
 
 export const resolveHydrationSessionOptions = (_getState: () => RootState): HydrationSessionOptions => ({
-  maxQueriesPerLeg: normalizeQueryLimit(DEFAULT_QUERY_LIMIT),
+  maxQueriesPerLeg: DEFAULT_QUERY_LIMIT,
 });
 
 export const estimateInitialLegCount = (

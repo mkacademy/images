@@ -1,5 +1,4 @@
-import { Status } from "../types/cpanel";
-import { Metadata } from "../types/cpanel";
+import { Metadata } from "../utils";
 import type { QuizTrees } from "./controlPanelUtils";
 import type {
   Banner,
@@ -31,7 +30,7 @@ export interface Submition {
   purpose?: string;
   filter?: string;
   filterId?: number;
-  status: Status | number;
+  status: number;
   contiguousOrdinal?: number;
   descendentsSums?: Record<string, number>;
   metadata?: Metadata;
@@ -59,7 +58,7 @@ export interface Quiz {
   dashboardId?: number;
   pennants: Submition[];
   isHighlighted: boolean;
-  status: Status | number;
+  status: number;
   contiguousOrdinal?: number;
   descendentsSums?: Record<string, number>;
 }

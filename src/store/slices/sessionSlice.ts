@@ -17,7 +17,6 @@ export interface SessionState {
   isIncognito: boolean;
   showShortcuts: boolean;
   authenticated: boolean;
-  pauseFetchers: boolean;
   curToken: string | null;
   fetchRole: string | null;
   username: string | undefined;
@@ -38,7 +37,6 @@ const initialState: SessionState = {
   roleIds: undefined,
   showShortcuts: true,
   showRolesToggler: false,
-  pauseFetchers: true,
   selectedTraversal: 0,
   roles: undefined,
   fetchRole: null,
@@ -97,7 +95,6 @@ const sessionSlice = createSlice({
       state.roleIds = undefined;
       state.showShortcuts = true;
       state.showRolesToggler = false;
-      state.pauseFetchers = true;
       state.selectedTraversal = 0;
       state.roles = undefined;
       state.fetchRole = null;

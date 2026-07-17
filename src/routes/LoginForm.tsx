@@ -5,7 +5,7 @@ import { authenticate } from '../library/Thunks';
 import { resolveLoginLoadingRedirectUrl } from '../library/hydrationUtils';
 import { initializedLoading } from '../store/slices/sessionSlice';
 import { AppDispatch, RootState } from '../store';
-import { convolutionDelay, convolutionTake, globalVars, sessionSizes } from '../utils';
+import { convolutionDelay, convolutionTake, globalVars } from '../utils';
 import * as styles from '../styles/course.module.css';
 import * as registrationStyles from '../styles/registration.module.css';
 import { CourseGlobal } from '../components/views/wrappers/courseGlobal';
@@ -67,7 +67,6 @@ const LoginForm: React.FC = () => {
         roleIndex: -1,
         curToken: null,
         isPrivate: false,
-        parentData: undefined,
         defaultTake: convolutionTake(),
       }));
     }
@@ -121,11 +120,16 @@ const LoginForm: React.FC = () => {
                     onChange={(e) => setSeconds(e.target.value)}
                     required
                   >
-                    {Object.entries(sessionSizes).map(([key, value]) => (
-                      <option key={key} value={key}>
-                        {value}
-                      </option>
-                    ))}
+                    <option value="7200">2 HOURS</option>
+                    <option value="14400">4 HOURS</option>
+                    <option value="21600">6 HOURS</option>
+                    <option value="28800">8 HOURS</option>
+                    <option value="36000">10 HOURS</option>
+                    <option value="43200">12 HOURS</option>
+                    <option value="50400">14 HOURS</option>
+                    <option value="57600">16 HOURS</option>
+                    <option value="64800">18 HOURS</option>
+                    <option value="72000">20 HOURS</option>
                   </select>
                 </div>
                 <div className={`form-group ${registrationStyles['form-group']}`}>
@@ -163,9 +167,7 @@ const LoginForm: React.FC = () => {
                   onClick={handleIncognito}
                 >
                   {authenticated
-                    ? globalVars.ingredients
-                      ? 'redirecting...'
-                      : 'resume session'
+                    ? 'redirecting...'
                     : 'continue incognito'}
                 </Link>
               </div>
