@@ -10,7 +10,10 @@ const trimTrailingUrlPunctuation = (url: string): { href: string; trailing: stri
   return { href: match[1], trailing: match[2] ?? '' };
 };
 
-export const linkifyPlainText = (text: string): React.ReactNode[] => {
+export const linkifyPlainText = (
+  text: string,
+  { stopPropagation = true }: { stopPropagation?: boolean } = {}
+): React.ReactNode[] => {
   if (!text) return [];
 
   const nodes: React.ReactNode[] = [];
@@ -30,7 +33,7 @@ export const linkifyPlainText = (text: string): React.ReactNode[] => {
         href={href}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
+        onClick={stopPropagation ? (e) => e.stopPropagation() : undefined}
       >
         {href}
       </a>
@@ -50,12 +53,27 @@ export interface LinkifiedTextProps {
   text: string;
   maxLength?: number;
   className?: string;
+  /**
+   * When false, link clicks bubble to parents (e.g. comment reply toggle).
+   * Parents should ignore clicks on `a[href]` so both can coexist.
+   * Default true keeps card/outline click handlers from firing.
+   */
+  stopPropagation?: boolean;
 }
 
 /** Renders plain text with http(s) URLs as clickable anchors. Optionally truncates via textEllipsis. */
-const LinkifiedText: React.FC<LinkifiedTextProps> = ({ text, maxLength, className }) => {
+const LinkifiedText: React.FC<LinkifiedTextProps> = ({
+  text,
+  maxLength,
+  className,
+  stopPropagation = true,
+}) => {
   const display = maxLength !== undefined ? textEllipsis(text, maxLength) : text;
-  return <span className={className}>{linkifyPlainText(display)}</span>;
+  return (
+    <span className={className}>
+      {linkifyPlainText(display, { stopPropagation })}
+    </span>
+  );
 };
 
 export default LinkifiedText;
