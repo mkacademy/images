@@ -1,64 +1,94 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { RootState } from '../../store';
 import { COMPLETED_MESSAGE, cpanelMessage } from '../../store/slices/viewSlice';
+import { resetHydrationQueries } from '../../store/slices/sessionSlice';
 import {
   isViewerLoadingRoute,
   isViewerLoginRoute,
   isViewerNotFoundRoute,
   isViewerUnknownRoute,
 } from '../../loadingRouteUtils';
-import * as styles from '../../styles/roletoggler.module.css';
+import * as styles from '../../styles/hydrationProgress.module.css';
 
 const PNC_ROUTE_RE = /^\/convolution\/(tutorial|course|quiz)\/?$/;
 
-/** Editor RoleToggler parity: shows `view.message` (hydration progress, etc.). */
+/** Thin top progress bar for hydration (replaces text status messages). */
 const ViewerStatusBar: React.FC = () => {
   const dispatch = useDispatch();
   const { pathname, search } = useLocation();
   const message = useSelector((state: RootState) => state.view.message);
-  const isRequestProcessing = useSelector((state: RootState) => state.view.requestIsProcessing);
+  const remaining = useSelector((state: RootState) => state.session.hydrationQueries);
+  const total = useSelector((state: RootState) => state.session.hydrationQueriesTotal);
+
+  const [exiting, setExiting] = useState(false);
+  const [displayWidth, setDisplayWidth] = useState(0);
 
   const pncMatch = pathname.match(PNC_ROUTE_RE);
-  const convCss = pncMatch?.[1];
+  const onViewerRoute = Boolean(pncMatch);
 
-  const refs = useRef({ isRequestProcessing, message });
-  useEffect(() => {
-    refs.current = { isRequestProcessing, message };
-  }, [isRequestProcessing, message]);
+  const active = total > 0;
+  const rawProgress = total > 0 ? ((total - remaining) / total) * 100 : 0;
+  // Keep a visible stub while work remains so the bar appears immediately.
+  const progress = remaining > 0 ? Math.max(rawProgress, 8) : active ? 100 : 0;
 
-  // Idle message is empty in viewer (editor unzip / non-maximum mode parity).
   useEffect(() => {
-    const { isRequestProcessing: processing, message: current } = refs.current;
-    if (!processing || current === COMPLETED_MESSAGE) {
-      const timeoutId = setTimeout(() => {
-        const latest = refs.current;
-        if (!latest.isRequestProcessing || latest.message === COMPLETED_MESSAGE) {
-          dispatch(cpanelMessage(''));
-        }
-      }, 2000);
-      return () => clearTimeout(timeoutId);
+    if (!active) {
+      setExiting(false);
+      setDisplayWidth(0);
+      return;
     }
-  }, [message, isRequestProcessing, dispatch]);
+
+    setExiting(false);
+    setDisplayWidth(progress);
+
+    if (remaining > 0) return;
+
+    const fadeId = window.setTimeout(() => setExiting(true), 200);
+    const resetId = window.setTimeout(() => {
+      dispatch(resetHydrationQueries());
+      setDisplayWidth(0);
+      setExiting(false);
+    }, 450);
+
+    return () => {
+      window.clearTimeout(fadeId);
+      window.clearTimeout(resetId);
+    };
+  }, [active, progress, remaining, dispatch]);
+
+  // Clear completion text leftover from hydration session lifecycle.
+  useEffect(() => {
+    if (message !== COMPLETED_MESSAGE) return;
+    const timeoutId = window.setTimeout(() => {
+      dispatch(cpanelMessage(''));
+    }, 2000);
+    return () => window.clearTimeout(timeoutId);
+  }, [message, dispatch]);
 
   if (
     isViewerLoginRoute(pathname) ||
     isViewerNotFoundRoute(pathname, search) ||
     isViewerUnknownRoute(pathname) ||
     isViewerLoadingRoute(pathname, search) ||
-    !convCss
+    !onViewerRoute
   ) {
     return null;
   }
 
-  if (!message) return null;
+  if (!active && !exiting) return null;
 
   return (
-    <div className={`${styles.notRolePicker} ${convCss}`}>
-      <div className={`role ${styles.role}`}>
-        <span>{message}</span>
-      </div>
+    <div
+      className={`${styles.track}${exiting ? ` ${styles.trackExiting}` : ''}`}
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(displayWidth)}
+      aria-label="Hydration progress"
+    >
+      <div className={styles.bar} style={{ width: `${displayWidth}%` }} />
     </div>
   );
 };

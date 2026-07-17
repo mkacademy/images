@@ -23,15 +23,3 @@ export type HydrationLegProgress = {
   currentLeg: number;
   totalLegs: number;
 };
-
-export const getHydrationCpanelMessage = (
-  webapp: string,
-  remaining: number,
-  leg?: HydrationLegProgress,
-): string => {
-  const rounds =
-    leg && leg.totalLegs > 1
-      ? ` (${leg.currentLeg}/${leg.totalLegs} rounds)`
-      : '';
-  return `hydrating ${webapp}... ${remaining} queries remaining${rounds}`;
-};

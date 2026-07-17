@@ -1,6 +1,6 @@
 import React from 'react';
 import { placeholder, textEllipsis } from "../../../utils";
-import { isValidDataUrl } from '../../../library/imageUtils';
+import { isMediaSlotValue, resolveMediaSlotSrc } from '../../../library/imageUtils';
 import { contCss, isHighlight, SlideType, slideStyles } from '../Tutorial/Content';
 
 interface SnapshotProps {
@@ -16,12 +16,11 @@ const Snapshot: React.FC<SnapshotProps> = ({
   },
   onSnapshotClick,
 }) => {
-  const hasImage = isValidDataUrl(imageurl);
-  const imageUrl = hasImage ? imageurl : placeholder;
+  const imageUrl = resolveMediaSlotSrc(imageurl);
 
   return (
     <React.Fragment>
-      {hasImage || imageurl === "data:image" ? (
+      {isMediaSlotValue(imageurl) ? (
         <div className={`${slideStyles.colSm12} ${slideStyles.colMd12} ${slideStyles.colLg6} ${slideStyles.colXl6} p-0 ${slideStyles.controlsRow}`}>
           <img
             src={imageUrl}

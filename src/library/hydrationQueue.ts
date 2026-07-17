@@ -1,17 +1,16 @@
 import type { ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
-import { hydrationDelay, getPlural } from '../utils';
+import { hydrationDelay } from '../utils';
 import { anonymousFetch, authenticatedFetch } from './ThunksUtils';
 import { deHydratedRowsDataFetcher } from './Thunks';
 import type { QueryParams } from './types';
 import type { RootState } from '../store';
 import { hydrateData } from './actions';
 import { resetHydrationQueries } from '../store/slices/sessionSlice';
-import { cpanelMessage, viewRequest } from '../store/slices/viewSlice';
+import { viewRequest } from '../store/slices/viewSlice';
 import {
   flushHydrationStoreBuffer,
 } from './hydrationPayloadBuffer';
 import {
-  getHydrationCpanelMessage,
   type HydrationLegProgress,
 } from './hydrationLegUtils';
 import { prependError } from '../store/slices/errorSlice';
@@ -217,13 +216,6 @@ const startNextLeg = (dispatch: ThunkDispatch<RootState, unknown, UnknownAction>
   // Count this leg's queries so progress / idle detection span the full multi-leg session.
   dispatch(hydrateData(nextLegQueries.length));
   startLeg(dispatch, toFetchSpecs(nextLegQueries));
-
-  if (activeWebapp) {
-    const webapp = getPlural(activeWebapp);
-    dispatch(cpanelMessage(
-      getHydrationCpanelMessage(webapp, nextLegQueries.length, getHydrationLegProgress()),
-    ));
-  }
   return true;
 };
 
@@ -274,12 +266,9 @@ export const onHydrationSessionIdle = (
 ): void => {
   if (getActiveWebapp() && !isHydrationCancelled()) {
     const { session: { hydrationQueries }, view: { requestIsProcessing } } = getState();
-    const webapp = getPlural(getActiveWebapp() ?? 'not_set');
     // Fulfilled/rejected has not decremented yet; account for the query that just settled.
     const remaining = hydrationQueries - 1;
-    if (remaining > 0 && !requestIsProcessing) {
-      dispatch(cpanelMessage(getHydrationCpanelMessage(webapp, remaining, getHydrationLegProgress())));
-    } else if (!requestIsProcessing && !isHydrationSessionBusy()) {
+    if (remaining <= 0 && !requestIsProcessing && !isHydrationSessionBusy()) {
       flushHydrationStoreBuffer();
       clearActiveWebapp();
       dispatch(viewRequest({ completed: true }));

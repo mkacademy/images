@@ -3,7 +3,7 @@ import { SlideGroupItem } from '../../../store/slices/courseSlice';
 import LinkifiedText from '../../LinkifiedText';
 import { placeholder, textEllipsis } from '../../../utils';
 import * as styles from '../../../styles/course.module.css';
-import { isValidDataUrl } from '../../../library/imageUtils';
+import { isMediaSlotValue, resolveMediaSlotSrc } from '../../../library/imageUtils';
 
 const slideStyles = {
   row: styles["row"],
@@ -102,11 +102,10 @@ const Snapshots: React.FC<SnapshotsProps> = ({
   const totals = `(${index + 1}-${length})`;
   const imagCss0 = `${slideStyles.colSm12} ${slideStyles.colMd12} ${slideStyles.colLg6}`;
   const imageCss1 = ` ${slideStyles.colXl6} p-0  text-center  ${slideStyles.textCenter} ${slideStyles.controlsRow} `;
-  const hasImage = isValidDataUrl(slide.imageurl);
-  const imageUrl = hasImage ? slide.imageurl : placeholder;
+  const imageUrl = resolveMediaSlotSrc(slide.imageurl);
   return (
     <React.Fragment>
-      {hasImage || slide.imageurl === "data:image" ? (
+      {isMediaSlotValue(slide.imageurl) ? (
         <div className={`${imagCss0} ${imageCss1}`}>
           <span className={`displayedTotals ${slideStyles.displayedTotals}`}>{totals}</span>
           <div className={`background_img ${slideStyles.backgroundImg}`}>
@@ -168,11 +167,10 @@ const Texts: React.FC<TextsProps> = ({
   length,
 }) => {
   const last = length - 1;
-  const hasImage = isValidDataUrl(slide.content);
-  const imageUrl = hasImage ? slide.content : placeholder;
+  const imageUrl = resolveMediaSlotSrc(slide.content);
   return (
     <React.Fragment>
-      {hasImage || slide.content === "data:image" ? (
+      {isMediaSlotValue(slide.content) ? (
         <div className={slide.isHighlighted ? `imgHighlited ${slideStyles.imgHighlited} ${snapCss}` : snapCss}>
           <span className={`displayedTotals ${slideStyles.displayedTotals}`}>
             o

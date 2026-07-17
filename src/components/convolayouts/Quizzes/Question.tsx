@@ -7,7 +7,7 @@ import LinkifiedText from '../../LinkifiedText';
 import { placeholder } from "../../../utils";
 import { Banner, SlideGroup } from '../../../store/slices/courseSlice';
 import { computeRanCombs, filterCombinationsForRandomizedType, getOptionsFromSlideGroup } from '../../../library/QuizUtils';
-import { isValidDataUrl } from '../../../library/imageUtils';
+import { isValidDataUrl, resolveMediaSlotSrc } from '../../../library/imageUtils';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../store/types";
 import OptionContent from './OptionContent';
@@ -102,7 +102,7 @@ const Question: React.FC<QuestionProps> = ({
                 {(displayCombinations[random] ?? []).map((id: string) => {
                   const option = processedOptions.find(opt => opt.id === id) || { value: '' };
                   const hasImage = isValidDataUrl(option.value);
-                  const imageUrl = hasImage ? option.value : placeholder;
+                  const imageUrl = resolveMediaSlotSrc(option.value);
                   return (
                     <label className={`options ${styleProps.options}`} key={id}>
                       <OptionContent

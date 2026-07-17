@@ -8,13 +8,12 @@ import { ROW_APPEND_QUERY_TYPE } from '../store/slices/rowSlice';
 import { hydrateData, hydratedThenFetch } from './actions';
 import { getPlural, convolutionDelay } from '../utils';
 import { prependError } from '../store/slices/errorSlice';
-import { viewRequestFetching, cpanelMessage } from '../store/slices/viewSlice';
+import { viewRequestFetching } from '../store/slices/viewSlice';
 import { fetchData } from './Thunks';
 import { buildFetchDataPayload, selectMinimumFeatureModeFlags } from './ThunksUtils';
-import { startHydrationSession, isHydrationSessionBusy, getHydrationLegProgress } from './hydrationQueue';
+import { startHydrationSession, isHydrationSessionBusy } from './hydrationQueue';
 import {
   estimateLegCount,
-  getHydrationCpanelMessage,
   takeFirstLegQueries,
 } from '../library/hydrationLegUtils';
 import type { IsDehydratedItem } from './controlPanelUtils';
@@ -754,13 +753,6 @@ export const handleHydrationLogic = (
   }
   else if (firstLegQueries.length > 0) {
     const count = firstLegQueries.length;
-    const legProgress = getHydrationLegProgress();
-    const message = getHydrationCpanelMessage(
-      webapp,
-      count,
-      legProgress.totalLegs > 1 ? legProgress : undefined,
-    );
-    setTimeout(() => dispatch(cpanelMessage(message)), 100);
     if (!action) {
       dispatch(hydrateData(count));
     }

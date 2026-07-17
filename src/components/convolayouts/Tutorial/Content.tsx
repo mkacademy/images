@@ -2,7 +2,7 @@ import React from 'react';
 import LinkifiedText from '../../LinkifiedText';
 import { placeholder } from "../../../utils";
 import * as styles from '../../../styles/course.module.css';
-import { isValidDataUrl } from '../../../library/imageUtils';
+import { isMediaSlotValue, resolveMediaSlotSrc } from '../../../library/imageUtils';
 
 export const slideStyles = {
   row: styles["row"],
@@ -48,11 +48,10 @@ const Content: React.FC<ContentProps> = ({
     isHighlighted: false,
   },
 }) => {
-  const hasImage = isValidDataUrl(content);
-  const imageUrl = hasImage ? content : placeholder;
+  const imageUrl = resolveMediaSlotSrc(content);
   return (
     <React.Fragment>
-      {hasImage || content === "data:image" ? (
+      {isMediaSlotValue(content) ? (
         <div
           className={isHighlighted ? slideStyles.imgHighlited + snapCss : snapCss}
         >

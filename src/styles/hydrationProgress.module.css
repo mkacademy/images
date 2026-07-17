@@ -1,0 +1,21 @@
+.track {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 10000;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 200ms ease-out;
+}
+
+.trackExiting {
+  opacity: 0;
+}
+
+.bar {
+  height: 100%;
+  background-color: #2188ff;
+  transition: width 200ms ease-out;
+}

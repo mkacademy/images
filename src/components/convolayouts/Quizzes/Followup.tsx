@@ -7,7 +7,7 @@ import { setFollowupId } from '../../../store/slices/quizSlice';
 import { Pennant, SlideItem } from '../../../store/slices/courseSlice';
 import { RootState } from '../../../store/types';
 import { getOptionsFromSlideItems, computeRanCombs, filterCombinationsForRandomizedType } from '../../../library/QuizUtils';
-import { isValidDataUrl } from '../../../library/imageUtils';
+import { isValidDataUrl, resolveMediaSlotSrc } from '../../../library/imageUtils';
 import LinkifiedText from '../../LinkifiedText';
 import { placeholder } from '../../../utils';
 import OptionContent from './OptionContent';
@@ -104,7 +104,7 @@ const Followup: React.FC<FollowupProps> = ({
                 {(displayCombinations[random] ?? []).map((id: string) => {
                   const option = processedOptions.find(opt => opt.id === id) || { value: '' };
                   const hasImage = isValidDataUrl(option.value);
-                  const imageUrl = hasImage ? option.value : placeholder;
+                  const imageUrl = resolveMediaSlotSrc(option.value);
                   return (
                     <label className={`options ${styleProps.options}`} key={id}>
                       <OptionContent

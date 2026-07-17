@@ -13,6 +13,8 @@ export interface SessionState {
   isFetching: boolean;
   defaultTake: number;
   hydrationQueries: number;
+  /** Cumulative queries queued in the current hydration session (for progress %). */
+  hydrationQueriesTotal: number;
   roleIndex: number;
   isIncognito: boolean;
   showShortcuts: boolean;
@@ -31,6 +33,7 @@ export interface SessionState {
 
 const initialState: SessionState = {
   hydrationQueries: 0,
+  hydrationQueriesTotal: 0,
   userid: undefined,
   curApp: 1,
   curMailer: -1,
@@ -68,6 +71,7 @@ const sessionSlice = createSlice({
   reducers: {
     resetHydrationQueries: (state) => {
       state.hydrationQueries = 0;
+      state.hydrationQueriesTotal = 0;
     },
     initializedLoading: (state, action: PayloadAction<InitializedLoadingPayload>) => {
       const newRoleIndex =
@@ -131,6 +135,11 @@ const sessionSlice = createSlice({
         });
       })
       .addCase(hydrateData, (state, action) => {
+        if (state.hydrationQueries === 0) {
+          state.hydrationQueriesTotal = action.payload;
+        } else {
+          state.hydrationQueriesTotal += action.payload;
+        }
         state.hydrationQueries += action.payload;
         state.allowMimeOnlyImageurlOverrideOnUpdateSteps = false;
       })

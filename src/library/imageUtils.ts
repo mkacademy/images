@@ -1,3 +1,12 @@
+import {
+  audioMimePlaceholder,
+  imageMimePlaceholder,
+  placeholder,
+  videoMimePlaceholder,
+} from '../utils';
+
+export type MediaMimeGroup = 'image' | 'audio' | 'video';
+
 export const isValidDataUrl = (url: string): boolean => {
   if (!url.startsWith('data:image')) return false;
   try {
@@ -12,3 +21,43 @@ export const isValidDataUrl = (url: string): boolean => {
     return false;
   }
 };
+
+/** Image, audio, or video data-URL slot (payload or mime-only sentinel). */
+export const getMediaMimeGroup = (url: string): MediaMimeGroup | null => {
+  if (typeof url !== 'string') return null;
+  if (url.startsWith('data:image')) return 'image';
+  if (url.startsWith('data:audio')) return 'audio';
+  if (url.startsWith('data:video')) return 'video';
+  return null;
+};
+
+export const isMediaSlotValue = (url: string): boolean =>
+  getMediaMimeGroup(url) !== null;
+
+/** @deprecated Prefer isMediaSlotValue — kept for image-only checks. */
+export const isImageSlotValue = (url: string): boolean =>
+  typeof url === 'string' && url.startsWith('data:image');
+
+/**
+ * Resolved <img> src for a media slot:
+ * - valid image data URL → itself
+ * - image mime-only → image group placeholder
+ * - audio (any) → audio group placeholder
+ * - video (any) → video group placeholder
+ */
+export const resolveMediaSlotSrc = (url: string): string => {
+  const group = getMediaMimeGroup(url);
+  if (group === 'image') {
+    return isValidDataUrl(url) ? url : imageMimePlaceholder;
+  }
+  if (group === 'audio') {
+    return audioMimePlaceholder;
+  }
+  if (group === 'video') {
+    return videoMimePlaceholder;
+  }
+  return placeholder;
+};
+
+/** @deprecated Prefer resolveMediaSlotSrc */
+export const resolveImageSlotSrc = resolveMediaSlotSrc;
