@@ -6,7 +6,7 @@ import type {
 import { parseCommentId } from '../types/comments';
 
 export type CommentContentQuery = {
-  search: string | null;
+  search?: string | null;
   isPrivateView: boolean;
   childIds?: number[];
   isMutating?: boolean;
