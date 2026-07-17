@@ -16,6 +16,7 @@ import { setCurPage } from '../../library/Thunks';
 import { unzipMessage } from './unzipMessage';
 import { parseUnzipQueryParam } from '../../library/unzipQuery';
 import { parseRandomizedQueryParam } from '../../library/randomizedQuery';
+import type { AppDispatch, RootState } from '../index';
 
 export interface LoadPncContentArg {
   search: string;
@@ -38,10 +39,18 @@ const parseFoundPairs = (search: string): LoadingDeepLinkPair[] => {
   });
 };
 
+type LoadPncResult =
+  | { skipped: true }
+  | { skipped: false; fetched: boolean; unzipped: boolean };
+
 /** Orchestrates bulk fetch → unzip → hydrate for Loading deep-links. */
-export const loadPncContent = createAsyncThunk(
+export const loadPncContent = createAsyncThunk<
+  LoadPncResult,
+  LoadPncContentArg,
+  { state: RootState; dispatch: AppDispatch }
+>(
   'content/loadPncContent',
-  async ({ search, foundPairs: pairsArg }: LoadPncContentArg, { dispatch }) => {
+  async ({ search, foundPairs: pairsArg }, { dispatch }) => {
     const resolvedSearch = resolveViewerDeepLinkSearch(search);
     const foundPairs = pairsArg ?? parseFoundPairs(resolvedSearch);
     const treeFlags = parseLoadingTreeFlags(resolvedSearch);

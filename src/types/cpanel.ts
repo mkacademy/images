@@ -1,4 +1,4 @@
-import { PennantInput, BannerInput, RootInput, StepInput, UserMockInput } from "../library/RowMockingUtils";
+
 
 export interface Status {
   initial: number;
@@ -96,7 +96,7 @@ export interface BaseEntity {
 }
 
 export interface BaseEntityData {
-  metadata: UserMockInput | BannerInput | PennantInput | StepInput | RootInput | Metadata;
+  metadata: Metadata;
   status: number;
   id: string;
   sizeInBytes: number;
