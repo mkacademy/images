@@ -1,5 +1,5 @@
 import { Middleware, type Dispatch } from '@reduxjs/toolkit';
-import { bannerRoutes, getCurAppName, pncApps } from '../../utils';
+import { bannerRoutes, getCurAppName } from '../../utils';
 import { setPagedRoute } from '../slices/paginationSlice';
 import { emptySelectedRoute } from '../slices/searchSlice';
 import {
@@ -38,7 +38,7 @@ import {
   type QuizRouteToggleSide,
   type QuizRouteToggleView,
 } from '../../library/quizRouteMatcherUtils';
-
+const pncApps = ['tutorial', 'course', 'quiz'];
 type PncToggleType =
   | typeof toggleTutorial.type
   | typeof toggleCourse.type

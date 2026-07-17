@@ -1,4 +1,4 @@
-import { Tree, getCurAppIndex, getCurAppName, orderedWebappRoutes } from '../../utils';
+import { getCurAppIndex } from '../../utils';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { hydrateData } from '../../library/actions';
 import { clearData } from './rowSlice';
@@ -8,7 +8,6 @@ import { DataRow } from '../../types/cpanel';
 export interface SessionState {
   curApp: number;
   curMailer: number;
-  curRoutes: string[];
   isPrivate: boolean;
   isAppend: boolean;
   isFetching: boolean;
@@ -31,7 +30,6 @@ export interface SessionState {
   allowMimeOnlyImageurlOverrideOnUpdateSteps: boolean;
 }
 
-const getCurRoutes = (app: string) => orderedWebappRoutes(Tree.entities, app);
 const initialState: SessionState = {
   hydrationQueries: 0,
   userid: undefined,
@@ -39,7 +37,6 @@ const initialState: SessionState = {
   curMailer: -1,
   roleIds: undefined,
   showShortcuts: true,
-  curRoutes: [],
   showRolesToggler: false,
   pauseFetchers: true,
   selectedTraversal: 0,
@@ -88,9 +85,8 @@ const sessionSlice = createSlice({
     mutateCurApp: (state, action: PayloadAction<string>) => {
       const userApp = getCurAppIndex(action.payload);
       if (userApp.length === 2) {
-        const [index, appname] = userApp;
+        const [index] = userApp;
         state.curApp = parseInt(index);
-        state.curRoutes = getCurRoutes(appname.toLowerCase());
       }
       else console.log("unknown app ==>", action.payload);
     },

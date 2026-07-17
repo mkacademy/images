@@ -1,5 +1,5 @@
 import { jwtDecode } from "jwt-decode";
-import { getCurAppIndex, signOut, userroles, timeout, getGraphqlResolver, redirectUrl, ToolKit, RECORDS } from "../utils";
+import { getCurAppIndex, signOut, userroles, timeout, getGraphqlResolver, ToolKit } from "../utils";
 import { resolveViewerDeepLinkSearch } from "../loadingRouteUtils";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { EntityTypeMap, ResultPayload, clearData as clearReducers } from "../store/slices/rowSlice";
@@ -20,7 +20,6 @@ export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayl
             email,
             password,
             seconds = 0,
-            ingredients,
             selectedRole,
         } = payload;
         const variables = { password, username: email, seconds };
@@ -54,7 +53,6 @@ export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayl
                 console.log("authenticate_roles", roles);
                 dispatch(clearReducers());
                 dispatch({ type: signOut(pauseFetchers) });
-                redirectUrl(ingredients);
                 const session = {
                     quota,
                     roles,
@@ -109,7 +107,7 @@ export const deHydratedRowsDataFetcher = createAsyncThunk<void, DehydratedRowsFe
         try {
             const { payload: data, parent: fromEntity, entity: toEntity, isAppend, keywords } = await fetcher();
             const { graphqlResolver, to, from } = getGraphqlResolver(fromEntity ?? '', toEntity ?? '');
-            const corData = data[RECORDS][graphqlResolver];
+            const corData = data['records'][graphqlResolver];
             enqueueHydrationStoreUpdate({
                 rows: {
                     entity: toEntity as keyof EntityTypeMap,
