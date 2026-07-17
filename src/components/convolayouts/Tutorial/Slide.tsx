@@ -1,37 +1,21 @@
 import React from 'react';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store/types';
 import Content, { getSectionClass, SlideType } from './Content';
 import Snapshot from './Snapshot';
 
 interface SlideProps {
   leftIMG: boolean;
   slide: SlideType;
-  selector: (payload: { ids: number[] }) => void;
 }
 
-const Slide: React.FC<SlideProps> = ({ leftIMG, selector, slide }) => {
-  const isMaximumFeatures = useSelector((state: RootState) =>
-    !state.settings.isUnzipCourses && !state.settings.isUnzipQuizzes && !state.settings.isUnzipTutorials);
-
-  const dismissHandler = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.nativeEvent) e.nativeEvent.stopImmediatePropagation();
-  };
-
+const Slide: React.FC<SlideProps> = ({ leftIMG, slide }) => {
   const imgcss = getSectionClass(leftIMG);
   return (
     <section className={imgcss}>
-      {leftIMG && (
-        <Snapshot slide={slide} showDismiss={isMaximumFeatures} onDismiss={dismissHandler} />
-      )}
-      <Content selector={selector} slide={slide} />
-      {!leftIMG && (
-        <Snapshot slide={slide} showDismiss={isMaximumFeatures} onDismiss={dismissHandler} />
-      )}
+      {leftIMG && <Snapshot slide={slide} />}
+      <Content slide={slide} />
+      {!leftIMG && <Snapshot slide={slide} />}
     </section>
   );
 };
 
-export default Slide; 
+export default Slide;

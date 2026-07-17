@@ -6,14 +6,13 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import LinkifiedText from '../../LinkifiedText';
 import { placeholder } from "../../../utils";
 import { Banner, SlideGroup } from '../../../store/slices/courseSlice';
-import { Attempt, computeRanCombs, filterCombinationsForRandomizedType, getOptionsFromSlideGroup } from '../../../library/QuizUtils';
+import { computeRanCombs, filterCombinationsForRandomizedType, getOptionsFromSlideGroup } from '../../../library/QuizUtils';
 import { isValidDataUrl } from '../../../library/imageUtils';
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../../store/types";
 import OptionContent from './OptionContent';
-import { HandleDismissParams } from "./Screen";
 import QuizRouteToggleOs from './QuizRouteToggleOs';
-import { layoutCellPointerHandlers } from '../../../library/layoutPointerHandlers';
+
 const styleProps = {
   msSm5: quizStyles['ms-sm-5'],
   psSm5: quizStyles['ps-sm-5'],
@@ -24,7 +23,6 @@ const styleProps = {
   clearChoiceBtn: quizStyles["clearChoiceBtn"],
   clearChoiceBtnSubmitted: quizStyles["clearChoiceBtnSubmitted"],
   clearChoiceBtnNeedsResubmit: quizStyles["clearChoiceBtnNeedsResubmit"],
-  dismissBtn: quizStyles["dismissBtn"],
   highlighted: quizStyles["highlighted"],
   highlighQuestion: quizStyles['highligh-question'],
   questionContainer: quizStyles['question-container'],
@@ -43,15 +41,12 @@ const contCss = `question-container ${styleProps.questionContainer} mt-sm-5`;
 const Question: React.FC<QuestionProps> = ({
   choices,
   combs: combinations = [],
-  slide: { id: questionId = -1, quote = "", isHighlighted = false, isDismissed = false },
+  slide: { id: questionId = -1, quote = "", isHighlighted = false },
 }) => {
   const dispatch = useDispatch();
   const identifier = "choice" + questionId;
-  const isMaximumFeatures = useSelector((state: RootState) =>
-    !state.settings.isUnzipCourses && !state.settings.isUnzipQuizzes && !state.settings.isUnzipTutorials);
   const randomizedType = useSelector((state: RootState) => state.settings.randomizedType);
   const choice = useRef<Record<string, string | null>>({ [identifier]: null });
-  const latestMetaRef = useRef({ identifier, isDismissed, questionId });
   const contClass = isHighlighted ? (isHighlight + ' ' + contCss) : contCss;
   const processedOptions = useMemo(() => getOptionsFromSlideGroup(choices), [choices]);
   const displayCombinations = useMemo(
@@ -59,14 +54,10 @@ const Question: React.FC<QuestionProps> = ({
     [combinations, randomizedType],
   );
   const [ranCombs, setRanCombs] = useState<number[]>([]);
-  const dismissClickedRef = useRef(false);
   const optionsContainerRef = useRef<HTMLDivElement>(null);
-
- 
 
   useEffect(() => {
     choice.current = { [identifier]: null };
-    // Whenever the persisted attempt changes, the UI is in sync again
   }, [identifier]);
   useEffect(() => {
     setRanCombs(computeRanCombs(
@@ -75,52 +66,6 @@ const Question: React.FC<QuestionProps> = ({
     ));
   }, [combinations, randomizedType, identifier]);
 
-  const dismissHandler = (e: React.MouseEvent) => {
-    dismissClickedRef.current = true;
-    e.preventDefault();
-    e.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
-    const choiceToDismiss: Record<string, Attempt> = { [identifier]: { [identifier]: choice.current[identifier] } };
-  };
-
-  const questionSelector = (e: React.MouseEvent<Element>) => {
-    const clazz = (e?.target as HTMLElement)?.getAttribute("class");
-    if (clazz && clazz === contClass) {
-      e.nativeEvent.stopImmediatePropagation();
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  };
-
-  // Always keep latest metadata and auth in refs without triggering renders
-  latestMetaRef.current = { identifier, isDismissed, questionId };
-
-  useEffect(() => {
-    return () => {
-      if (dismissClickedRef.current) return;
-      const {
-        identifier: idKey,
-        isDismissed: latestIsDismissed,
-        questionId: latestQuestionId
-      } =
-        latestMetaRef.current;
-      const currentChoice = choice.current?.[idKey];
-      const selectedValue = currentChoice ? Object.values(currentChoice).pop() : undefined;
-      if (selectedValue == null || selectedValue === '') return;
-    };
-  }, []);
-
-  const submittionSelector = (e: React.MouseEvent) => {
-    e.nativeEvent.stopImmediatePropagation();
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
-  const toggleChoiceHandler = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
-  };
   const openFollowupsHandler = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -129,13 +74,7 @@ const Question: React.FC<QuestionProps> = ({
   };
 
   return (
-    <div {...layoutCellPointerHandlers(questionSelector)} className={contClass}>
-      <span
-        className={`clearChoiceBtn ${styleProps.clearChoiceBtn}`}
-        onClick={toggleChoiceHandler}
-      >
-        o
-      </span>
+    <div className={contClass}>
       <span
         className={`clearChoiceBtn ${styleProps.clearChoiceBtn}`}
         style={{ right: 0, left: 'auto' }}
@@ -143,11 +82,8 @@ const Question: React.FC<QuestionProps> = ({
       >
         o
       </span>
-      {isMaximumFeatures && <span className={`dismissBtn ${styleProps.dismissBtn}`} onClick={dismissHandler}>
-        x
-      </span>}
       <div className={`question ms-sm-5 ps-sm-5 pt-2 ${styleProps.question} ${styleProps.msSm5} ${styleProps.psSm5}`}>
-        <div onClick={submittionSelector} className="py-2 h5">
+        <div className="py-2 h5">
           <b>
             <LinkifiedText text={quote} />
           </b>
@@ -201,4 +137,4 @@ const Question: React.FC<QuestionProps> = ({
   );
 };
 
-export default Question; 
+export default Question;

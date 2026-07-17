@@ -16,7 +16,6 @@ interface BannerProps {
   isHighlighted?: boolean;
   positionY?: RefObject<number>;
   toggler: (payload: { selectedId?: number; canToggle?: boolean }) => void;
-  selector: (payload: { ids: number[] }) => void;
 }
 
 const Banner: React.FC<BannerProps> = ({
@@ -25,7 +24,6 @@ const Banner: React.FC<BannerProps> = ({
   title,
   quote,
   toggler,
-  selector,
   leftQuote,
   positionY,
   isHighlighted,
@@ -47,16 +45,9 @@ const Banner: React.FC<BannerProps> = ({
     if (!isClickable) onExit();
   };
 
-  const selectHandler = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    selector({ ids: [id] });
-  };
-
   const quoteColumnProps = {
     quote,
     isHighlighted,
-    onSelect: selectHandler,
   };
 
   return (

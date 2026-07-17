@@ -17,10 +17,9 @@ import { SlideGroupItem } from '../../../store/slices/courseSlice';
 
 interface CanopyProps {
     noCourses: boolean;
-    onRouterSelection?: () => void;
 }
 
-const Canopy: React.FC<CanopyProps> = ({ noCourses, onRouterSelection }) => {
+const Canopy: React.FC<CanopyProps> = ({ noCourses }) => {
     const positionY = useRef(-1);
     const dispatch = useDispatch();
     const { state: routerState } = useLocation();
@@ -77,14 +76,12 @@ const Canopy: React.FC<CanopyProps> = ({ noCourses, onRouterSelection }) => {
                         <Chapters
                             slides={slides}
                             chapters={chapters}
-                            onRouterSelection={onRouterSelection}
                         />
                     ) : (
                         <Covers
                             banner={banner}
                             positionY={positionY}
                             covers={slideGroupItems}
-                            onRouterSelection={onRouterSelection}
                             total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
                         />
                     )}
@@ -100,7 +97,6 @@ const Canopy: React.FC<CanopyProps> = ({ noCourses, onRouterSelection }) => {
                         quote={banner.quote || ''}
                         isHighlighted={banner.isHighlighted}
                         total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
-                        selector={() => { }}
                         toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleCourse(payload))}
                     />
                 ))

@@ -14,7 +14,6 @@ import * as styles from '../../../styles/404.module.css';
 import { useApplyRouterSelections, useClearFsqOnEscapeWhenUnselected, useExitExpandedOnEscape } from '../../../Hooks/useShortcuts';
 interface ScreenProps {
   noTutorials: boolean;
-  onRouterSelection?: () => void;
 }
 
 export interface LengthItem {
@@ -22,7 +21,7 @@ export interface LengthItem {
   id: number;
 }
 
-const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
+const Screen: React.FC<ScreenProps> = ({ noTutorials }) => {
   const positionY = useRef(-1);
   const dispatch = useDispatch();
   const { state: routerState } = useLocation();
@@ -80,7 +79,6 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
             quote={banner.quote || ''}
             isHighlighted={banner.isHighlighted}
             total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
-            selector={() => { onRouterSelection?.(); }}
             toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleTutorial(payload))}
           />
           {visible.length > 0 ? (
@@ -94,7 +92,6 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
                   isHighlighted: slide.isHighlighted || false
                 }}
                 leftIMG={i % 2 !== 0}
-                selector={() => { onRouterSelection?.(); }}
               />
             ))
           ) : (
@@ -114,7 +111,6 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials, onRouterSelection }) => {
             quote={banner.quote || ''}
             isHighlighted={banner.isHighlighted}
             total={lengths.find(({ id }: LengthItem) => id === banner.id)?.total}
-            selector={() => { onRouterSelection?.(); }}
             toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleTutorial(payload))}
           />
         ))

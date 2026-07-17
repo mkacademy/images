@@ -1,5 +1,4 @@
 import React from 'react';
-import { layoutCellPointerHandlers } from '../../../library/layoutPointerHandlers';
 import LinkifiedText from '../../LinkifiedText';
 import { placeholder } from "../../../utils";
 import * as styles from '../../../styles/course.module.css';
@@ -11,7 +10,6 @@ export const slideStyles = {
   leftImage: styles["leftImage"],
   flexCol: styles['flex-col'],
   rightImage: styles["rightImage"],
-  dismissBtn: styles["dismissBtn"],
   arrowLeft: styles['arrow-left'],
   arrowRight: styles['arrow-right'],
   flexCenter: styles['flex-center'],
@@ -40,34 +38,22 @@ export interface SlideType {
 }
 
 interface ContentProps {
-  selector: (payload: { ids: number[] }) => void;
   slide: SlideType;
 }
 
 const Content: React.FC<ContentProps> = ({
-  selector,
   slide: { id, content, isHighlighted = false } = {
     id: -1,
     content: "",
     isHighlighted: false,
   },
 }) => {
-  const selectHandler = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.nativeEvent) {
-      e.nativeEvent.stopImmediatePropagation();
-    }
-    setTimeout(() => selector({ ids: [id] }));
-  };
-  const cellPointer = layoutCellPointerHandlers(selectHandler);
   const hasImage = isValidDataUrl(content);
   const imageUrl = hasImage ? content : placeholder;
   return (
     <React.Fragment>
       {hasImage || content === "data:image" ? (
         <div
-          {...cellPointer}
           className={isHighlighted ? slideStyles.imgHighlited + snapCss : snapCss}
         >
           <img
@@ -83,7 +69,6 @@ const Content: React.FC<ContentProps> = ({
         </div>
       ) : (
         <div
-          {...cellPointer}
           className={`${slideStyles.colSm12} ${slideStyles.colMd12} ${slideStyles.colLg6} ${slideStyles.colXl6}`}
         >
           <div className={isHighlighted ? isHighlight + contCss : contCss}>

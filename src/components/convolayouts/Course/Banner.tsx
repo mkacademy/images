@@ -17,7 +17,6 @@ interface BannerProps {
   isHighlighted?: boolean;
   titleColumnSelected?: boolean;
   onWrapperClick?: React.MouseEventHandler<HTMLDivElement>;
-  selector: (payload: { ids: number[] }) => void;
 }
 
 const Banner: React.FC<BannerProps> = ({
@@ -25,7 +24,6 @@ const Banner: React.FC<BannerProps> = ({
   total,
   title,
   quote,
-  selector,
   leftQuote,
   isHighlighted,
   onWrapperClick,
@@ -41,16 +39,9 @@ const Banner: React.FC<BannerProps> = ({
     dispatch(prependError('Chapter mode disabled'));
   };
 
-  const selectHandler = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    e.preventDefault();
-    selector({ ids: [id] });
-  };
-
   const quoteColumnProps = {
     quote,
     isHighlighted,
-    onSelect: selectHandler,
   };
 
   return (

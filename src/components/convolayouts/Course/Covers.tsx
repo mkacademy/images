@@ -12,10 +12,9 @@ interface CoversProps {
   total?: number;
   positionY?: RefObject<number>;
   covers: SlideGroupItem[];
-  onRouterSelection?: () => void;
 }
 
-const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers, onRouterSelection }) => {
+const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers }) => {
   const dispatch = useDispatch();
 
   return (
@@ -29,9 +28,6 @@ const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers, onRou
           quote={banner.quote || ''}
           isHighlighted={banner.isHighlighted}
           total={total}
-          selector={() => {
-            onRouterSelection?.();
-          }}
           toggler={(payload: { selectedId?: number, canToggle?: boolean }) => dispatch(toggleCourse(payload))}
         />
       )}
@@ -55,9 +51,6 @@ const Covers: React.FC<CoversProps> = ({ banner, total, positionY, covers, onRou
             slide={slide}
             key={cover.id}
             leftIMG={i % 2 !== 0}
-            selector={() => {
-              onRouterSelection?.();
-            }}
           />
         })
       )}

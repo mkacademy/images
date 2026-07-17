@@ -24,7 +24,6 @@ const styleProps = {
 
 interface ScreenProps {
   noQuizzes: boolean;
-  onRouterSelection?: () => void;
 }
 
 export interface HandleDismissParams {
@@ -37,7 +36,7 @@ export interface HandleDismissParams {
 
 const FOLLOWUPS_CROSSFADE_MS = 220;
 
-const Screen: React.FC<ScreenProps> = ({ noQuizzes, onRouterSelection }) => {
+const Screen: React.FC<ScreenProps> = ({ noQuizzes }) => {
   const positionY = useRef<number>(-1);
   const followupPanelSnapRef = useRef<{ parent: Banner; visible: Pennant[] } | null>(null);
   const [followupExitHold, setFollowupExitHold] = useState(false);

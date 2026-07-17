@@ -5,8 +5,6 @@ import { contCss, isHighlight, SlideType, slideStyles } from '../Tutorial/Conten
 
 interface SnapshotProps {
   slide: SlideType;
-  showDismiss?: boolean;
-  onDismiss?: (e: React.MouseEvent) => void;
   onSnapshotClick?: (e: React.MouseEvent) => void;
 }
 
@@ -16,8 +14,6 @@ const Snapshot: React.FC<SnapshotProps> = ({
     imageurl: "",
     isHighlighted: false,
   },
-  showDismiss = false,
-  onDismiss,
   onSnapshotClick,
 }) => {
   const hasImage = isValidDataUrl(imageurl);
@@ -27,11 +23,6 @@ const Snapshot: React.FC<SnapshotProps> = ({
     <React.Fragment>
       {hasImage || imageurl === "data:image" ? (
         <div className={`${slideStyles.colSm12} ${slideStyles.colMd12} ${slideStyles.colLg6} ${slideStyles.colXl6} p-0 ${slideStyles.controlsRow}`}>
-          {showDismiss && (
-            <span className={slideStyles.dismissBtn} onClick={onDismiss}>
-              x
-            </span>
-          )}
           <img
             src={imageUrl}
             alt="placeholder"
@@ -45,11 +36,6 @@ const Snapshot: React.FC<SnapshotProps> = ({
         </div>
       ) : (
         <div className={`${slideStyles.colSm12} ${slideStyles.colMd12} ${slideStyles.colLg6} ${slideStyles.colXl6}`}>
-          {showDismiss && (
-            <span className={slideStyles.dismissBtn} onClick={onDismiss}>
-              x
-            </span>
-          )}
           <div onClick={onSnapshotClick} className={isHighlighted ? isHighlight + contCss : contCss}>
             <div className={`flex-center flex-col ${slideStyles.flexCenter} ${slideStyles.flexCol}`}>
               <p className={`text-container ${slideStyles.textContainer}`}>

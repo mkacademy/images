@@ -6,7 +6,6 @@ import { Pennant, SlideItem } from '../../../store/slices/courseSlice';
 
 interface FollowupsProps {
   visible: Pennant[];
-  onRouterSelection?: () => void;
 }
 
 const getPennantSlideItems = (content: RootState['quiz']['content'], pennantId: number): SlideItem[] => {
@@ -19,15 +18,9 @@ const getPennantSlideItems = (content: RootState['quiz']['content'], pennantId: 
 
 const Followups: React.FC<FollowupsProps> = ({
   visible,
-  onRouterSelection,
 }) => {
-  const dispatch = useDispatch();
   const content = useSelector((state: RootState) => state.quiz.content);
-  const followupCombinations = useSelector((state: RootState) => state.quiz.followupCombinations);
-
-  const handleHighlightQuestion = useCallback(() => {
-    onRouterSelection?.();
-  }, [dispatch, onRouterSelection]);
+  const followupCombinations = useSelector((state: RootState) => state.quiz.followupCombinations)
 
 
   return (
@@ -37,7 +30,6 @@ const Followups: React.FC<FollowupsProps> = ({
           <Followup
             key={followup.id}
             pennant={followup}
-            selector={handleHighlightQuestion}
             combs={followupCombinations[followup.id] ?? []}
             slideItems={getPennantSlideItems(content, followup.id)}
           />

@@ -11,7 +11,6 @@ import { isValidDataUrl } from '../../../library/imageUtils';
 import LinkifiedText from '../../LinkifiedText';
 import { placeholder } from '../../../utils';
 import OptionContent from './OptionContent';
-import { layoutCellPointerHandlers } from '../../../library/layoutPointerHandlers';
 import QuizRouteToggleOs from './QuizRouteToggleOs';
 
 const styleProps = {
@@ -24,7 +23,6 @@ const styleProps = {
   clearChoiceBtn: quizStyles["clearChoiceBtn"],
   clearChoiceBtnSubmitted: quizStyles["clearChoiceBtnSubmitted"],
   clearChoiceBtnNeedsResubmit: quizStyles["clearChoiceBtnNeedsResubmit"],
-  dismissBtn: quizStyles["dismissBtn"],
   highlighted: quizStyles["highlighted"],
   highlighQuestion: quizStyles['highligh-question'],
   questionContainer: quizStyles['question-container'],
@@ -34,7 +32,6 @@ interface FollowupProps {
   pennant: Pennant;
   combs?: string[][];
   slideItems: SlideItem[];
-  selector: (params: { ids: number[] }) => void;
 }
 const optionsContainerCss = "ms-md-3 ms-sm-3 ps-md-5 ps-sm-3";
 const isHighlight = `highligh-question ${styleProps.highlighQuestion}`;
@@ -44,15 +41,11 @@ const Followup: React.FC<FollowupProps> = ({
   pennant,
   slideItems,
   combs = [],
-  selector,
 }) => {
-  const { id: questionId = -1, quote = "", isHighlighted = false, isDismissed = false } = pennant;
+  const { id: questionId = -1, quote = "", isHighlighted = false } = pennant;
   const identifier = "choice" + questionId;
-  const isMaximumFeatures = useSelector((state: RootState) =>
-    !state.settings.isUnzipCourses && !state.settings.isUnzipQuizzes && !state.settings.isUnzipTutorials);
   const randomizedType = useSelector((state: RootState) => state.settings.randomizedType);
   const choice = useRef<Record<string, string | null>>({ [identifier]: null });
-  const latestMetaRef = useRef({ identifier, isDismissed, questionId });
   const contClass = isHighlighted ? (isHighlight + ' ' + contCss) : contCss;
   const processedOptions = useMemo(() => getOptionsFromSlideItems(slideItems), [slideItems]);
   const displayCombinations = useMemo(
@@ -60,7 +53,6 @@ const Followup: React.FC<FollowupProps> = ({
     [combs, randomizedType],
   );
   const [ranCombs, setRanCombs] = useState<number[]>([]);
-  const dismissClickedRef = useRef(false);
   const optionsContainerRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
   useEffect(() => {
@@ -74,49 +66,6 @@ const Followup: React.FC<FollowupProps> = ({
     ));
   }, [combs, randomizedType]);
 
-  latestMetaRef.current = { identifier, isDismissed, questionId };
-
-  useEffect(() => {
-    return () => {
-      if (dismissClickedRef.current) return;
-      const {
-        identifier: idKey,
-      } = latestMetaRef.current;
-      const currentChoice = choice.current?.[idKey];
-      const selectedValue = currentChoice ? Object.values(currentChoice).pop() : undefined;
-      if (selectedValue == null || selectedValue === '') return;
-    };
-  }, [identifier]);
-
-  const dismissHandler = (e: React.MouseEvent) => {
-    dismissClickedRef.current = true;
-    e.preventDefault();
-    e.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
-  };
-
-  const questionSelector = (e: React.MouseEvent<Element>) => {
-    const clazz = (e?.target as HTMLElement)?.getAttribute("class");
-    if (clazz && clazz === contClass) {
-      setTimeout(() => selector({ ids: [questionId] }));
-      e.nativeEvent.stopImmediatePropagation();
-      e.stopPropagation();
-      e.preventDefault();
-    }
-  };
-
-  const submittionSelector = (e: React.MouseEvent) => {
-    e.nativeEvent.stopImmediatePropagation();
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
-  const toggleChoiceHandler = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    e.nativeEvent.stopImmediatePropagation();
-  };
-
   const exitFollowupsHandler = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -125,13 +74,7 @@ const Followup: React.FC<FollowupProps> = ({
   };
 
   return (
-    <div {...layoutCellPointerHandlers(questionSelector)} className={contClass}>
-      <span
-        className={`clearChoiceBtn ${styleProps.clearChoiceBtn}`}
-        onClick={toggleChoiceHandler}
-      >
-        o
-      </span>
+    <div className={contClass}>
       <span
         className={`clearChoiceBtn ${styleProps.clearChoiceBtn}`}
         style={{ right: 0, left: 'auto' }}
@@ -141,11 +84,8 @@ const Followup: React.FC<FollowupProps> = ({
       >
         ←
       </span>
-      {isMaximumFeatures && <span className={`dismissBtn ${styleProps.dismissBtn}`} onClick={dismissHandler}>
-        x
-      </span>}
       <div className={`question ms-sm-5 ps-sm-5 pt-2 ${styleProps.question} ${styleProps.msSm5} ${styleProps.psSm5}`}>
-        <div onClick={submittionSelector} className="py-2 h5">
+        <div className="py-2 h5">
           <b>
             <LinkifiedText text={quote} />
           </b>

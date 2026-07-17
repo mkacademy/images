@@ -4,8 +4,6 @@ import LinkifiedText from '../../LinkifiedText';
 import { placeholder, textEllipsis } from '../../../utils';
 import * as styles from '../../../styles/course.module.css';
 import { isValidDataUrl } from '../../../library/imageUtils';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store/types';
 
 const slideStyles = {
   row: styles["row"],
@@ -13,7 +11,6 @@ const slideStyles = {
   leftImage: styles["leftImage"],
   flexCol: styles['flex-col'],
   rightImage: styles["rightImage"],
-  dismissBtn: styles["dismissBtn"],
   arrowLeft: styles['arrow-left'],
   arrowRight: styles['arrow-right'],
   flexCenter: styles['flex-center'],
@@ -102,25 +99,15 @@ const Snapshots: React.FC<SnapshotsProps> = ({
   index,
 }) => {
   const last = length - 1;
-  const dismissHandler = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const payload0 = { id: slide.id };
-  };
   const totals = `(${index + 1}-${length})`;
   const imagCss0 = `${slideStyles.colSm12} ${slideStyles.colMd12} ${slideStyles.colLg6}`;
   const imageCss1 = ` ${slideStyles.colXl6} p-0  text-center  ${slideStyles.textCenter} ${slideStyles.controlsRow} `;
-  const isMaximumFeatures = useSelector((state: RootState) => 
-    !state.settings.isUnzipCourses && !state.settings.isUnzipQuizzes && !state.settings.isUnzipTutorials);
   const hasImage = isValidDataUrl(slide.imageurl);
   const imageUrl = hasImage ? slide.imageurl : placeholder;
   return (
     <React.Fragment>
       {hasImage || slide.imageurl === "data:image" ? (
         <div className={`${imagCss0} ${imageCss1}`}>
-          {isMaximumFeatures && <span className={slideStyles.dismissBtn} onClick={dismissHandler}>
-            x
-          </span>}
           <span className={`displayedTotals ${slideStyles.displayedTotals}`}>{totals}</span>
           <div className={`background_img ${slideStyles.backgroundImg}`}>
             <img
@@ -147,9 +134,6 @@ const Snapshots: React.FC<SnapshotsProps> = ({
         </div>
       ) : (
         <div className={`${slideStyles.colSm12} ${slideStyles.colMd12} ${slideStyles.colLg6} ${slideStyles.colXl6} ${slideStyles.controlsRow}`}>
-          {isMaximumFeatures && <span className={slideStyles.dismissBtn} onClick={dismissHandler}>
-            x
-          </span>}
           <span className={`displayedTotals ${slideStyles.displayedTotals}`}>{totals}</span>
           <div className={slide.isHighlighted ? (isHigh + ' ' + cCss) : cCss}>
             <div className={`flex-center flex-col ${slideStyles.flexCenter} ${slideStyles.flexCol}`}>
@@ -184,18 +168,13 @@ const Texts: React.FC<TextsProps> = ({
   length,
 }) => {
   const last = length - 1;
-  const selelctHandler = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
   const hasImage = isValidDataUrl(slide.content);
   const imageUrl = hasImage ? slide.content : placeholder;
   return (
     <React.Fragment>
       {hasImage || slide.content === "data:image" ? (
         <div className={slide.isHighlighted ? `imgHighlited ${slideStyles.imgHighlited} ${snapCss}` : snapCss}>
-          <span className={`displayedTotals ${slideStyles.displayedTotals}`} onClick={selelctHandler}>
+          <span className={`displayedTotals ${slideStyles.displayedTotals}`}>
             o
           </span>
           <div className={`background_img ${slideStyles.backgroundImg}`}>
@@ -223,7 +202,6 @@ const Texts: React.FC<TextsProps> = ({
         </div>
       ) : (
         <div
-          onClick={selelctHandler}
           className={`${slideStyles.colSm12} ${slideStyles.colMd12} ${slideStyles.colLg6} ${slideStyles.colXl6}`}
         >
           <div className={slide.isHighlighted ? (isHigh + ' ' + cCss) : cCss}>

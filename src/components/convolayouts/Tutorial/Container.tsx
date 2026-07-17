@@ -1,5 +1,4 @@
 import React from 'react';
-import { layoutCellPointerHandlers } from '../../../library/layoutPointerHandlers';
 import LinkifiedText from '../../LinkifiedText';
 import * as styles from '../../../styles/course.module.css';
 
@@ -37,16 +36,13 @@ export const BannerSection: React.FC<{ children: React.ReactNode }> = ({ childre
 export interface BannerQuoteColumnProps {
   quote: string;
   isHighlighted?: boolean;
-  onSelect: (e: React.MouseEvent) => void;
 }
 
 export const BannerQuoteColumn: React.FC<BannerQuoteColumnProps> = ({
   quote,
   isHighlighted,
-  onSelect,
 }) => (
   <div
-    {...layoutCellPointerHandlers(onSelect)}
     className={`${bannerStyles.colSm12} ${bannerStyles.colMd12} ${bannerStyles.colLg6} ${bannerStyles.colXl6}`}
   >
     <div className={isHighlighted ? isHighlight + contCss : contCss}>

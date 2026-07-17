@@ -24,7 +24,6 @@ export interface ChapterSlideRow {
 interface ChaptersProps {
   chapters: number[];
   slides: SlideItem[][];
-  onRouterSelection?: () => void;
 }
 const NO_SLIDES = 'This chapter has no steps';
 const NO_COUPLING = 'This chapter has steps, but no coupling';
@@ -33,7 +32,6 @@ const NO_COVER = 'This Chapter has slides, but no covers matches its ordinal, so
 const Chapters: React.FC<ChaptersProps> = ({
   slides,
   chapters: chapterIndexes,
-  onRouterSelection,
 }) => {
   const dispatch = useDispatch();
   const course = useSelector((state: RootState) => state.course);
@@ -92,13 +90,6 @@ const Chapters: React.FC<ChaptersProps> = ({
       },
     [course, dispatch]
   );
-  const pennantSelector = () => {
-    onRouterSelection?.();
-  };
-
-  const slideSelector = () => {
-    onRouterSelection?.();
-  };
 
 
   if (allPennants.length === 0) {
@@ -119,7 +110,6 @@ const Chapters: React.FC<ChaptersProps> = ({
               total={pennantTotal}
               leftQuote={undefined}
               id={selectedPennant.id}
-              selector={pennantSelector}
               title={selectedPennant.title || ''}
               quote={selectedPennant.quote || ''}
               onWrapperClick={toggleShowSelected}
@@ -143,7 +133,6 @@ const Chapters: React.FC<ChaptersProps> = ({
                   slide={slide}
                   key={`${row.slideIndex}-${row.item.id}`}
                   leftIMG={i % 2 !== 0}
-                  selector={slideSelector}
                 />
               );
             })
@@ -165,7 +154,6 @@ const Chapters: React.FC<ChaptersProps> = ({
               onWrapperClick={isRedPennant ? toggleShowSelected : pennantChapterWrapperClick(pennant.id)}
               total={slideCountsByPennantBannerId.get(pennant.id) ?? 0}
               titleColumnSelected={isRedPennant}
-              selector={pennantSelector}
             />
           );
         })

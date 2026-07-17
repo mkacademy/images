@@ -1,9 +1,7 @@
 import React from 'react';
-import { layoutCellPointerHandlers } from '../../../library/layoutPointerHandlers';
 import LinkifiedText from '../../LinkifiedText';
 import * as quizStyles from '../../../styles/quiz.module.css';
 import * as courseStyles from '../../../styles/course.module.css';
-import { Attempt } from '../../../store/slices/quizSlice';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../../store/types';
 
@@ -89,18 +87,11 @@ const Quiz: React.FC<QuizProps> = ({
     if (!isClickable) onExit();
   };
 
-  const selectHandler = (e: React.MouseEvent) => {
-    e.nativeEvent.stopImmediatePropagation();
-    e.stopPropagation();
-    e.preventDefault();
-  };
-
   return (
     <div>
       <section className={`row section banner pb-lg-3 ${styleProps.row} ${styleProps.banner} ${styleProps.section}`}>
         {leftQuote && (
           <div
-            {...layoutCellPointerHandlers(selectHandler)}
             className={`${styleProps.colSm12} ${styleProps.colMd12} ${styleProps.colLg6} ${styleProps.colXl6}`}
           >
             <div className={isHighlighted ? isHighlight + contCss : contCss}>
@@ -127,7 +118,6 @@ const Quiz: React.FC<QuizProps> = ({
         </div>
         {!leftQuote && (
           <div
-            {...layoutCellPointerHandlers(selectHandler)}
             className={`${styleProps.colSm12} ${styleProps.colMd12} ${styleProps.colLg6} ${styleProps.colXl6}`}
           >
             <div className={isHighlighted ? isHighlight + contCss : contCss}>

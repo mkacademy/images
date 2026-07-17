@@ -10,10 +10,9 @@ import Snapshot from '../Tutorial/Snapshot';
 interface CoverProps {
   leftIMG: boolean;
   slide: SlideType;
-  selector: (payload: { ids: number[] }) => void;
 }
 
-const Cover: React.FC<CoverProps> = ({ leftIMG, selector, slide }) => {
+const Cover: React.FC<CoverProps> = ({ leftIMG, slide }) => {
   const dispatch = useDispatch();
   const { pathname } = useLocation();
   const course = useSelector((state: RootState) => state.course);
@@ -40,7 +39,7 @@ const Cover: React.FC<CoverProps> = ({ leftIMG, selector, slide }) => {
   return (
     <section className={imgcss}>
       {leftIMG && <Snapshot slide={slide} onSnapshotClick={chapterHandler} />}
-      <Content selector={selector} slide={slide} />
+      <Content slide={slide} />
       {!leftIMG && <Snapshot slide={slide} onSnapshotClick={chapterHandler} />}
     </section>
   );
