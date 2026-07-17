@@ -1,4 +1,4 @@
-import { userApps, memberApps, adminsApps } from './constants';
+import { userApps, memberApps } from './constants';
 
 export interface Metadata {
   owner: boolean;
@@ -129,7 +129,7 @@ export const getCurAppName = (input: string | number): string => {
     ? userApps[appIndex].toLowerCase()
     : appIndex > maxIndexOfApps && appIndex <= maxIndexOfUserApps
       ? memberApps[appIndex].toLowerCase()
-      : adminsApps[appIndex].toLowerCase();
+      : '';
 };
 
 export const getCurAppIndex = (input: string): [string, string] | [] => {
@@ -137,7 +137,6 @@ export const getCurAppIndex = (input: string): [string, string] | [] => {
   return (
     Object.entries(userApps).find(pred) ??
     Object.entries(memberApps).find(pred) ??
-    Object.entries(adminsApps).find(pred) ??
     []
   );
 };

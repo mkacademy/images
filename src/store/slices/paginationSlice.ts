@@ -41,10 +41,6 @@ export const paginationSlice = createSlice({
         ([_, value]) => "quiz" === value.toLowerCase()
       ) || [];
 
-      const [tutors] = Object.entries(userApps).find(
-        ([_, value]) => "tutors" === value.toLowerCase()
-      ) || [];
-
       const [incoming] = Object.entries(memberApps).find(
         ([_, value]) => "incoming" === value.toLowerCase()
       ) || [];
@@ -59,7 +55,6 @@ export const paginationSlice = createSlice({
         ...(tutorial && { [tutorial]: "foundationfilters" }),
         ...(course && { [course]: "foundationsifters" }),
         ...(quiz && { [quiz]: "foundationdashboards" }),
-        ...(tutors && { [tutors]: "foundationminions" }),
         ...(outgoing && { [outgoing]: "minionsinstructions" }),
         ...(incoming && { [incoming]: "foundationinstructions" }),
       };
@@ -77,8 +72,8 @@ export const paginationSlice = createSlice({
 });
 
 export const {
-  resetPagination,
   setPagedRoute,
+  resetPagination,
 } = paginationSlice.actions;
 
 export default paginationSlice.reducer;
