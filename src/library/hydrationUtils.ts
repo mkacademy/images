@@ -4,7 +4,7 @@ import { Banner as CourseBanner, SlideGroup, SlideItem, SlideGroupItem } from '.
 import { Quiz } from '../store/slices/quizSlice';
 import { ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
 import { RootState } from '../store';
-import { ResultPayload, ROW_APPEND_QUERY_TYPE } from '../store/slices/rowSlice';
+import { ROW_APPEND_QUERY_TYPE } from '../store/slices/rowSlice';
 import { hydrateData, hydratedThenFetch } from './actions';
 import { getHydrationDefaultTake, normalizeQueryLimit } from '../utils';
 import { getPlural, convolutionDelay } from '../utils';

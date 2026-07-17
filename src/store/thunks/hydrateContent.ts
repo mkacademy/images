@@ -2,15 +2,21 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { abortIfHydrationDisabled, handleHydrationLogic } from '../../library/hydrationUtils';
 import { isDehydrated } from '../../library/controlPanelUtils';
 import { getActiveWebapp } from '../../library/hydrationQueue';
-import type { RootState } from '../index';
+import type { AppDispatch, RootState } from '../index';
 
 export type HydrateContentWebapp = 'tutorial' | 'course' | 'quiz';
 
+type HydrateThunkConfig = { state: RootState; dispatch: AppDispatch };
+
 /** Runs multi-leg hydration for active webapps (replaces hydrateData middleware path). */
-export const hydrateContent = createAsyncThunk(
+export const hydrateContent = createAsyncThunk<
+  { started: boolean },
+  HydrateContentWebapp[] | undefined,
+  HydrateThunkConfig
+>(
   'content/hydrateContent',
-  async (webapps: HydrateContentWebapp[] | undefined, { dispatch, getState }) => {
-    const state = getState() as RootState;
+  async (webapps, { dispatch, getState }) => {
+    const state = getState();
     if (abortIfHydrationDisabled(() => state)) return { started: false };
 
     const targets: HydrateContentWebapp[] = webapps ?? [];
@@ -25,7 +31,7 @@ export const hydrateContent = createAsyncThunk(
       if (getActiveWebapp()) break;
       handleHydrationLogic(
         webapp,
-        getState as () => RootState,
+        getState,
         dispatch,
         [isDehydrated],
       );
@@ -36,13 +42,19 @@ export const hydrateContent = createAsyncThunk(
 );
 
 /** Scoped re-hydrate for dehydrated children under one banner. */
-export const hydrateContainer = createAsyncThunk(
+export const hydrateContainer = createAsyncThunk<
+  { webapp: HydrateContentWebapp; bannerId: number },
+  { webapp: HydrateContentWebapp; bannerId: number },
+  HydrateThunkConfig
+>(
   'content/hydrateContainer',
-  async (
-    { webapp, bannerId }: { webapp: HydrateContentWebapp; bannerId: number },
-    { dispatch, getState },
-  ) => {
-    const scopedDehydrated = (row: Parameters<typeof isDehydrated>[0]) =>
+  async ({ webapp, bannerId }, { dispatch, getState }) => {
+    const scopedDehydrated = (row: Parameters<typeof isDehydrated>[0] & {
+      bannerId?: number;
+      filterId?: number;
+      sifterId?: number;
+      dashboardId?: number;
+    }) =>
       isDehydrated(row) && (
         row.bannerId === bannerId ||
         row.filterId === bannerId ||
@@ -52,7 +64,7 @@ export const hydrateContainer = createAsyncThunk(
 
     handleHydrationLogic(
       webapp,
-      getState as () => RootState,
+      getState,
       dispatch,
       [scopedDehydrated],
       undefined,

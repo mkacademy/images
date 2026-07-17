@@ -21,7 +21,7 @@ import {
   MappedQuizTrees,
   MappedTutorialTrees,
 } from '../slices/settingsSlice';
-import type { RootState } from '../index';
+import type { AppDispatch, RootState } from '../index';
 import { hydrateContent } from './hydrateContent';
 import {
   getDeepLinkTreeIds,
@@ -42,10 +42,14 @@ const scheduleCompletedUnzippingWhenIdle = (
 };
 
 /** Unzips comms payloads into Trees + skeleton PNC rows (replaces HydrationManager). */
-export const unzipMessage = createAsyncThunk(
+export const unzipMessage = createAsyncThunk<
+  { hasTrees: boolean },
+  void,
+  { state: RootState; dispatch: AppDispatch }
+>(
   'content/unzipMessage',
   async (_, { dispatch, getState }) => {
-    const state = getState() as RootState;
+    const state = getState();
     const {
       settings: {
         isUnzipCourses,

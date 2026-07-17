@@ -135,7 +135,7 @@ export const deHydratedRowsDataFetcher = createAsyncThunk<void, DehydratedRowsFe
                 markHydrationAttemptedSeekIds(hydrationSeekIds);
             }
             if (!skipQueueLifecycle) {
-                onHydrationQueryComplete(dispatch, getState, settleError);
+                onHydrationQueryComplete(dispatch, settleError);
                 onHydrationSessionIdle(dispatch, getState);
             }
         }

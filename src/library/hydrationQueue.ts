@@ -237,7 +237,6 @@ const finishCancelledInFlight = (): void => {
 /** Called after each deHydratedRowsDataFetcher settles (replaces controlPanel middleware). */
 export const onHydrationQueryComplete = (
   dispatch: ThunkDispatch<RootState, unknown, UnknownAction>,
-  getState: () => RootState,
   errorMessage?: string,
 ): void => {
   if (errorMessage && !isHydrationCancelled()) {
