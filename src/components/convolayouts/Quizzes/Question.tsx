@@ -2,7 +2,7 @@ import { Carousel } from "react-bootstrap";
 import '../../../styles/indicators.module.css';
 import * as quizStyles from '../../../styles/quiz.module.css';
 import { setFollowupId } from "../../../store/slices/quizSlice";
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import LinkifiedText from '../../LinkifiedText';
 import { placeholder } from "../../../utils";
 import { Banner, SlideGroup } from '../../../store/slices/courseSlice';
@@ -22,7 +22,6 @@ const styleProps = {
   checkmark: quizStyles["checkmark"],
   clearChoiceBtn: quizStyles["clearChoiceBtn"],
   clearChoiceBtnSubmitted: quizStyles["clearChoiceBtnSubmitted"],
-  clearChoiceBtnNeedsResubmit: quizStyles["clearChoiceBtnNeedsResubmit"],
   highlighted: quizStyles["highlighted"],
   highlighQuestion: quizStyles['highligh-question'],
   questionContainer: quizStyles['question-container'],
@@ -32,6 +31,8 @@ interface QuestionProps {
   slide: Banner;
   combs?: string[][];
   choices: SlideGroup | undefined;
+  attempt?: string | null;
+  submittedOptionIds?: string[];
 }
 
 const optionsContainerCss = "ms-md-3 ms-sm-3 ps-md-5 ps-sm-3";
@@ -41,12 +42,13 @@ const contCss = `question-container ${styleProps.questionContainer} mt-sm-5`;
 const Question: React.FC<QuestionProps> = ({
   choices,
   combs: combinations = [],
+  submittedOptionIds = [],
+  attempt,
   slide: { id: questionId = -1, quote = "", isHighlighted = false },
 }) => {
   const dispatch = useDispatch();
   const identifier = "choice" + questionId;
   const randomizedType = useSelector((state: RootState) => state.settings.randomizedType);
-  const choice = useRef<Record<string, string | null>>({ [identifier]: null });
   const contClass = isHighlighted ? (isHighlight + ' ' + contCss) : contCss;
   const processedOptions = useMemo(() => getOptionsFromSlideGroup(choices), [choices]);
   const displayCombinations = useMemo(
@@ -54,17 +56,17 @@ const Question: React.FC<QuestionProps> = ({
     [combinations, randomizedType],
   );
   const [ranCombs, setRanCombs] = useState<number[]>([]);
-  const optionsContainerRef = useRef<HTMLDivElement>(null);
+  const attemptValue = attempt ?? null;
+  const hasSubmission = attemptValue != null && attemptValue !== '';
 
-  useEffect(() => {
-    choice.current = { [identifier]: null };
-  }, [identifier]);
   useEffect(() => {
     setRanCombs(computeRanCombs(
       combinations,
       randomizedType,
+      submittedOptionIds,
+      attemptValue,
     ));
-  }, [combinations, randomizedType, identifier]);
+  }, [combinations, randomizedType, submittedOptionIds, attemptValue]);
 
   const openFollowupsHandler = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -75,6 +77,11 @@ const Question: React.FC<QuestionProps> = ({
 
   return (
     <div className={contClass}>
+      <span
+        className={`clearChoiceBtn ${styleProps.clearChoiceBtn}${hasSubmission ? ` ${styleProps.clearChoiceBtnSubmitted}` : ''}`}
+      >
+        o
+      </span>
       <span
         className={`clearChoiceBtn ${styleProps.clearChoiceBtn}`}
         style={{ right: 0, left: 'auto' }}
@@ -88,9 +95,9 @@ const Question: React.FC<QuestionProps> = ({
             <LinkifiedText text={quote} />
           </b>
         </div>
-        <div ref={optionsContainerRef} className={optionsContainerCss} id="options">
+        <div className={optionsContainerCss} id="options">
           <Carousel
-            key={`${randomizedType}`}
+            key={`${attemptValue ?? ''}-${randomizedType}`}
             indicatorLabels={ranCombs.map(() => 'carousel-indicator')}
             controls={false}
             interval={null}
@@ -115,13 +122,10 @@ const Question: React.FC<QuestionProps> = ({
                       <input
                         value={id}
                         type="radio"
+                        disabled
                         name={identifier}
-                        onChange={(e) => {
-                          const newValue = e.target.value;
-                          choice.current[e.target.name] = newValue;
-                          const inputs = optionsContainerRef.current?.querySelectorAll<HTMLInputElement>(`input[name="${identifier}"]`) ?? [];
-                          inputs.forEach((input) => { input.checked = input === e.target; });
-                        }}
+                        defaultChecked={attemptValue === id}
+                        readOnly
                       />
                       <span className={styleProps.checkmark}></span>
                     </label>

@@ -150,6 +150,8 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes }) => {
               {visible.length > 0 ? (
                 <Questions
                   visible={visible}
+                  pennants={quiz.pennants}
+                  quizBannerId={quiz.id}
                 />
               ) : (
                 <div className={`${styleProps["notFound"]} ${styleProps["bigger"]}`}>
@@ -161,7 +163,9 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes }) => {
               {showFollowupsPanel && followupPanelProps ? (
                 followupPanelProps.parent && followupPanelProps.visible.length > 0 ? (
                   <Followups
+                    parent={followupPanelProps.parent}
                     visible={followupPanelProps.visible}
+                    quizPennants={quiz.pennants}
                   />
                 ) : (
                   <div className={`${styleProps["notFound"]} ${styleProps["bigger"]}`}>

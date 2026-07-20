@@ -205,13 +205,35 @@ export const filterCombinationsForRandomizedType = (
 export const computeRanCombs = (
   combinations: string[][],
   randomizedType: RandomizedType,
+  submittedOptionIds: string[] = [],
+  attemptOptionId: string | null | undefined = undefined,
 ): number[] => {
   const displayCombinations = filterCombinationsForRandomizedType(combinations, randomizedType);
   if (displayCombinations.length === 0) return [];
 
   const targetCount = Math.min(3, displayCombinations.length);
 
+  const submittedSet = new Set(submittedOptionIds);
+  const hasSubmission = submittedSet.size > 0;
+  const matchingIndices = hasSubmission
+    ? displayCombinations
+      .map((combo, i) => (combo.some((id) => submittedSet.has(id)) ? i : -1))
+      .filter((i) => i >= 0)
+    : [];
+
   const randoms: number[] = [];
+  if (matchingIndices.length > 0) {
+    const attemptFirstIndex =
+      attemptOptionId != null && attemptOptionId !== ''
+        ? displayCombinations.findIndex((combo) => combo.includes(attemptOptionId))
+        : -1;
+    const firstIndex =
+      attemptFirstIndex >= 0
+        ? attemptFirstIndex
+        : matchingIndices[(Math.random() * matchingIndices.length) | 0];
+    randoms.push(firstIndex);
+  }
+
   while (randoms.length < targetCount) {
     const pick = (Math.random() * displayCombinations.length) | 0;
     if (!randoms.includes(pick)) randoms.push(pick);

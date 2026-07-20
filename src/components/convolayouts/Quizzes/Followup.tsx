@@ -1,7 +1,7 @@
 import { Carousel } from "react-bootstrap";
 import '../../../styles/indicators.module.css';
 import * as quizStyles from '../../../styles/quiz.module.css';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setFollowupId } from '../../../store/slices/quizSlice';
 import { Pennant, SlideItem } from '../../../store/slices/courseSlice';
@@ -22,7 +22,6 @@ const styleProps = {
   checkmark: quizStyles["checkmark"],
   clearChoiceBtn: quizStyles["clearChoiceBtn"],
   clearChoiceBtnSubmitted: quizStyles["clearChoiceBtnSubmitted"],
-  clearChoiceBtnNeedsResubmit: quizStyles["clearChoiceBtnNeedsResubmit"],
   highlighted: quizStyles["highlighted"],
   highlighQuestion: quizStyles['highligh-question'],
   questionContainer: quizStyles['question-container'],
@@ -32,6 +31,8 @@ interface FollowupProps {
   pennant: Pennant;
   combs?: string[][];
   slideItems: SlideItem[];
+  attemptValue?: string | null;
+  submittedOptionIds?: string[];
 }
 const optionsContainerCss = "ms-md-3 ms-sm-3 ps-md-5 ps-sm-3";
 const isHighlight = `highligh-question ${styleProps.highlighQuestion}`;
@@ -41,11 +42,12 @@ const Followup: React.FC<FollowupProps> = ({
   pennant,
   slideItems,
   combs = [],
+  attemptValue,
+  submittedOptionIds = [],
 }) => {
   const { id: questionId = -1, quote = "", isHighlighted = false } = pennant;
   const identifier = "choice" + questionId;
   const randomizedType = useSelector((state: RootState) => state.settings.randomizedType);
-  const choice = useRef<Record<string, string | null>>({ [identifier]: null });
   const contClass = isHighlighted ? (isHighlight + ' ' + contCss) : contCss;
   const processedOptions = useMemo(() => getOptionsFromSlideItems(slideItems), [slideItems]);
   const displayCombinations = useMemo(
@@ -53,18 +55,18 @@ const Followup: React.FC<FollowupProps> = ({
     [combs, randomizedType],
   );
   const [ranCombs, setRanCombs] = useState<number[]>([]);
-  const optionsContainerRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
-  useEffect(() => {
-    choice.current = { [identifier]: null };
-  }, [identifier]);
+  const resolvedAttempt = attemptValue ?? null;
+  const hasSubmission = resolvedAttempt != null && resolvedAttempt !== '';
 
   useEffect(() => {
     setRanCombs(computeRanCombs(
       combs,
       randomizedType,
+      submittedOptionIds,
+      resolvedAttempt,
     ));
-  }, [combs, randomizedType]);
+  }, [combs, randomizedType, submittedOptionIds, resolvedAttempt]);
 
   const exitFollowupsHandler = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -75,6 +77,11 @@ const Followup: React.FC<FollowupProps> = ({
 
   return (
     <div className={contClass}>
+      <span
+        className={`clearChoiceBtn ${styleProps.clearChoiceBtn}${hasSubmission ? ` ${styleProps.clearChoiceBtnSubmitted}` : ''}`}
+      >
+        o
+      </span>
       <span
         className={`clearChoiceBtn ${styleProps.clearChoiceBtn}`}
         style={{ right: 0, left: 'auto' }}
@@ -90,9 +97,9 @@ const Followup: React.FC<FollowupProps> = ({
             <LinkifiedText text={quote} />
           </b>
         </div>
-        <div ref={optionsContainerRef} className={optionsContainerCss} id="options">
+        <div className={optionsContainerCss} id="options">
           <Carousel
-            key={`${randomizedType}`}
+            key={`${resolvedAttempt ?? ''}-${randomizedType}`}
             indicatorLabels={ranCombs.map(() => 'carousel-indicator')}
             controls={false}
             interval={null}
@@ -117,13 +124,10 @@ const Followup: React.FC<FollowupProps> = ({
                       <input
                         value={id}
                         type="radio"
+                        disabled
                         name={identifier}
-                        onChange={(e) => {
-                          const newValue = e.target.value;
-                          choice.current[e.target.name] = newValue;
-                          const inputs = optionsContainerRef.current?.querySelectorAll<HTMLInputElement>(`input[name="${identifier}"]`) ?? [];
-                          inputs.forEach((input: HTMLInputElement) => { input.checked = input === e.target; });
-                        }}
+                        defaultChecked={resolvedAttempt === id}
+                        readOnly
                       />
                       <span className={styleProps.checkmark}></span>
                     </label>

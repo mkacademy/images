@@ -1,11 +1,18 @@
 import React, { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import Followup from './Followup';
 import { RootState } from '../../../store';
-import { Pennant, SlideItem } from '../../../store/slices/courseSlice';
+import { Banner, Pennant, SlideItem } from '../../../store/slices/courseSlice';
+import type { Submition } from '../../../store/slices/quizSlice';
+import {
+  getSavedAttemptValue,
+  getSubmittedOptionIdsForQuestion,
+} from '../../../library/quizSubmissionUtils';
 
 interface FollowupsProps {
+  parent: Banner;
   visible: Pennant[];
+  quizPennants: Submition[];
 }
 
 const getPennantSlideItems = (content: RootState['quiz']['content'], pennantId: number): SlideItem[] => {
@@ -17,11 +24,21 @@ const getPennantSlideItems = (content: RootState['quiz']['content'], pennantId: 
 };
 
 const Followups: React.FC<FollowupsProps> = ({
+  parent,
   visible,
+  quizPennants,
 }) => {
   const content = useSelector((state: RootState) => state.quiz.content);
-  const followupCombinations = useSelector((state: RootState) => state.quiz.followupCombinations)
+  const followupCombinations = useSelector((state: RootState) => state.quiz.followupCombinations);
+  const quizBannerId = parent.bannerId ?? -1;
 
+  const getAttemptForFollowup = useCallback((followupId: number): string | null => {
+    return getSavedAttemptValue(followupId, quizPennants, quizBannerId);
+  }, [quizPennants, quizBannerId]);
+
+  const getSubmittedIdsForFollowup = useCallback((followupId: number): string[] => {
+    return getSubmittedOptionIdsForQuestion(quizBannerId, followupId, quizPennants);
+  }, [quizPennants, quizBannerId]);
 
   return (
     <React.Fragment>
@@ -32,6 +49,8 @@ const Followups: React.FC<FollowupsProps> = ({
             pennant={followup}
             combs={followupCombinations[followup.id] ?? []}
             slideItems={getPennantSlideItems(content, followup.id)}
+            attemptValue={getAttemptForFollowup(followup.id)}
+            submittedOptionIds={getSubmittedIdsForFollowup(followup.id)}
           />
         );
       })}
