@@ -4,8 +4,9 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { authenticate } from '../library/Thunks';
 import { resolveLoginLoadingRedirectUrl } from '../library/hydrationUtils';
 import { initializedLoading } from '../store/slices/sessionSlice';
+import { clearData as clearReducers } from '../store/slices/rowSlice';
 import { AppDispatch, RootState } from '../store';
-import { convolutionDelay, convolutionTake, globalVars } from '../utils';
+import { convolutionDelay, convolutionTake, signOut } from '../utils';
 import * as styles from '../styles/course.module.css';
 import * as registrationStyles from '../styles/registration.module.css';
 import { CourseGlobal } from '../components/views/wrappers/courseGlobal';
@@ -61,6 +62,9 @@ const LoginForm: React.FC = () => {
   const handleIncognito = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!authenticated) {
+      // Match authenticate / EXIT: wipe stale session + slice state before guest fetch.
+      dispatch(clearReducers());
+      dispatch({ type: signOut() });
       dispatch(initializedLoading({
         isIncognito: true,
         authenticated: false,
