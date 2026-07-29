@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { signOut } from '../../utils';
 import { clearData as clearReducers } from '../../store/slices/rowSlice';
+import { dispatchEscapeKeyShortcut } from '../../Hooks/useShortcuts';
 import * as styles from '../../styles/shortcuts.module.css';
 import ViewerNavigation from './ViewerNavigation';
 import { isViewerLoadingRoute, isViewerLoginRoute, isViewerNotFoundRoute, isViewerUnknownRoute } from '../../loadingRouteUtils';
@@ -44,8 +45,25 @@ const ViewerUiShortcuts: React.FC<ViewerUiShortcutsProps> = ({ convCss = 'carder
     dispatch({ type: signOut() });
   };
 
+  const onEscapeBadgeClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatchEscapeKeyShortcut();
+  };
+
   return (
     <div className={styles.shortcuts}>
+      <div className={`${container} ${styles.escapeBadgeContainer}`}>
+        <button
+          type="button"
+          className={styles.escapeBadge}
+          title="Escape"
+          aria-label="Escape"
+          onClick={onEscapeBadgeClick}
+        >
+          <span className={styles.escapeBadgeMark} aria-hidden="true">×</span>
+        </button>
+      </div>
       <ViewerNavigation convCss={convCss} />
       <div className={container} style={{ position: 'relative' }}>
         <Link

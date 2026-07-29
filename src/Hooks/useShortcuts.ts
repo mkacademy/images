@@ -9,6 +9,16 @@ import { isFsqEligiblePathname, stripFsqFromSearch } from '../library/convolutio
 
 const IGNORE_ESC_IN = 'input, textarea, select, [contenteditable="true"]';
 
+/**
+ * Fire Escape the same way the keyboard shortcut does so existing window
+ * listeners (exit expanded, clear fsq, chapter escape, …) run unchanged.
+ */
+export function dispatchEscapeKeyShortcut(): void {
+  document.body.dispatchEvent(
+    new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }),
+  );
+}
+
 export function useExitExpandedOnEscape(isExpanded: boolean, onExit: () => void): void {
   const dispatch = useDispatch<AppDispatch>();
   const onExitRef = useRef(onExit);
