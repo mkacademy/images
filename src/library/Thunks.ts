@@ -9,6 +9,7 @@ import { InitializedLoadingPayload } from "../store/slices/sessionSlice";
 import { CustomJwtPayload, AuthPayload } from "./types";
 import { RootState } from "../store";
 import { FetchDataPayload, Executedquery, validateThenDispatch, getAccountRecords, getAnonymousRecords } from "./ThunksUtils";
+import { resetAppliedRouterSelections } from "../Hooks/useShortcuts";
 
 
 export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayload, { rejectValue: string }>(
@@ -51,6 +52,7 @@ export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayl
                 console.log("authenticate_roles", roles);
                 dispatch(clearReducers());
                 dispatch({ type: signOut() });
+                resetAppliedRouterSelections();
                 const session = {
                     quota,
                     roles,

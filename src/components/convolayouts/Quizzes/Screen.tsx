@@ -50,7 +50,6 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes }) => {
   const selected = useSelector((state: RootState) => state.quiz.selected);
   const followupId = useSelector((state: RootState) => state.quiz.followupId);
 
-
   useEffect(() => {
     const handleScroll = () => {
       if (selected === -1 && followupId === undefined) {

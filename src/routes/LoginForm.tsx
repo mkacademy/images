@@ -7,6 +7,7 @@ import { initializedLoading } from '../store/slices/sessionSlice';
 import { clearData as clearReducers } from '../store/slices/rowSlice';
 import { AppDispatch, RootState } from '../store';
 import { convolutionDelay, convolutionTake, signOut } from '../utils';
+import { resetAppliedRouterSelections } from '../Hooks/useShortcuts';
 import * as styles from '../styles/course.module.css';
 import * as registrationStyles from '../styles/registration.module.css';
 import { CourseGlobal } from '../components/views/wrappers/courseGlobal';
@@ -65,6 +66,7 @@ const LoginForm: React.FC = () => {
       // Match authenticate / EXIT: wipe stale session + slice state before guest fetch.
       dispatch(clearReducers());
       dispatch({ type: signOut() });
+      resetAppliedRouterSelections();
       dispatch(initializedLoading({
         isIncognito: true,
         authenticated: false,

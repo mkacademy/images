@@ -75,6 +75,11 @@ let lastAppliedRouterSelectionKey: string | null = null;
 const routerSelectionKey = (state: RouterSelectionState): string =>
   `${state.selectedT ?? ''}:${state.selectedC ?? ''}:${state.selectedQ ?? ''}`;
 
+/** Clear dedupe so deep-link open can run again after login/sign-out wipe content. */
+export function resetAppliedRouterSelections(): void {
+  lastAppliedRouterSelectionKey = null;
+}
+
 export function useChapterEscape(
   isChapterOpen: boolean,
   onCloseChapter: () => void,

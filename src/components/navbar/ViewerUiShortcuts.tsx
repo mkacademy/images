@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../store';
 import { signOut } from '../../utils';
 import { clearData as clearReducers } from '../../store/slices/rowSlice';
-import { dispatchEscapeKeyShortcut } from '../../Hooks/useShortcuts';
+import { dispatchEscapeKeyShortcut, resetAppliedRouterSelections } from '../../Hooks/useShortcuts';
 import * as styles from '../../styles/shortcuts.module.css';
 import ViewerNavigation from './ViewerNavigation';
 import { isViewerLoadingRoute, isViewerLoginRoute, isViewerNotFoundRoute, isViewerUnknownRoute } from '../../loadingRouteUtils';
@@ -43,6 +43,7 @@ const ViewerUiShortcuts: React.FC<ViewerUiShortcutsProps> = ({ convCss = 'carder
     e.preventDefault();
     dispatch(clearReducers());
     dispatch({ type: signOut() });
+    resetAppliedRouterSelections();
   };
 
   const onEscapeBadgeClick = (e: React.MouseEvent) => {
