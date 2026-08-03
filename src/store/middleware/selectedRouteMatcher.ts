@@ -56,7 +56,13 @@ const getDefaultChildRoute = (key: PncToggleType): string => {
   }
 };
 
-const getChapterChildRoute = (): string => 'filtersinstructions';
+/** Pennant list after chapters are set (chapter mode, not yet opened). */
+const getChapterListRoute = (): string => 'siftersfilters';
+/** Chapter steps view when a chapter is opened in the UI. */
+const getChapterOpenRoute = (): string => 'filtersinstructions';
+
+const isCourseChapterRoute = (route: string): boolean =>
+  route === getChapterListRoute() || route === getChapterOpenRoute();
 
 const getConnectedAppSelector = (key: PncToggleType, state: RootState): number => {
   switch (key) {
@@ -272,7 +278,7 @@ const selectedRouteMatcher: Middleware<{}, RootState> = ({ getState, dispatch })
       course: { chapters, selected },
     } = state;
     const { traversal } = emptySelectedRoute;
-    const chapterChildRoute = getChapterChildRoute();
+    const chapterListRoute = getChapterListRoute();
 
     if (resetChapters.match(action)) {
       if (chapters.length > 0) {
@@ -280,7 +286,7 @@ const selectedRouteMatcher: Middleware<{}, RootState> = ({ getState, dispatch })
           ([a, r]) =>
             parseInt(a, 10) === curApp &&
             typeof r === 'string' &&
-            r === chapterChildRoute,
+            isCourseChapterRoute(r),
         );
         if (onChapterRoute) {
           const [app] = onChapterRoute;
@@ -292,13 +298,13 @@ const selectedRouteMatcher: Middleware<{}, RootState> = ({ getState, dispatch })
         }
       }
     } else if (chapters.length === 0 && selected > -1) {
-      const notOnChapterRoute = Object.entries(selectedRoutes).find(
+      const notOnChapterListRoute = Object.entries(selectedRoutes).find(
         ([a, r]) =>
           parseInt(a, 10) === curApp &&
           typeof r === 'string' &&
-          r !== chapterChildRoute,
+          r !== chapterListRoute,
       );
-      if (notOnChapterRoute) {
+      if (notOnChapterListRoute) {
         if (
           traversal === undefined ||
           traversal === null ||
@@ -306,7 +312,7 @@ const selectedRouteMatcher: Middleware<{}, RootState> = ({ getState, dispatch })
           traversal.startsWith('foundation') ||
           traversal.startsWith('sifters')
         ) {
-          setTimeout(() => dispatch(setPagedRoute([curApp, chapterChildRoute])));
+          setTimeout(() => dispatch(setPagedRoute([curApp, chapterListRoute])));
         } else {
           setTimeout(() => dispatch(setPagedRoute([curApp, traversal])));
         }

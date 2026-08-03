@@ -6,6 +6,7 @@ import {
   setChaptersViaPennantId,
   SlideItem,
 } from '../../../store/slices/courseSlice';
+import { setPagedRoute } from '../../../store/slices/paginationSlice';
 import { prependError, prependWarning } from '../../../store/slices/errorSlice';
 import { useChapterEscape } from '../../../Hooks/useShortcuts';
 import * as styles from '../../../styles/404.module.css';
@@ -15,6 +16,9 @@ import Slide from '../Tutorial/Slide';
 import ChapterBanner from './Banner';
 import { RootState } from '../../../store/types';
 import { countSlideItemsByBannerId } from '../../../library/CourseUtils';
+
+const CHAPTER_LIST_ROUTE = 'siftersfilters';
+const CHAPTER_OPEN_ROUTE = 'filtersinstructions';
 
 export interface ChapterSlideRow {
   item: SlideItem;
@@ -35,10 +39,21 @@ const Chapters: React.FC<ChaptersProps> = ({
 }) => {
   const dispatch = useDispatch();
   const course = useSelector((state: RootState) => state.course);
+  const curApp = useSelector((state: RootState) => state.session.curApp);
   const { banners, selected } = course;
   const [showSelected, setShowSelected] = useState(false);
-  const toggleShowSelected = () => setShowSelected((v) => !v);
-  const closeSelectedChapter = () => setShowSelected(false);
+  const openSelectedChapter = useCallback(() => {
+    setShowSelected(true);
+    dispatch(setPagedRoute([curApp, CHAPTER_OPEN_ROUTE]));
+  }, [curApp, dispatch]);
+  const closeSelectedChapter = useCallback(() => {
+    setShowSelected(false);
+    dispatch(setPagedRoute([curApp, CHAPTER_LIST_ROUTE]));
+  }, [curApp, dispatch]);
+  const toggleShowSelected = () => {
+    if (showSelected) closeSelectedChapter();
+    else openSelectedChapter();
+  };
   useChapterEscape(
     showSelected,
     closeSelectedChapter,
