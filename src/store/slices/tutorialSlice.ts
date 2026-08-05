@@ -7,6 +7,7 @@ import {
 } from '../../library/sliceUtils';
 import {
   updateSteps,
+  mediaHydration,
   updateTutorials,
   updateRootsMetadata,
   updateStepsMetadata,
@@ -68,6 +69,9 @@ const tutorialSlice = createSlice({
     builder
       .addCase(signedOut, () => initialState)
       .addCase(updateSteps, (state, action) => {
+        state.content = state.content.map((rows) => rows.map(textsMerger(action.payload)));
+      })
+      .addCase(mediaHydration, (state, action) => {
         state.content = state.content.map((rows) => rows.map(textsMerger(action.payload)));
       })
       .addCase(updateTutorials, (state, action) => {

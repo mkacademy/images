@@ -1,6 +1,6 @@
 import type { RootState } from '../store';
 import type { QueryParams } from './types';
-import { isValidDataUrl } from './imageUtils';
+import { isMimeOnlyMediaUrl } from './imageUtils';
 import {
   getFiltersInstructions,
   getFixedSizeQueries,
@@ -27,10 +27,14 @@ export type ImageHydrationItem = {
   imageurl?: string;
 };
 
+/**
+ * Images repo is image-only: typed mime-only `data:image/…` slots.
+ * Bare `data:image` is a permanent sentinel and is never queued.
+ */
 export const isDehydratedImage = (item: ImageHydrationItem): boolean =>
   typeof item.imageurl === 'string'
   && item.imageurl.startsWith('data:image')
-  && !isValidDataUrl(item.imageurl);
+  && isMimeOnlyMediaUrl(item.imageurl);
 
 export const getInstructionsParentFromRoute = (route: string): InstructionsRouteParent | null => {
   if (!route.endsWith('instructions')) return null;

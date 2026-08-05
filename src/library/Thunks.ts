@@ -5,12 +5,16 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { EntityTypeMap, ResultPayload, clearData as clearReducers } from "../store/slices/rowSlice";
 import { enqueueHydrationStoreUpdate } from "./hydrationPayloadBuffer";
 import { markHydrationAttemptedSeekIds, onHydrationQueryComplete, onHydrationSessionIdle } from "./hydrationQueue";
+import {
+    buildEmptyImageHydrationCollapseUpdates,
+    partitionImageHydrationRows,
+} from "./imageHydrationCollapseUtils";
+import { mediaHydration } from "./actions";
 import { InitializedLoadingPayload } from "../store/slices/sessionSlice";
 import { CustomJwtPayload, AuthPayload } from "./types";
 import { RootState } from "../store";
 import { FetchDataPayload, Executedquery, validateThenDispatch, getAccountRecords, getAnonymousRecords } from "./ThunksUtils";
 import { resetAppliedRouterSelections } from "../Hooks/useShortcuts";
-
 
 export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayload, { rejectValue: string }>(
     'authenticate',
@@ -108,10 +112,50 @@ export const deHydratedRowsDataFetcher = createAsyncThunk<void, DehydratedRowsFe
             const { payload: data, parent: fromEntity, entity: toEntity, isAppend, keywords } = await fetcher();
             const { graphqlResolver, to, from } = getGraphqlResolver(fromEntity ?? '', toEntity ?? '');
             const corData = data['records'][graphqlResolver];
+            const rowsKey = to.toLowerCase();
+            const rawRows = corData[rowsKey];
+            const rowsPayload = Array.isArray(rawRows) ? rawRows : [];
+
+            // Image hydration: only forward rows with real media; collapse empty misses
+            // to bare sentinels so mime-only slots are not re-queued forever.
+            if (skipQueueLifecycle && hydrationSeekIds?.length) {
+                const { hydratedRows, collapseSeekIds } = partitionImageHydrationRows(
+                    hydrationSeekIds,
+                    rowsPayload,
+                );
+
+                if (hydratedRows.length > 0) {
+                    enqueueHydrationStoreUpdate({
+                        rows: {
+                            entity: toEntity as keyof EntityTypeMap,
+                            payload: hydratedRows,
+                            parent: fromEntity,
+                            keywords,
+                            isAppend,
+                        },
+                        metadata: {
+                            dest: to,
+                            orig: from,
+                            data: corData[from],
+                            interaction: true,
+                        },
+                    });
+                }
+
+                const collapseUpdates = buildEmptyImageHydrationCollapseUpdates(
+                    collapseSeekIds,
+                    getState(),
+                );
+                if (collapseUpdates.length > 0) {
+                    dispatch(mediaHydration(collapseUpdates));
+                }
+                return;
+            }
+
             enqueueHydrationStoreUpdate({
                 rows: {
                     entity: toEntity as keyof EntityTypeMap,
-                    payload: corData[to.toLowerCase()],
+                    payload: rowsPayload,
                     parent: fromEntity,
                     keywords,
                     isAppend,

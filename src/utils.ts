@@ -45,7 +45,7 @@ export const bannerRoutes = [
 ];
 
 export const placeholder = new URL("./Images/placeholder.jpg", import.meta.url).href;
-/** Shown for dehydrated / mime-only image slots (data:image, data:image/jpeg, …). */
+/** Shown for dehydrated / mime-only image slots (data:image/jpeg, …). Bare `data:image` is a permanent sentinel. */
 export const imageMimePlaceholder = new URL("./Images/imageLoading.gif", import.meta.url).href;
 /** Shown for dehydrated / mime-only audio slots (data:audio, data:audio/mpeg, …). */
 export const audioMimePlaceholder = new URL("./Images/audioMimePlaceholder.png", import.meta.url).href;

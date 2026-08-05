@@ -55,6 +55,8 @@ export const updateTutorials = createAction<UpdatePayload[]>('updateTutorials');
 export const updateCourses = createAction<UpdatePayload[]>('updateCourses');
 export const updateQuizzes = createAction<UpdatePayload[]>('updateQuizzes');
 export const updateSteps = createAction<UpdatePayload[]>('updateSteps');
+/** Hydration fills / empty-miss collapses for *instructions; does not set `edited`. */
+export const mediaHydration = createAction<UpdatePayload[]>('mediaHydration');
 
 export const updateStepsMetadata = createAction<MetadataUpdate[]>('updateStepsMetadata');
 export const updateCoversMetadata = createAction<MetadataUpdate[]>('updateCoversMetadata');

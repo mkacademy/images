@@ -34,6 +34,42 @@ export const getMediaMimeGroup = (url: string): MediaMimeGroup | null => {
 export const isMediaSlotValue = (url: string): boolean =>
   getMediaMimeGroup(url) !== null;
 
+/** True when a media data-URL already has a non-empty base64 payload. */
+export const hasMediaBase64Payload = (url: string): boolean => {
+  if (!isMediaSlotValue(url)) return false;
+  const comma = url.indexOf(',');
+  if (comma === -1) return false;
+  if (!url.slice(0, comma).includes(';base64')) return false;
+  return url.slice(comma + 1).trim().length > 0;
+};
+
+/** Bare UI sentinels — never fetched by image hydration (`data:image`, `data:audio`, `data:video`). */
+export const isPermanentMediaSlotSentinel = (url: string): boolean => {
+  const trimmed = url.trim();
+  return trimmed === 'data:image' || trimmed === 'data:audio' || trimmed === 'data:video';
+};
+
+/**
+ * Collapse a typed mime-only slot to a permanent bare sentinel.
+ * Images repo only queues `data:image/…`; other groups kept for shared UI resolution.
+ */
+export const toPermanentMediaSlotSentinel = (
+  url: string,
+): 'data:image' | 'data:audio' | 'data:video' | null => {
+  const group = getMediaMimeGroup(url);
+  if (group === 'image') return 'data:image';
+  if (group === 'audio') return 'data:audio';
+  if (group === 'video') return 'data:video';
+  return null;
+};
+
+/** Typed mime-only sentinel awaiting fetch (no base64 payload yet). Bare sentinels are excluded. */
+export const isMimeOnlyMediaUrl = (url: string): boolean => {
+  if (typeof url !== 'string') return false;
+  if (isPermanentMediaSlotSentinel(url)) return false;
+  return isMediaSlotValue(url) && !hasMediaBase64Payload(url);
+};
+
 /** @deprecated Prefer isMediaSlotValue — kept for image-only checks. */
 export const isImageSlotValue = (url: string): boolean =>
   typeof url === 'string' && url.startsWith('data:image');
@@ -41,9 +77,9 @@ export const isImageSlotValue = (url: string): boolean =>
 /**
  * Resolved <img> src for a media slot:
  * - valid image data URL → itself
- * - image mime-only → image group placeholder
- * - audio (any) → audio group placeholder
- * - video (any) → video group placeholder
+ * - image mime-only / bare `data:image` → image group placeholder
+ * - audio (any) / bare `data:audio` → audio group placeholder
+ * - video (any) / bare `data:video` → video group placeholder
  */
 export const resolveMediaSlotSrc = (url: string): string => {
   const group = getMediaMimeGroup(url);

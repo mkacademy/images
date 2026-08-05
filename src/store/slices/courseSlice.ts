@@ -10,6 +10,7 @@ import {
   updateCourses,
   updateTutorials,
   updateSteps,
+  mediaHydration,
   updateRootsMetadata,
   updatePennantsMetadata,
   updateCoversMetadata,
@@ -112,6 +113,9 @@ const courseSlice = createSlice({
         state.banners = nState;
       })
       .addCase(updateSteps, (state, action) => {
+        applyUpdateSteps(state, action.payload);
+      })
+      .addCase(mediaHydration, (state, action) => {
         applyUpdateSteps(state, action.payload);
       })
       .addCase(updateCourses, (state, action) => {

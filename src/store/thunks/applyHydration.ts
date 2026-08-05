@@ -3,7 +3,7 @@ import type { MetadataPayload } from '../../library/actions';
 import {
   updateCourses,
   updateQuizzes,
-  updateSteps,
+  mediaHydration,
   updateTutorials,
   updateAnswersMetadata,
   updateCoversMetadata,
@@ -54,13 +54,13 @@ export function applyHydrateRows(
       break;
     }
     case 'instructions': {
-      const updates = payload.map(({ instruction, modified, ...step }) => ({
+      // mediaHydration: fill imageurl without setting edited/modified.
+      const updates = payload.map(({ instruction, modified: _modified, ...step }) => ({
         ...step,
-        edited: modified,
         title: instruction,
         id: parseInt(step.id.toString(), 10),
       }));
-      dispatch(updateSteps(updates));
+      dispatch(mediaHydration(updates));
       break;
     }
     default:

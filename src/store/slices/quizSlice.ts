@@ -25,6 +25,7 @@ import {
   updateCourses,
   updateTutorials,
   updateSteps,
+  mediaHydration,
   updateQuestionsMetadata,
   updateQuizMetadata,
   updatePennantsMetadata,
@@ -116,6 +117,10 @@ const quizSlice = createSlice({
         state.banners = banners || state.banners;
       })
       .addCase(updateSteps, (state, action) => {
+        const { content } = applyCourseReducer(state, action);
+        state.content = content || state.content;
+      })
+      .addCase(mediaHydration, (state, action) => {
         const { content } = applyCourseReducer(state, action);
         state.content = content || state.content;
       })
