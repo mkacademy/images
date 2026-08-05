@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { RootState } from '../types';
 import { CommentItem } from '../../types/comments';
 import { fetchMessageComments } from '../thunks/fetchMessageComments';
+import { signedOut } from './sessionSlice';
 
 export type CommentsFor = 'course' | 'quiz' | 'tutorial';
 
@@ -77,7 +78,9 @@ const commentsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(fetchMessageComments.fulfilled, (state, action) => {
+    builder
+      .addCase(signedOut, () => initialState)
+      .addCase(fetchMessageComments.fulfilled, (state, action) => {
         const { _for, commentsId, comments, parentIDs, hasMore } = action.payload;
         const area = state[_for];
         const current = area[commentsId];
