@@ -6,7 +6,6 @@ import {
   BannerQuoteColumn,
   BannerTitleColumn,
 } from '../Tutorial/Container';
-import { prependError } from '../../../store/slices/errorSlice';
 
 interface BannerProps {
   id: number;
@@ -36,7 +35,7 @@ const Banner: React.FC<BannerProps> = ({
     e.preventDefault();
     e.stopPropagation();
     dispatch(resetChapters());
-    dispatch(prependError('Chapter mode disabled'));
+    console.log('Chapter mode disabled');
   };
 
   const quoteColumnProps = {

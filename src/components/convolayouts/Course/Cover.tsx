@@ -31,7 +31,7 @@ const Cover: React.FC<CoverProps> = ({ leftIMG, slide }) => {
     }
     if (res === 'ok') {
       dispatch(setChaptersViaSlideId(slide.id));
-      dispatch(prependWarning('Chapter mode enabled'));
+      console.log('Chapter mode enabled');
     }
   };
 

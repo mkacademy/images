@@ -7,7 +7,7 @@ import {
   SlideItem,
 } from '../../../store/slices/courseSlice';
 import { setPagedRoute } from '../../../store/slices/paginationSlice';
-import { prependError, prependWarning } from '../../../store/slices/errorSlice';
+import { prependWarning } from '../../../store/slices/errorSlice';
 import { useChapterEscape } from '../../../Hooks/useShortcuts';
 import * as styles from '../../../styles/404.module.css';
 import { _500 as Notfound } from '../../../components/views/404';
@@ -58,7 +58,7 @@ const Chapters: React.FC<ChaptersProps> = ({
     showSelected,
     closeSelectedChapter,
     () => {
-      dispatch(prependError('Chapter mode disabled'));
+      console.log('Chapter mode disabled');
       dispatch(resetChapters());
     },
   );
