@@ -100,6 +100,25 @@ export const settingsSlice = createSlice({
     addUnzippedTrees: (state, action: PayloadAction<unzippedTrees>) => {
       state.unzippedTrees.push(action.payload);
     },
+    /** Bulk-register Trees maps from auto-unzip (avoids N× setCourses/setTutorials/setQuizzes). */
+    registerUnzippedContentTrees: (state, action: PayloadAction<Partial<unzippedTrees>>) => {
+      const { tutorialTrees, courseTrees, quizTrees } = action.payload;
+      if (tutorialTrees) {
+        for (const [id, trees] of Object.entries(tutorialTrees)) {
+          state.TutorialTrees[Number(id)] = trees;
+        }
+      }
+      if (courseTrees) {
+        for (const [id, trees] of Object.entries(courseTrees)) {
+          state.CourseTrees[Number(id)] = trees;
+        }
+      }
+      if (quizTrees) {
+        for (const [id, trees] of Object.entries(quizTrees)) {
+          state.QuizTrees[Number(id)] = trees;
+        }
+      }
+    },
     randomizedTypeSelected: (state, action: PayloadAction<SettingsState['randomizedType']>) => {
       state.randomizedType = action.payload;
     },
@@ -160,6 +179,7 @@ export const {
   unzipQuizzesTypeSelected,
   completedUnzipping,
   addUnzippedTrees,
+  registerUnzippedContentTrees,
   randomizedTypeSelected,
 } = settingsSlice.actions;
 
