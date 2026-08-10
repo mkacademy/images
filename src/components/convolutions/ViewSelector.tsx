@@ -30,6 +30,29 @@ const ArticleSelector: React.FC<ArticleSelectorProps> = ({ content, noArticles }
   const cBanners = useSelector((state: RootState) => state.course.banners);
   const qBanners = useSelector((state: RootState) => state.quiz.quizzes);
 
+  const selected =
+    content === "Tutorials"
+      ? tSelected
+      : content === "Courses"
+        ? cSelected
+        : qSelected;
+
+  const total =
+    content === "Tutorials"
+      ? tBanners.length
+      : content === "Courses"
+        ? cBanners.length
+        : qBanners.length;
+
+  const label =
+    content === "Tutorials"
+      ? "Tutorial"
+      : content === "Courses"
+        ? "Course"
+        : "Quiz";
+
+  const countLabel = selected < 0 ? `${label}(${total})` : `${label}(${selected + 1} - ${total})`;
+
   const isNextDisabled =
     content === "Tutorials"
       ? tSelected === tBanners.length - 1
@@ -96,7 +119,7 @@ const ArticleSelector: React.FC<ArticleSelectorProps> = ({ content, noArticles }
         <span className="current-year">Prev</span>
       </Link>
       <Link to="#" onClick={viewHandler} className={`${vs.tcg} ${vs.mf} ms-1`}>
-        <span className="current-year">{content}</span>
+        <span className="current-year">{countLabel}</span>
       </Link>
       <Link
         to="#"
@@ -126,28 +149,29 @@ const ChaptersSelector: React.FC<ChaptersSelectorProps> = ({ noArticles, chapter
     ? getBannerChaptersCouplings({ content, couplings }, selectedBanner.id)
     : [];
 
-  const currentChapterPosition = chapters.length > 0
-    ? chapterCouplings.findIndex((coupling) =>
-      coupling.some((value) => chapters.includes(value))
-    )
-    : -1;
+  const selectedPositions = chapters.length > 0
+    ? chapterCouplings
+      .map((coupling, i) => (coupling.some((value) => chapters.includes(value)) ? i : -1))
+      .filter((i) => i >= 0)
+    : [];
+  const lowestChapterPosition = selectedPositions.length > 0 ? Math.min(...selectedPositions) : -1;
 
-  const isPrevDisabled = currentChapterPosition <= 0;
-  const isNextDisabled = currentChapterPosition === -1 || currentChapterPosition >= chapterCouplings.length - 1;
+  const isPrevDisabled = lowestChapterPosition <= 0;
+  const isNextDisabled = lowestChapterPosition === -1 || lowestChapterPosition >= chapterCouplings.length - 1;
 
   const goPrev = React.useCallback(() => {
     if (isPrevDisabled) return;
-    const prevChapterPosition = currentChapterPosition - 1;
+    const prevChapterPosition = lowestChapterPosition - 1;
     if (prevChapterPosition < 0 || prevChapterPosition >= chapterCouplings.length) return;
     dispatch(setChapters(chapterCouplings[prevChapterPosition]));
-  }, [isPrevDisabled, currentChapterPosition, chapterCouplings, dispatch]);
+  }, [isPrevDisabled, lowestChapterPosition, chapterCouplings, dispatch]);
 
   const goNext = React.useCallback(() => {
     if (isNextDisabled) return;
-    const nextChapterPosition = currentChapterPosition + 1;
+    const nextChapterPosition = lowestChapterPosition + 1;
     if (nextChapterPosition < 0 || nextChapterPosition >= chapterCouplings.length) return;
     dispatch(setChapters(chapterCouplings[nextChapterPosition]));
-  }, [isNextDisabled, currentChapterPosition, chapterCouplings, dispatch]);
+  }, [isNextDisabled, lowestChapterPosition, chapterCouplings, dispatch]);
 
   const prevHandler = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -166,6 +190,11 @@ const ChaptersSelector: React.FC<ChaptersSelectorProps> = ({ noArticles, chapter
 
   if (noArticles || selected < 0 || !selectedBanner || chapterCouplings.length === 0) return null;
 
+  const total = chapterCouplings.length;
+  const countLabel = lowestChapterPosition < 0
+    ? `Chapter(${total})`
+    : `Chapter(${lowestChapterPosition + 1} - ${total})`;
+
   return (
     <React.Fragment>
       <Link
@@ -176,7 +205,7 @@ const ChaptersSelector: React.FC<ChaptersSelectorProps> = ({ noArticles, chapter
         <span className="current-year">Prev</span>
       </Link>
       <Link to="#" onClick={viewHandler} className={`${vs.tcg} ${vs.mf} ms-1`}>
-        <span className="current-year">Chapters</span>
+        <span className="current-year">{countLabel}</span>
       </Link>
       <Link
         to="#"
@@ -239,6 +268,11 @@ const FollowupsSelector: React.FC<FollowupsSelectorProps> = ({ noArticles }) => 
 
   if (noArticles || selected < 0 || followupId === undefined || followupBanners.length === 0) return null;
 
+  const total = followupBanners.length;
+  const countLabel = currentFollowupPosition < 0
+    ? `Followup(${total})`
+    : `Followup(${currentFollowupPosition + 1} - ${total})`;
+
   return (
     <React.Fragment>
       <Link
@@ -249,7 +283,7 @@ const FollowupsSelector: React.FC<FollowupsSelectorProps> = ({ noArticles }) => 
         <span className="current-year">Prev</span>
       </Link>
       <Link to="#" onClick={viewHandler} className={`${vs.tcg} ${vs.mf} ms-1`}>
-        <span className="current-year">Followups</span>
+        <span className="current-year">{countLabel}</span>
       </Link>
       <Link
         to="#"

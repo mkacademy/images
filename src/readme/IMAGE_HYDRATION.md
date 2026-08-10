@@ -22,7 +22,7 @@ Core: `src/Hooks/useImageHydration.ts`, `src/library/imageHydrationUtils.ts`, `s
 
 Already-loaded base64 image payloads are skipped (`isValidDataUrl` / `hasMediaBase64Payload`).
 
-Audio / video mime-only slots are **not** queued in this repo (image-only predicate).
+Audio / video / markdown mime-only slots are **not** queued in this repo (image-only predicate).
 
 ### Permanent bare sentinels (not fetched)
 
@@ -33,6 +33,7 @@ Exact bare URLs are **terminal UI slots** — never queued (`isPermanentMediaSlo
 | `data:image` | Empty / abandoned image slot | `imageMimePlaceholder` |
 | `data:audio` | Display-only (not hydrated here) | `audioMimePlaceholder` |
 | `data:video` | Display-only (not hydrated here) | `videoMimePlaceholder` |
+| `data:text` | Display-only markdown miss (not hydrated here) | `markdownMimePlaceholder` |
 
 ---
 

@@ -51,6 +51,8 @@ export const imageMimePlaceholder = new URL("./Images/imageLoading.gif", import.
 export const audioMimePlaceholder = new URL("./Images/audioMimePlaceholder.png", import.meta.url).href;
 /** Shown for dehydrated / mime-only video slots (data:video, data:video/mp4, …). */
 export const videoMimePlaceholder = new URL("./Images/videoMimePlaceholder.png", import.meta.url).href;
+/** Shown for markdown text slots (`data:text/markdown`, …). */
+export const markdownMimePlaceholder = new URL("./Images/markdownMimePlaceholder.png", import.meta.url).href;
 /** @deprecated Prefer imageMimePlaceholder */
 export const imageLoadingGif = imageMimePlaceholder;
 
