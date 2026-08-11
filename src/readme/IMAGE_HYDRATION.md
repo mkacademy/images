@@ -1,13 +1,13 @@
 # Image Hydration (Images viewer)
 
-Rules for **image hydration** in the read-only images viewer: serial `take=1` fetches that fill **typed mime-only image** slots (`imageurl`) on the opened tutorial / course / quiz instructions. Distinct from main skeleton hydration.
+Rules for **image hydration** in the read-only images viewer: serial `take=1` fetches that fill **typed mime-only image and markdown** slots (`imageurl`) on the opened tutorial / course / quiz instructions. Distinct from main skeleton hydration.
 
-Unlike studio, this app is **image-only** (no Fetch Media setting, no audio/video slot hydration). Image hydration starts when an instructions container is open and main hydration is idle.
+Unlike studio, this app does **not** hydrate audio/video (no Fetch Media setting). Image hydration starts when an instructions container is open and main hydration is idle.
 
 | Layer | Role |
 | --- | --- |
 | Main hydration | Hydrate dehydrated skeleton rows |
-| Image hydration | After main session is idle, fetch base64 into typed mime-only `data:image/…` slots |
+| Image hydration | After main session is idle, fetch base64 into typed mime-only `data:image/…` and `data:text/markdown` slots |
 
 Core: `src/Hooks/useImageHydration.ts`, `src/library/imageHydrationUtils.ts`, `src/library/imageHydrationQueue.ts`, `src/library/imageHydrationCollapseUtils.ts`.
 
@@ -15,14 +15,14 @@ Core: `src/Hooks/useImageHydration.ts`, `src/library/imageHydrationUtils.ts`, `s
 
 ## What counts as dehydrated (image hydration)
 
-`isDehydratedImage` → `imageurl` is a **typed mime-only image** URL:
+`isDehydratedImage` → `imageurl` is a **typed mime-only image or markdown** URL:
 
-- Starts with `data:image…` **with a subtype** (e.g. `data:image/jpeg`)
+- Starts with `data:image…` **with a subtype** (e.g. `data:image/jpeg`), **or** `data:text/markdown`
 - Has **no** non-empty `;base64,` payload yet (`isMimeOnlyMediaUrl`)
 
-Already-loaded base64 image payloads are skipped (`isValidDataUrl` / `hasMediaBase64Payload`).
+Already-loaded base64 payloads are skipped (`isValidDataUrl` / `hasMediaBase64Payload`).
 
-Audio / video / markdown mime-only slots are **not** queued in this repo (image-only predicate).
+Audio / video mime-only slots are **not** queued in this repo.
 
 ### Permanent bare sentinels (not fetched)
 
@@ -33,7 +33,7 @@ Exact bare URLs are **terminal UI slots** — never queued (`isPermanentMediaSlo
 | `data:image` | Empty / abandoned image slot | `imageMimePlaceholder` |
 | `data:audio` | Display-only (not hydrated here) | `audioMimePlaceholder` |
 | `data:video` | Display-only (not hydrated here) | `videoMimePlaceholder` |
-| `data:text` | Display-only markdown miss (not hydrated here) | `markdownMimePlaceholder` |
+| `data:text` | Empty / abandoned markdown slot | `markdownMimePlaceholder` |
 
 ---
 
@@ -44,13 +44,14 @@ When image hydration (`skipQueueLifecycle` + seek ids) gets **no usable media pa
 | Current `imageurl` | Collapsed to |
 | --- | --- |
 | `data:image/…` | `data:image` |
+| `data:text/markdown` | `data:text` |
 
-(Other media groups map the same way if present; this viewer only queues images.)
+(Other media groups map the same way if present; this viewer only queues image + markdown.)
 
 Implementation:
 
 1. `partitionImageHydrationRows` — only rows with `hasMediaBase64Payload(imageurl)` are enqueued into the hydration store buffer
-2. `buildEmptyImageHydrationCollapseUpdates` — builds `{ id, imageurl: 'data:image' }` for the rest
+2. `buildEmptyImageHydrationCollapseUpdates` — builds `{ id, imageurl: sentinel }` for the rest
 3. Dispatch **`mediaHydration`** (not `updateSteps`)
 
 **Important:** collapse (and successful instruction fills) set **`imageurl` without `edited` / `modified`**, so local UI state is not marked dirty for save paths.
@@ -99,7 +100,7 @@ Queries are built only for the **opened container** and the **current instructio
 
 ### By webapp
 
-Same shape as studio (tutorial filters; course sifters + filters; quiz sifters + filters), but the row predicate is **image-only** typed mime-only slots.
+Same shape as studio (tutorial filters; course sifters + filters; quiz sifters + filters), but the row predicate is **image + markdown** typed mime-only slots (no audio/video).
 
 Every built query is forced to **`take: 1`**.
 
@@ -113,9 +114,9 @@ Every built query is forced to **`take: 1`**.
 2. After each item (and between legs), wait `hydrationDelay`
 3. Each item: `deHydratedRowsDataFetcher` with `skipQueueLifecycle: true`
 4. On success with base64: buffer → `applyHydrateRows` → `mediaHydration` fill
-5. On empty / unusable payload: `mediaHydration` collapse to `data:image`
+5. On empty / unusable payload: `mediaHydration` collapse to `data:image` / `data:text`
 6. Per-item failure: continue the serial queue
-7. After each leg, re-derive remaining typed mime-only image rows (`deriveNextLeg`)
+7. After each leg, re-derive remaining typed mime-only image/markdown rows (`deriveNextLeg`)
 
 ---
 
@@ -126,8 +127,8 @@ main hydration session (skeleton rows)
         ↓ idle
 opened instructions container
         ↓
-image hydration (typed data:image/… only, take=1, serial)
-        ↓ empty miss → data:image (no edited)
+image hydration (typed data:image/… + data:text/markdown, take=1, serial)
+        ↓ empty miss → data:image / data:text (no edited)
 ```
 
 ---
@@ -137,11 +138,11 @@ image hydration (typed data:image/… only, take=1, serial)
 | Symbol | Role |
 | --- | --- |
 | `useImageHydration` | Gate + start / supersede by selection |
-| `isDehydratedImage` / `isMimeOnlyMediaUrl` | Which image slots need fetch (excludes bare `data:image`) |
+| `isDehydratedImage` / `isMimeOnlyMediaUrl` | Which image/markdown slots need fetch (excludes bare sentinels) |
 | `isPermanentMediaSlotSentinel` / `toPermanentMediaSlotSentinel` | Terminal slots + collapse mapping |
 | `partitionImageHydrationRows` / `buildEmptyImageHydrationCollapseUpdates` | Split success vs empty-miss collapse |
 | `buildContainerInstructionsQueries` | Scope queries by webapp / route / chapters / followup |
-| `createImageHydrationLegDeriver` | Live re-scan of remaining typed mime-only image rows |
+| `createImageHydrationLegDeriver` | Live re-scan of remaining typed mime-only image/markdown rows |
 | `startImageHydration` / `supersedeImageHydration` | Serial queue lifecycle |
 | `deHydratedRowsDataFetcher` | Network fetch; buffer fills or collapse via `mediaHydration` |
 | `mediaHydration` | Instruction `imageurl` fill/collapse without setting `edited` |

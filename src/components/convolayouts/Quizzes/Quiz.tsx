@@ -110,7 +110,7 @@ const Quiz: React.FC<QuizProps> = ({
           className={`${styleProps.colSm12} ${styleProps.colMd12} ${styleProps.colLg6} ${styleProps.colXl6} p-0`}
         >
           {(isMaximumFeatures || !isClickable) && <span className={`${styleProps.dismissBtn}`} onClick={dismissHandler}>
-            x
+            ×
           </span>}
           <div className={`flex-center p-5 bg-color-primary section-min-h  ${styleProps.flexCenter} ${styleProps.bgColorPrimary} ${styleProps.sectionMinH} ${styleProps.banner}`}>
             <h1 className={`text-color-white site-name ${styleProps.textColorWhite} ${styleProps.siteName}`}>{banner}</h1>

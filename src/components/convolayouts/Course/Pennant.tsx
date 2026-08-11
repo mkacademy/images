@@ -153,7 +153,7 @@ const Pennants = ({
   return (
     <div className={`p-0 ${pennantStyles.colSm12} ${pennantStyles.colMd12} ${pennantStyles.colLg6} ${pennantStyles.colXl6} ${pennantStyles.controlsRow}`}>
       {(isMaximumFeatures || !isClickable) && <span className={pennantStyles.dismissBtn} onClick={dismissHandler}>
-        x
+        ×
       </span>}
       <span
         className={pennantStyles.displayedTotals}

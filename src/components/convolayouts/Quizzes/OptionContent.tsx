@@ -60,7 +60,7 @@
 import React from 'react';
 import LinkifiedText from '../../LinkifiedText';
 import { textEllipsis } from '../../../utils';
-import { isMediaSlotValue } from '../../../library/imageUtils';
+import { isVisualSlotValue } from '../../../library/imageUtils';
 
 export interface OptionContentProps {
   hasImage: boolean;
@@ -72,7 +72,7 @@ export interface OptionContentProps {
 
 const OptionContent = React.memo(function OptionContent(props: OptionContentProps) {
   const { hasImage, imageUrl, textValue, placeholder, imageWrapperClassName } = props;
-  if (!hasImage && !isMediaSlotValue(textValue)) {
+  if (!hasImage && !isVisualSlotValue(textValue)) {
     return (
       <span>
         <LinkifiedText text={textEllipsis(textValue.toLowerCase(), 500)} />

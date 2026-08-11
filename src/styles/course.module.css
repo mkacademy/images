@@ -45,22 +45,31 @@
     min-width: 0;
 }
 
-.course .banner .dismissBtn,
-.course .leftImage .dismissBtn,
-.course .rightImage .dismissBtn,
-.course .pennant .dismissBtn {
-    top: 0;
-    right: 0;
+/* Standalone so the hashed name always applies; matches media fullscreen close. */
+.dismissBtn {
+    top: 0.75rem;
+    right: 0.75rem;
     z-index: 2;
+    width: 2.5rem;
+    height: 2.5rem;
     padding: 0;
-    color: #000;
-    float: right;
-    color: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(33, 37, 41, 0.75);
+    color: #fff;
+    float: none;
     line-height: 1;
     cursor: pointer;
-    font-weight: 700;
-    font-size: 1.5rem;
+    font-weight: 400;
+    font-size: 1.75rem;
     position: absolute;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dismissBtn:hover {
+    background: rgba(33, 37, 41, 0.92);
 }
 
 .course .rightImage {
@@ -112,29 +121,41 @@
 .course .markdownExpandPane {
     position: relative;
     width: 100%;
-    padding: 1.75rem 1.5rem 1.5rem;
+    padding: 3.5rem 1.5rem 1.5rem;
     overflow: visible;
 }
 
-.course .markdownExpandClose {
-    top: 0.35rem;
-    right: 0.5rem;
+/* Standalone so the hashed name always applies; matches media fullscreen close. */
+.markdownExpandClose {
+    top: 0.75rem;
+    right: 0.75rem;
     z-index: 3;
-    padding: 0 0.35rem;
-    border: none;
-    background: transparent;
-    color: inherit;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 999px;
+    background: rgba(33, 37, 41, 0.75);
+    color: #fff;
     line-height: 1;
     cursor: pointer;
-    font-weight: 700;
+    font-weight: 400;
     font-size: 1.75rem;
     position: absolute;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.course .markdownExpandBtn {
+.markdownExpandClose:hover {
+    background: rgba(33, 37, 41, 0.92);
+}
+
+/* Standalone local class so the hashed name always applies on the button itself. */
+.markdownExpandBtn {
     top: 0.35rem;
     right: 0.5rem;
-    z-index: 3;
+    z-index: 5;
     padding: 0;
     border: none;
     background: transparent;
@@ -143,7 +164,7 @@
     position: absolute;
 }
 
-.course .markdownExpandBtn img {
+.markdownExpandBtn img {
     width: 1.75rem;
     height: 1.75rem;
     display: block;

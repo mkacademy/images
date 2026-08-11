@@ -78,7 +78,7 @@ export const BannerTitleColumn: React.FC<BannerTitleColumnProps> = ({
   >
     {showDismiss && (
       <span className={bannerStyles.dismissBtn} onClick={dismissHandler}>
-        x
+        ×
       </span>
     )}
     <div

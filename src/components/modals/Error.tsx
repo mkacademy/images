@@ -61,7 +61,7 @@ const Activity = ({ message, dismisser, id, variant }: ActivityProps) => {
     return (
         <div className={`card ${styleProps.card}`}>
             <span className={`dismissBtn ${styleProps.dismissBtn}`} onClick={dismissHandler}>
-                x
+                ×
             </span>
             <div className={`${messageBoxClass} ${styleProps.messageBox}`}>
                 <div className={`info-tab ${tipIconClass} ${styleProps.infoTab} ${styleProps.tipIcon}`}>

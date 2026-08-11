@@ -1,14 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import {
-  hasMediaBase64Payload,
-  isMarkdownSlotValue,
-} from '../../../library/imageUtils';
+import { isMarkdownSlotValue } from '../../../library/imageUtils';
 import * as styles from '../../../styles/course.module.css';
 import { getSectionClass, SlideType } from './Content';
 import MarkdownExpandPane from './MarkdownExpandPane';
 
+/** Same gate as the MD Snapshot card — show expand whenever the slot is markdown. */
 export const canExpandMarkdownSlot = (imageurl: string): boolean =>
-  isMarkdownSlotValue(imageurl) && hasMediaBase64Payload(imageurl);
+  isMarkdownSlotValue(imageurl);
 
 type ExpandRenderProps = {
   canExpand: boolean;

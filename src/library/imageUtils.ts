@@ -53,6 +53,10 @@ export const isPermanentMarkdownSlotSentinel = (url: string): boolean =>
 export const isMarkdownSlotValue = (url: string): boolean =>
   isMarkdownDataUrl(url) || isPermanentMarkdownSlotSentinel(url);
 
+/** True when the slot should render as an <img> (media or markdown placeholder). */
+export const isVisualSlotValue = (url: string): boolean =>
+  isMediaSlotValue(url) || isMarkdownSlotValue(url);
+
 /** True when a media or markdown data-URL already has a non-empty base64 payload. */
 export const hasMediaBase64Payload = (url: string): boolean => {
   if (isMarkdownDataUrl(url)) return hasBase64Payload(url);
@@ -71,7 +75,7 @@ export const isPermanentMediaSlotSentinel = (url: string): boolean => {
 
 /**
  * Collapse a typed mime-only slot to a permanent bare sentinel.
- * Images repo only queues `data:image/…`; other groups kept for shared UI resolution.
+ * Images repo queues `data:image/…` and `data:text/markdown`; other groups kept for UI.
  * markdown → `data:text`.
  */
 export const toPermanentMediaSlotSentinel = (

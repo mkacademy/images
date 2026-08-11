@@ -22,7 +22,7 @@ npm run dev
 
 Runs on http://localhost:3001.
 
-Image hydration rules (typed mime-only images, bare `data:image` sentinel, empty-response collapse): [`src/readme/IMAGE_HYDRATION.md`](src/readme/IMAGE_HYDRATION.md).
+Image hydration rules (typed mime-only image + markdown, bare sentinels, empty-response collapse): [`src/readme/IMAGE_HYDRATION.md`](src/readme/IMAGE_HYDRATION.md).
 
 ## Build
 

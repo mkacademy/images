@@ -3,7 +3,11 @@ import { Image } from 'react-bootstrap';
 import LinkifiedText from '../../LinkifiedText';
 import { placeholder } from "../../../utils";
 import * as styles from '../../../styles/course.module.css';
-import { isMediaSlotValue, resolveMediaSlotSrc } from '../../../library/imageUtils';
+import {
+  isMarkdownSlotValue,
+  isVisualSlotValue,
+  resolveMediaSlotSrc,
+} from '../../../library/imageUtils';
 
 const fullscreenIcon = new URL('../../../Images/fullscreen.png', import.meta.url).href;
 
@@ -50,9 +54,10 @@ interface ContentProps {
 const Content: React.FC<ContentProps> = ({
   canExpandMarkdown = false,
   onExpandMarkdown,
-  slide: { id, content, isHighlighted = false } = {
+  slide: { id, content, imageurl = '', isHighlighted = false } = {
     id: -1,
     content: "",
+    imageurl: "",
     isHighlighted: false,
   },
 }) => {
@@ -63,7 +68,10 @@ const Content: React.FC<ContentProps> = ({
     if (e.nativeEvent) e.nativeEvent.stopImmediatePropagation();
     onExpandMarkdown?.();
   };
-  const expandBtn = canExpandMarkdown && onExpandMarkdown ? (
+  const showExpand =
+    Boolean(onExpandMarkdown) &&
+    (canExpandMarkdown || isMarkdownSlotValue(imageurl));
+  const expandBtn = showExpand ? (
     <button
       type="button"
       className={slideStyles.markdownExpandBtn}
@@ -77,7 +85,7 @@ const Content: React.FC<ContentProps> = ({
 
   return (
     <React.Fragment>
-      {isMediaSlotValue(content) ? (
+      {isVisualSlotValue(content) ? (
         <div
           className={isHighlighted ? slideStyles.imgHighlited + snapCss : snapCss}
         >

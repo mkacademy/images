@@ -3,7 +3,7 @@ import { SlideGroupItem } from '../../../store/slices/courseSlice';
 import LinkifiedText from '../../LinkifiedText';
 import { placeholder, textEllipsis } from '../../../utils';
 import * as styles from '../../../styles/course.module.css';
-import { isMediaSlotValue, resolveMediaSlotSrc } from '../../../library/imageUtils';
+import { isVisualSlotValue, resolveMediaSlotSrc } from '../../../library/imageUtils';
 
 const slideStyles = {
   row: styles["row"],
@@ -105,7 +105,7 @@ const Snapshots: React.FC<SnapshotsProps> = ({
   const imageUrl = resolveMediaSlotSrc(slide.imageurl);
   return (
     <React.Fragment>
-      {isMediaSlotValue(slide.imageurl) ? (
+      {isVisualSlotValue(slide.imageurl) ? (
         <div className={`${imagCss0} ${imageCss1}`}>
           <span className={`displayedTotals ${slideStyles.displayedTotals}`}>{totals}</span>
           <div className={`background_img ${slideStyles.backgroundImg}`}>
@@ -170,7 +170,7 @@ const Texts: React.FC<TextsProps> = ({
   const imageUrl = resolveMediaSlotSrc(slide.content);
   return (
     <React.Fragment>
-      {isMediaSlotValue(slide.content) ? (
+      {isVisualSlotValue(slide.content) ? (
         <div className={slide.isHighlighted ? `imgHighlited ${slideStyles.imgHighlited} ${snapCss}` : snapCss}>
           <span className={`displayedTotals ${slideStyles.displayedTotals}`}>
             o

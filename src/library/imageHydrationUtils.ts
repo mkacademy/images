@@ -1,6 +1,6 @@
 import type { RootState } from '../store';
 import type { QueryParams } from './types';
-import { isMimeOnlyMediaUrl } from './imageUtils';
+import { isMarkdownDataUrl, isMimeOnlyMediaUrl } from './imageUtils';
 import {
   getFiltersInstructions,
   getFixedSizeQueries,
@@ -28,13 +28,16 @@ export type ImageHydrationItem = {
 };
 
 /**
- * Images repo is image-only: typed mime-only `data:image/…` slots.
- * Bare `data:image` is a permanent sentinel and is never queued.
+ * Images repo hydrates typed mime-only image + markdown slots
+ * (`data:image/…`, `data:text/markdown`). Audio/video are not queued.
+ * Bare sentinels (`data:image` / `data:text`) are never queued.
  */
-export const isDehydratedImage = (item: ImageHydrationItem): boolean =>
-  typeof item.imageurl === 'string'
-  && item.imageurl.startsWith('data:image')
-  && isMimeOnlyMediaUrl(item.imageurl);
+export const isDehydratedImage = (item: ImageHydrationItem): boolean => {
+  if (typeof item.imageurl !== 'string') return false;
+  const url = item.imageurl;
+  if (!url.startsWith('data:image') && !isMarkdownDataUrl(url)) return false;
+  return isMimeOnlyMediaUrl(url);
+};
 
 export const getInstructionsParentFromRoute = (route: string): InstructionsRouteParent | null => {
   if (!route.endsWith('instructions')) return null;
