@@ -4,7 +4,8 @@ import { RootState } from '../../../store/types';
 import { useLocation } from 'react-router-dom';
 import { resolveChaptersForSlideInSelectedCourse, setChaptersViaSlideId } from '../../../store/slices/courseSlice';
 import { prependWarning } from '../../../store/slices/errorSlice';
-import Content, { getSectionClass, SlideType } from '../Tutorial/Content';
+import Content, { SlideType } from '../Tutorial/Content';
+import MarkdownExpandableSection from '../Tutorial/MarkdownExpandableSection';
 import Snapshot from '../Tutorial/Snapshot';
 
 interface CoverProps {
@@ -35,14 +36,21 @@ const Cover: React.FC<CoverProps> = ({ leftIMG, slide }) => {
     }
   };
 
-  const imgcss = getSectionClass(leftIMG);
   return (
-    <section className={imgcss}>
-      {leftIMG && <Snapshot slide={slide} onSnapshotClick={chapterHandler} />}
-      <Content slide={slide} />
-      {!leftIMG && <Snapshot slide={slide} onSnapshotClick={chapterHandler} />}
-    </section>
+    <MarkdownExpandableSection leftIMG={leftIMG} slide={slide}>
+      {({ canExpand, onExpand }) => (
+        <>
+          {leftIMG && <Snapshot slide={slide} onSnapshotClick={chapterHandler} />}
+          <Content
+            slide={slide}
+            canExpandMarkdown={canExpand}
+            onExpandMarkdown={onExpand}
+          />
+          {!leftIMG && <Snapshot slide={slide} onSnapshotClick={chapterHandler} />}
+        </>
+      )}
+    </MarkdownExpandableSection>
   );
 };
 
-export default Cover; 
+export default Cover;

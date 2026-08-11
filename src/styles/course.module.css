@@ -102,6 +102,144 @@
     min-height: 400px;
 }
 
+/* Markdown expand: grow with document; page scrolls (no section scrollbar). */
+.course .section.markdownExpanded {
+    position: relative;
+    min-height: 0;
+    overflow: visible;
+}
+
+.course .markdownExpandPane {
+    position: relative;
+    width: 100%;
+    padding: 1.75rem 1.5rem 1.5rem;
+    overflow: visible;
+}
+
+.course .markdownExpandClose {
+    top: 0.35rem;
+    right: 0.5rem;
+    z-index: 3;
+    padding: 0 0.35rem;
+    border: none;
+    background: transparent;
+    color: inherit;
+    line-height: 1;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1.75rem;
+    position: absolute;
+}
+
+.course .markdownExpandBtn {
+    top: 0.35rem;
+    right: 0.5rem;
+    z-index: 3;
+    padding: 0;
+    border: none;
+    background: transparent;
+    line-height: 0;
+    cursor: pointer;
+    position: absolute;
+}
+
+.course .markdownExpandBtn img {
+    width: 1.75rem;
+    height: 1.75rem;
+    display: block;
+}
+
+.course .markdownExpandStatus {
+    margin: 0;
+    color: #666666;
+    line-height: 1.6;
+}
+
+.course .markdownExpandBody {
+    font-size: 1rem;
+    line-height: 1.6;
+    overflow: visible;
+}
+
+.course .markdownExpandBody :global(h1),
+.course .markdownExpandBody :global(h2),
+.course .markdownExpandBody :global(h3),
+.course .markdownExpandBody :global(h4),
+.course .markdownExpandBody :global(h5),
+.course .markdownExpandBody :global(h6) {
+    margin-top: 1.25em;
+    margin-bottom: 0.5em;
+    line-height: 1.25;
+}
+
+.course .markdownExpandBody :global(h1:first-child),
+.course .markdownExpandBody :global(h2:first-child),
+.course .markdownExpandBody :global(h3:first-child) {
+    margin-top: 0;
+}
+
+.course .markdownExpandBody :global(p),
+.course .markdownExpandBody :global(ul),
+.course .markdownExpandBody :global(ol),
+.course .markdownExpandBody :global(blockquote),
+.course .markdownExpandBody :global(pre) {
+    margin: 0 0 1em;
+}
+
+.course .markdownExpandBody :global(ul),
+.course .markdownExpandBody :global(ol) {
+    padding-left: 1.5em;
+}
+
+.course .markdownExpandBody :global(code) {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.9em;
+    background: #f1f3f5;
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+}
+
+.course .markdownExpandBody :global(pre) {
+    overflow-x: auto;
+    background: #f8f9fa;
+    border: 1px solid #edf0f2;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+}
+
+.course .markdownExpandBody :global(pre code) {
+    background: transparent;
+    padding: 0;
+}
+
+.course .markdownExpandBody :global(blockquote) {
+    border-left: 3px solid #dee2e6;
+    padding-left: 1rem;
+    color: #495057;
+}
+
+.course .markdownExpandBody :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 0 1em;
+}
+
+.course .markdownExpandBody :global(th),
+.course .markdownExpandBody :global(td) {
+    border: 1px solid #dee2e6;
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+}
+
+.course .markdownExpandBody :global(img) {
+    max-width: 100%;
+    height: auto;
+}
+
+.course .markdownExpandBody :global(a) {
+    color: #0d6efd;
+}
+
 .course .flex-center {
     width: 100%;
     height: 100%;
