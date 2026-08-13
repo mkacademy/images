@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import { isPlainTextSlotValue } from '../../../library/imageUtils';
 import { decodeMarkdownSlotText } from '../../../library/markdownSlotUtils';
+import LinkifiedText from '../../LinkifiedText';
+import MarkdownDocument from '../../markdown/MarkdownDocument';
 import * as styles from '../../../styles/course.module.css';
 
 type MarkdownExpandPaneProps = {
@@ -13,12 +14,14 @@ const MarkdownExpandPane: React.FC<MarkdownExpandPaneProps> = ({
   imageurl,
   onClose,
 }) => {
-  const [markdownText, setMarkdownText] = useState<string | null>(null);
+  const [documentText, setDocumentText] = useState<string | null>(null);
   const [decodeError, setDecodeError] = useState(false);
+  const isPlainText = isPlainTextSlotValue(imageurl);
+  const kindLabel = isPlainText ? 'text' : 'markdown';
 
   useEffect(() => {
     let cancelled = false;
-    setMarkdownText(null);
+    setDocumentText(null);
     setDecodeError(false);
 
     (async () => {
@@ -28,7 +31,7 @@ const MarkdownExpandPane: React.FC<MarkdownExpandPaneProps> = ({
         setDecodeError(true);
         return;
       }
-      setMarkdownText(text);
+      setDocumentText(text);
     })();
 
     return () => {
@@ -49,22 +52,24 @@ const MarkdownExpandPane: React.FC<MarkdownExpandPaneProps> = ({
         type="button"
         className={styles['markdownExpandClose']}
         onClick={closeHandler}
-        title="Close markdown"
-        aria-label="Close markdown"
+        title={`Close ${kindLabel}`}
+        aria-label={`Close ${kindLabel}`}
       >
         ×
       </button>
       {decodeError ? (
         <p className={styles['markdownExpandStatus']}>
-          Could not decode this markdown document.
+          Could not decode this {kindLabel} document.
         </p>
-      ) : markdownText == null ? (
-        <p className={styles['markdownExpandStatus']}>Loading markdown…</p>
+      ) : documentText == null ? (
+        <p className={styles['markdownExpandStatus']}>Loading {kindLabel}…</p>
+      ) : isPlainText ? (
+        <div className={`${styles['markdownExpandBody']} ${styles['markdownExpandPlain']}`}>
+          <LinkifiedText text={documentText} />
+        </div>
       ) : (
         <div className={styles['markdownExpandBody']}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {markdownText}
-          </ReactMarkdown>
+          <MarkdownDocument>{documentText}</MarkdownDocument>
         </div>
       )}
     </div>

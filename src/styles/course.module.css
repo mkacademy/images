@@ -182,6 +182,13 @@
     overflow: visible;
 }
 
+.course .markdownExpandPlain {
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    font-size: 0.95rem;
+}
+
 .course .markdownExpandBody :global(h1),
 .course .markdownExpandBody :global(h2),
 .course .markdownExpandBody :global(h3),

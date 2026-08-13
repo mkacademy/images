@@ -53,6 +53,8 @@ export const audioMimePlaceholder = new URL("./Images/audioMimePlaceholder.png",
 export const videoMimePlaceholder = new URL("./Images/videoMimePlaceholder.png", import.meta.url).href;
 /** Shown for markdown text slots (`data:text/markdown`, …). */
 export const markdownMimePlaceholder = new URL("./Images/markdownMimePlaceholder.png", import.meta.url).href;
+/** Shown for plain text slots (`data:text/plain`, …). */
+export const textMimePlaceholder = new URL("./Images/textMimePlaceholder.png", import.meta.url).href;
 /** @deprecated Prefer imageMimePlaceholder */
 export const imageLoadingGif = imageMimePlaceholder;
 

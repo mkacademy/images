@@ -5,6 +5,7 @@ import { placeholder } from "../../../utils";
 import * as styles from '../../../styles/course.module.css';
 import {
   isMarkdownSlotValue,
+  isPlainTextSlotValue,
   isVisualSlotValue,
   resolveMediaSlotSrc,
 } from '../../../library/imageUtils';
@@ -68,16 +69,16 @@ const Content: React.FC<ContentProps> = ({
     if (e.nativeEvent) e.nativeEvent.stopImmediatePropagation();
     onExpandMarkdown?.();
   };
-  const showExpand =
-    Boolean(onExpandMarkdown) &&
-    (canExpandMarkdown || isMarkdownSlotValue(imageurl));
+  const isTextSlot = isMarkdownSlotValue(imageurl) || isPlainTextSlotValue(imageurl);
+  const showExpand = Boolean(onExpandMarkdown) && (canExpandMarkdown || isTextSlot);
+  const expandLabel = isPlainTextSlotValue(imageurl) ? 'View text' : 'View markdown';
   const expandBtn = showExpand ? (
     <button
       type="button"
       className={slideStyles.markdownExpandBtn}
       onClick={expandHandler}
-      title="View markdown"
-      aria-label="View markdown"
+      title={expandLabel}
+      aria-label={expandLabel}
     >
       <Image src={fullscreenIcon} alt="" />
     </button>

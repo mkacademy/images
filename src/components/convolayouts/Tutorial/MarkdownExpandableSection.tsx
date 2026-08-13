@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { isMarkdownSlotValue } from '../../../library/imageUtils';
+import { isMarkdownSlotValue, isPlainTextSlotValue } from '../../../library/imageUtils';
 import * as styles from '../../../styles/course.module.css';
 import { getSectionClass, SlideType } from './Content';
 import MarkdownExpandPane from './MarkdownExpandPane';
 
-/** Same gate as the MD Snapshot card — show expand whenever the slot is markdown. */
+/** Same gate as the Snapshot card — show expand for markdown or plain-text slots. */
 export const canExpandMarkdownSlot = (imageurl: string): boolean =>
-  isMarkdownSlotValue(imageurl);
+  isMarkdownSlotValue(imageurl) || isPlainTextSlotValue(imageurl);
 
 type ExpandRenderProps = {
   canExpand: boolean;
@@ -25,7 +25,8 @@ const MarkdownExpandableSection: React.FC<MarkdownExpandableSectionProps> = ({
   children,
 }) => {
   const canExpand = canExpandMarkdownSlot(slide.imageurl);
-  const [expanded, setExpanded] = useState(false);
+  // Markdown / plain-text rows open expanded so the document is visible immediately.
+  const [expanded, setExpanded] = useState(canExpand);
 
   useEffect(() => {
     if (!canExpand) setExpanded(false);
