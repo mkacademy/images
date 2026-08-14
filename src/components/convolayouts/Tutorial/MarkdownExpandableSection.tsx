@@ -32,18 +32,6 @@ const MarkdownExpandableSection: React.FC<MarkdownExpandableSectionProps> = ({
     if (!canExpand) setExpanded(false);
   }, [canExpand, slide.imageurl]);
 
-  useEffect(() => {
-    if (!expanded) return undefined;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape') return;
-      e.preventDefault();
-      e.stopPropagation();
-      setExpanded(false);
-    };
-    window.addEventListener('keydown', onKeyDown, true);
-    return () => window.removeEventListener('keydown', onKeyDown, true);
-  }, [expanded]);
-
   const onExpand = useCallback(() => {
     if (!canExpand) return;
     setExpanded(true);
