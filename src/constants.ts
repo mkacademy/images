@@ -9,6 +9,7 @@ export const memberApps: Record<number, string> = {
   0: "---CHOOSE_MEMBERAPP---",
   5: "INCOMING",
   6: "OUTGOING",
+  7: "SESSION",
 };
 
 // Content delay constant moved here to avoid circular dependency with utils.ts and store

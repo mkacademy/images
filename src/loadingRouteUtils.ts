@@ -122,13 +122,13 @@ export const isViewerLoginRoute = (pathname: string): boolean =>
 export const isViewerLoadingPath = (pathname: string): boolean =>
   pathname === '/' || pathname === '';
 
-/** `/` with deep-link params — loading spinner before auto-navigate. */
-export const isViewerLoadingRoute = (pathname: string, search: string): boolean =>
-  isViewerLoadingPath(pathname) && hasLoadingDeepLinkParams(resolveViewerDeepLinkSearch(search));
+/** `/` — loading spinner before auto-navigate (deep-link or fallback). */
+export const isViewerLoadingRoute = (pathname: string, _search?: string): boolean =>
+  isViewerLoadingPath(pathname);
 
-/** `/` without deep-link params — dial 404 screen. */
-export const isViewerNotFoundRoute = (pathname: string, search: string): boolean =>
-  isViewerLoadingPath(pathname) && !hasLoadingDeepLinkParams(resolveViewerDeepLinkSearch(search));
+/** Unknown paths use `isViewerUnknownRoute`. Bare `/` is never a 404. */
+export const isViewerNotFoundRoute = (_pathname: string, _search: string): boolean =>
+  false;
 
 /** `/convolution` or `/convolution/*` — the read-only content viewer. */
 export const isViewerConvolutionRoute = (pathname: string): boolean =>
@@ -148,6 +148,6 @@ export const isOnLoadingScreen = (): boolean => {
   return !!basename && (pathname === basename || pathname === `${basename}/`);
 };
 
-/** Loading mounts at `/` with valid deep-link params and enforces its own min delay. */
+/** Loading mounts at `/` and enforces its own min delay (deep-link or fallback). */
 export const willLoadingEnforceMinDelay = (): boolean =>
-  isOnLoadingScreen() && hasLoadingDeepLinkParams(window.location.search);
+  isOnLoadingScreen();

@@ -133,7 +133,7 @@ export const ToolKit: ToolKit = {
 };
 
 export const maxIndexOfApps = 4;
-export const maxIndexOfUserApps = 6;
+export const maxIndexOfUserApps = 7;
 
 export const getCurAppName = (input: string | number): string => {
   const appIndex = parseInt(input as string);

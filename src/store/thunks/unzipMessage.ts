@@ -1,16 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
-import {
-  FS,
-  FF,
-  FD,
-  sifterTypes,
-  filterTypes,
-  dashboardTypes,
-} from '../../library/commsUtils';
 import { parseZipTrees } from '../../library/EncodingManagerUtils';
 import { flushCourseTrees, flushQuizTrees, flushTutorialTrees } from '../../library/controlPanelUtilz';
 import type { ItemWithCourseTrees, ItemWithQuizTrees, ItemWithTutorialTrees } from '../../types/unzipTrees';
-import type { IncomingMessage, OutgoingMessage } from '../slices/commsSlice';
 import { setCourses } from '../slices/courseSlice';
 import { setQuizzes } from '../slices/quizSlice';
 import { setTutorials } from '../slices/tutorialSlice';
@@ -33,11 +24,35 @@ import type { CourseTrees, QuizTrees, TutorialTrees } from '../../library/contro
 import type { Banner as CourseBanner, SlideGroup } from '../../library/CourseUtils';
 import type { Banner as TutorialBanner, Content as TutorialContent } from '../slices/tutorialSlice';
 import type { Quiz } from '../../library/QuizUtils';
+import type { SessionItem, SessionItemKind } from '../slices/sessionSlice';
 
 const UNZIP_COMPLETE_POLL_MS = 2000;
 
-const matchesTargetTree = (messageId: number, targetTreeId: number | undefined): boolean =>
-  targetTreeId === undefined || messageId === targetTreeId;
+const isZipQuote = (quote: string | undefined): quote is string =>
+  typeof quote === 'string' && quote.trim() !== '' && quote.trim() !== '.';
+
+const hasTrees = (trees: object): boolean => Object.keys(trees).length > 0;
+
+const collectKindTrees = <T extends CourseTrees | TutorialTrees | QuizTrees>(
+  sessionItems: SessionItem[],
+  kind: SessionItemKind,
+  enabled: boolean,
+  targetTreeId: number | undefined,
+  restrictToUrlIds: boolean,
+  alreadyUnzipped: Set<number>,
+): Array<{ TreesId: number; Trees: T }> => {
+  if (!enabled) return [];
+  if (restrictToUrlIds && targetTreeId === undefined) return [];
+  const collected: Array<{ TreesId: number; Trees: T }> = [];
+  for (const item of sessionItems) {
+    if (item.kind !== kind || alreadyUnzipped.has(item.id) || !isZipQuote(item.quote)) continue;
+    if (targetTreeId !== undefined && item.id !== targetTreeId) continue;
+    const Trees = parseZipTrees<T>(item.quote);
+    if (!hasTrees(Trees)) continue;
+    collected.push({ TreesId: item.id, Trees });
+  }
+  return collected;
+};
 
 const scheduleCompletedUnzippingWhenIdle = (
   dispatch: (action: ReturnType<typeof completedUnzipping>) => void,
@@ -46,7 +61,7 @@ const scheduleCompletedUnzippingWhenIdle = (
   setTimeout(attempt, UNZIP_COMPLETE_POLL_MS);
 };
 
-/** Unzips comms payloads into Trees + skeleton PNC rows (replaces HydrationManager). */
+/** Unzips sessionItems.quote into Trees + skeleton PNC rows. */
 export const unzipMessage = createAsyncThunk<
   { hasTrees: boolean },
   void,
@@ -60,79 +75,42 @@ export const unzipMessage = createAsyncThunk<
         isUnzipCourses,
         isUnzipTutorials,
         isUnzipQuizzes,
-        unzipCoursesType,
-        unzipTutorialsType,
-        unzipQuizzesType,
         TutorialTrees,
         CourseTrees,
         QuizTrees,
       },
-      comms: { outgoing, incoming },
+      session: { sessionItems },
     } = state;
 
     const viewerSearch = typeof window !== 'undefined'
       ? resolveViewerDeepLinkSearch(window.location.search)
       : '';
-    if (!hasLoadingDeepLinkParams(viewerSearch)) {
-      scheduleCompletedUnzippingWhenIdle(dispatch);
-      return { hasTrees: false as const };
-    }
-
+    const restrictToUrlIds = hasLoadingDeepLinkParams(viewerSearch);
     const treeIds = getDeepLinkTreeIds(viewerSearch);
-    const tutorialTrees: ItemWithTutorialTrees[] = [];
-    const courseTrees: ItemWithCourseTrees[] = [];
-    const quizTrees: ItemWithQuizTrees[] = [];
-
-    if (isUnzipCourses && treeIds.course !== undefined) {
-      const targetTreeId = treeIds.course;
-      const unzippedTreeIds = new Set(Object.keys(CourseTrees).map(Number));
-      if (unzipCoursesType === 'outgoing' || unzipCoursesType === 'incoming_and_outgoing') {
-        for (const { type, id, text } of outgoing as OutgoingMessage[]) {
-          if (!sifterTypes.includes(type) || unzippedTreeIds.has(id) || !matchesTargetTree(id, targetTreeId)) continue;
-          courseTrees.push({ TreesId: id, Trees: parseZipTrees<CourseTrees>(text) });
-        }
-      }
-      if (unzipCoursesType === 'incoming' || unzipCoursesType === 'incoming_and_outgoing') {
-        for (const { type, id, text } of incoming as IncomingMessage[]) {
-          if (type !== FS || unzippedTreeIds.has(id) || !matchesTargetTree(id, targetTreeId)) continue;
-          courseTrees.push({ TreesId: id, Trees: parseZipTrees<CourseTrees>(text) });
-        }
-      }
-    }
-
-    if (isUnzipTutorials && treeIds.tutorial !== undefined) {
-      const targetTreeId = treeIds.tutorial;
-      const unzippedTreeIds = new Set(Object.keys(TutorialTrees).map(Number));
-      if (unzipTutorialsType === 'outgoing' || unzipTutorialsType === 'incoming_and_outgoing') {
-        for (const { type, id, text } of outgoing as OutgoingMessage[]) {
-          if (!filterTypes.includes(type) || unzippedTreeIds.has(id) || !matchesTargetTree(id, targetTreeId)) continue;
-          tutorialTrees.push({ TreesId: id, Trees: parseZipTrees<TutorialTrees>(text) });
-        }
-      }
-      if (unzipTutorialsType === 'incoming' || unzipTutorialsType === 'incoming_and_outgoing') {
-        for (const { type, id, text } of incoming as IncomingMessage[]) {
-          if (type !== FF || unzippedTreeIds.has(id) || !matchesTargetTree(id, targetTreeId)) continue;
-          tutorialTrees.push({ TreesId: id, Trees: parseZipTrees<TutorialTrees>(text) });
-        }
-      }
-    }
-
-    if (isUnzipQuizzes && treeIds.quiz !== undefined) {
-      const targetTreeId = treeIds.quiz;
-      const unzippedTreeIds = new Set(Object.keys(QuizTrees).map(Number));
-      if (unzipQuizzesType === 'outgoing' || unzipQuizzesType === 'incoming_and_outgoing') {
-        for (const { type, id, text } of outgoing as OutgoingMessage[]) {
-          if (!dashboardTypes.includes(type) || unzippedTreeIds.has(id) || !matchesTargetTree(id, targetTreeId)) continue;
-          quizTrees.push({ TreesId: id, Trees: parseZipTrees<QuizTrees>(text) });
-        }
-      }
-      if (unzipQuizzesType === 'incoming' || unzipQuizzesType === 'incoming_and_outgoing') {
-        for (const { type, id, text } of incoming as IncomingMessage[]) {
-          if (type !== FD || unzippedTreeIds.has(id) || !matchesTargetTree(id, targetTreeId)) continue;
-          quizTrees.push({ TreesId: id, Trees: parseZipTrees<QuizTrees>(text) });
-        }
-      }
-    }
+    const tutorialTrees: ItemWithTutorialTrees[] = collectKindTrees<TutorialTrees>(
+      sessionItems,
+      'tutorial',
+      isUnzipTutorials,
+      treeIds.tutorial,
+      restrictToUrlIds,
+      new Set(Object.keys(TutorialTrees).map(Number)),
+    );
+    const courseTrees: ItemWithCourseTrees[] = collectKindTrees<CourseTrees>(
+      sessionItems,
+      'course',
+      isUnzipCourses,
+      treeIds.course,
+      restrictToUrlIds,
+      new Set(Object.keys(CourseTrees).map(Number)),
+    );
+    const quizTrees: ItemWithQuizTrees[] = collectKindTrees<QuizTrees>(
+      sessionItems,
+      'quiz',
+      isUnzipQuizzes,
+      treeIds.quiz,
+      restrictToUrlIds,
+      new Set(Object.keys(QuizTrees).map(Number)),
+    );
 
     if (courseTrees.length > 0) {
       const banners: CourseBanner[] = [];
@@ -178,10 +156,10 @@ export const unzipMessage = createAsyncThunk<
       dispatch(registerUnzippedContentTrees({ quizTrees: quizTreesMap }));
     }
 
-    const hasTrees = courseTrees.length > 0 || tutorialTrees.length > 0 || quizTrees.length > 0;
+    const hasTreesResult = courseTrees.length > 0 || tutorialTrees.length > 0 || quizTrees.length > 0;
     scheduleCompletedUnzippingWhenIdle(dispatch);
 
-    if (hasTrees) {
+    if (hasTreesResult) {
       dispatch(addUnzippedTrees({
         tutorialTrees: tutorialTrees.reduce((acc: MappedTutorialTrees, t) => {
           acc[t.TreesId] = t.Trees;
@@ -199,6 +177,6 @@ export const unzipMessage = createAsyncThunk<
       await dispatch(hydrateContent());
     }
 
-    return { hasTrees };
+    return { hasTrees: hasTreesResult };
   },
 );

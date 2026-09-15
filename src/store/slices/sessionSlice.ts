@@ -5,6 +5,38 @@ import { clearData } from './rowSlice';
 import { authenticate, deHydratedRowsDataFetcher } from '../../library/Thunks';
 import { DataRow } from '../../types/cpanel';
 
+export type SessionItemKind = 'tutorial' | 'course' | 'quiz';
+
+export interface SessionItem {
+  id: number;
+  kind: SessionItemKind;
+  owner: boolean;
+  quote: string;
+  title: string;
+  ordinal: number;
+  bannerId: number;
+  sizeInBytes: number;
+  isDismissed: boolean;
+  isHighlighted: boolean;
+  status: number;
+  descendentsSums: Record<string, number>;
+}
+
+export interface SessionRow {
+  id: number;
+  bannerId: number;
+  owner: boolean;
+  title: string;
+  ordinal: number;
+  content: string;
+  imageurl: string;
+  sizeInBytes: number;
+  isHighlighted: boolean;
+  status: number;
+  descendentsSums: Record<string, number>;
+  isDismissed: boolean;
+}
+
 export interface SessionState {
   curApp: number;
   curMailer: number;
@@ -29,6 +61,8 @@ export interface SessionState {
   roleIds: number[] | undefined;
   singleItemForms?: Record<string, boolean>;
   allowMimeOnlyImageurlOverrideOnUpdateSteps: boolean;
+  sessions: SessionRow[];
+  sessionItems: SessionItem[];
 }
 
 const initialState: SessionState = {
@@ -53,6 +87,8 @@ const initialState: SessionState = {
   defaultTake: 1,
   roleIndex: -1,
   allowMimeOnlyImageurlOverrideOnUpdateSteps: false,
+  sessions: [],
+  sessionItems: [],
 };
 
 let loginAttempts = -2;
@@ -92,6 +128,10 @@ const sessionSlice = createSlice({
       }
       else console.log("unknown app ==>", action.payload);
     },
+    setSessions: (state, action: PayloadAction<{ sessions?: SessionRow[]; sessionItems: SessionItem[] }>) => {
+      if (action.payload.sessions) state.sessions = action.payload.sessions;
+      state.sessionItems = action.payload.sessionItems;
+    },
     signedOut: (state) => {
       const { isAppend } = state;
       state.userid = undefined;
@@ -112,6 +152,8 @@ const sessionSlice = createSlice({
       state.defaultTake = 1;
       state.roleIndex = -1;
       state.allowMimeOnlyImageurlOverrideOnUpdateSteps = false;
+      state.sessions = [];
+      state.sessionItems = [];
     },
   },
   extraReducers: (builder) => {
@@ -159,6 +201,7 @@ export const {
   resetHydrationQueries,
   initializedLoading,
   mutateCurApp,
+  setSessions,
   signedOut,
 } = sessionSlice.actions;
 

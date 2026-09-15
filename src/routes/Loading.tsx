@@ -4,6 +4,7 @@ import * as styles from '../styles/loading.module.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchData, setCurPage } from '../library/Thunks';
 import { buildFetchDataPayload } from '../library/ThunksUtils';
+import { buildFallbackSessionQueries } from '../library/fallbackSessionQuery';
 import { RootState, AppDispatch } from '../store';
 import {
   LOADING_DEEP_LINK_PAIRS,
@@ -13,20 +14,15 @@ import {
   primaryLoadingWebapp,
   resolveViewerDeepLinkSearch,
 } from '../loadingRouteUtils';
-import NotFound from '../components/views/NotFound';
 import {
   completedUnzipping,
   toggleUnzipCourses,
   toggleUnzipQuizzes,
   toggleUnzipTutorials,
-  unzipCoursesTypeSelected,
-  unzipTutorialsTypeSelected,
-  unzipQuizzesTypeSelected,
   randomizedTypeSelected,
 } from '../store/slices/settingsSlice';
 import { unzipMessage } from '../store/thunks/unzipMessage';
 import { buildConvolutionNavigateTo, warnConvolutionCsFsqConflict } from '../library/convolutionNavSearch';
-import { parseUnzipQueryParam } from '../library/unzipQuery';
 import { parseRandomizedQueryParam } from '../library/randomizedQuery';
 
 const MIN_LOADING_DELAY_MS = 2_000;
@@ -81,11 +77,20 @@ const Loading: React.FC = () => {
     };
   }, [location.search]);
 
+  const isFallback = !hasTreeParams && foundPairs.length === 0;
   const contentAlreadyLoaded = useMemo(
-    () =>
-      (hasTutorial && (!noTutorials || tutorialCount > 0)) ||
-      (hasCourse && (!noCourses || courseCount > 0)) ||
-      (hasQuiz && (!noQuizzes || quizCount > 0)),
+    () => {
+      const hasAnyContent =
+        (!noTutorials || tutorialCount > 0) ||
+        (!noCourses || courseCount > 0) ||
+        (!noQuizzes || quizCount > 0);
+      if (isFallback) return hasAnyContent;
+      return (
+        (hasTutorial && (!noTutorials || tutorialCount > 0)) ||
+        (hasCourse && (!noCourses || courseCount > 0)) ||
+        (hasQuiz && (!noQuizzes || quizCount > 0))
+      );
+    },
     [
       hasTutorial,
       hasCourse,
@@ -96,6 +101,7 @@ const Loading: React.FC = () => {
       tutorialCount,
       courseCount,
       quizCount,
+      isFallback,
     ],
   );
 
@@ -112,39 +118,46 @@ const Loading: React.FC = () => {
   }, [location.search]);
 
   useEffect(() => {
-    if (!hasTreeParams && foundPairs.length === 0) return;
     if (contentAlreadyLoaded || fetchStarted.current) return;
 
     fetchStarted.current = true;
     const resolvedSearch = resolveViewerDeepLinkSearch(location.search);
-    const webapp = primaryLoadingWebapp(resolvedSearch, foundPairs);
-    const unzipTypes = parseUnzipQueryParam(resolvedSearch);
-    dispatch(toggleUnzipTutorials(hasTutorial));
-    dispatch(toggleUnzipCourses(hasCourse));
-    dispatch(toggleUnzipQuizzes(hasQuiz));
-    if (unzipTypes.tutorial) dispatch(unzipTutorialsTypeSelected(unzipTypes.tutorial));
-    if (unzipTypes.course) dispatch(unzipCoursesTypeSelected(unzipTypes.course));
-    if (unzipTypes.quiz) dispatch(unzipQuizzesTypeSelected(unzipTypes.quiz));
+    const isFallbackLoad = !hasTreeParams && foundPairs.length === 0;
+    dispatch(toggleUnzipTutorials(isFallbackLoad || hasTutorial));
+    dispatch(toggleUnzipCourses(isFallbackLoad || hasCourse));
+    dispatch(toggleUnzipQuizzes(isFallbackLoad || hasQuiz));
     const randomizedType = parseRandomizedQueryParam(resolvedSearch);
     if (randomizedType) dispatch(randomizedTypeSelected(randomizedType));
     dispatch(completedUnzipping(true));
     setCurPage(0);
+    const webapp = primaryLoadingWebapp(resolvedSearch, foundPairs);
     dispatch(
-      fetchData(   
+      fetchData(
         buildFetchDataPayload(
-          { isUnzipCourses: hasCourse, isUnzipQuizzes: hasQuiz, isUnzipTutorials: hasTutorial },
           {
-            search: resolvedSearch,
-            webapp,
-            convolution: webapp,
+            isUnzipCourses: isFallbackLoad || hasCourse,
+            isUnzipQuizzes: isFallbackLoad || hasQuiz,
+            isUnzipTutorials: isFallbackLoad || hasTutorial,
           },
+          isFallbackLoad
+            ? {
+                search: resolvedSearch,
+                webapp: 'session',
+                convolution: 'session',
+                requestTake: 1,
+                queriesOverride: buildFallbackSessionQueries('images'),
+              }
+            : {
+                search: resolvedSearch,
+                webapp,
+                convolution: webapp,
+              },
         ),
       ),
     );
   }, [location.search, dispatch, foundPairs, hasTutorial, hasCourse, hasQuiz, hasTreeParams, contentAlreadyLoaded]);
 
   useEffect(() => {
-    if (!hasTreeParams && foundPairs.length === 0) return;
     if (contentAlreadyLoaded) {
       if (postFetchReadyAt.current === null) postFetchReadyAt.current = Date.now();
       return;
@@ -158,22 +171,26 @@ const Loading: React.FC = () => {
       postFetchReadyAt.current = Date.now();
       setTimeout(() => void dispatch(unzipMessage()));
     }
-  }, [isNotUnzipping, foundPairs, hasTreeParams, dispatch, contentAlreadyLoaded]);
+  }, [isNotUnzipping, dispatch, contentAlreadyLoaded]);
 
   useEffect(() => {
-    if (!hasTreeParams && foundPairs.length === 0) return;
     if (hasNavigated.current) return;
 
     const proceed = () => {
       if (hasNavigated.current) return;
 
-      const resolvedSearch = resolveViewerDeepLinkSearch(location.search);
       const currentUrl = `${location.pathname}${location.search}`;
-      const route = primaryLoadingRoute(resolvedSearch, foundPairs);
+      const isFallbackLoad = !hasTreeParams && foundPairs.length === 0;
+      const resolvedSearch = resolveViewerDeepLinkSearch(location.search);
+      const route = isFallbackLoad
+        ? '/convolution/tutorial'
+        : primaryLoadingRoute(resolvedSearch, foundPairs);
       const target = buildConvolutionNavigateTo(
         route,
         undefined,
-        { ldr: currentUrl, ...deepLinkExtraParams(location.search) },
+        isFallbackLoad
+          ? { ldr: currentUrl }
+          : { ldr: currentUrl, ...deepLinkExtraParams(location.search) },
       );
       if (!target) {
         warnConvolutionCsFsqConflict(dispatch);
@@ -227,10 +244,6 @@ const Loading: React.FC = () => {
     hasTreeParams,
     isNotUnzipping,
   ]);
-
-  if (!hasTreeParams && foundPairs.length === 0) {
-    return <NotFound />;
-  }
 
   return (
     <div className={styles['ring']}>

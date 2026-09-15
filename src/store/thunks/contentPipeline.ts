@@ -7,14 +7,10 @@ import {
   toggleUnzipCourses,
   toggleUnzipQuizzes,
   toggleUnzipTutorials,
-  unzipCoursesTypeSelected,
-  unzipTutorialsTypeSelected,
-  unzipQuizzesTypeSelected,
   randomizedTypeSelected,
 } from '../slices/settingsSlice';
 import { setCurPage } from '../../library/Thunks';
 import { unzipMessage } from './unzipMessage';
-import { parseUnzipQueryParam } from '../../library/unzipQuery';
 import { parseRandomizedQueryParam } from '../../library/randomizedQuery';
 import type { AppDispatch, RootState } from '../index';
 
@@ -71,10 +67,6 @@ export const loadPncContent = createAsyncThunk<
     dispatch(toggleUnzipTutorials(hasTutorial));
     dispatch(toggleUnzipCourses(hasCourse));
     dispatch(toggleUnzipQuizzes(hasQuiz));
-    const unzipTypes = parseUnzipQueryParam(resolvedSearch);
-    if (unzipTypes.tutorial) dispatch(unzipTutorialsTypeSelected(unzipTypes.tutorial));
-    if (unzipTypes.course) dispatch(unzipCoursesTypeSelected(unzipTypes.course));
-    if (unzipTypes.quiz) dispatch(unzipQuizzesTypeSelected(unzipTypes.quiz));
     const randomizedType = parseRandomizedQueryParam(resolvedSearch);
     if (randomizedType) dispatch(randomizedTypeSelected(randomizedType));
     dispatch(completedUnzipping(true));
