@@ -1,6 +1,5 @@
 import { configureStore, type ThunkDispatch, type UnknownAction } from '@reduxjs/toolkit';
 import sessionReducer from './slices/sessionSlice';
-import commsReducer from './slices/commsSlice';
 import errorReducer from './slices/errorSlice';
 import courseReducer from './slices/courseSlice';
 import quizReducer from './slices/quizSlice';
@@ -17,7 +16,6 @@ import { preThunkMiddleware, postThunkMiddleware } from './middleware';
 export const store = configureStore({
   reducer: {
     session: sessionReducer,
-    comms: commsReducer,
     comments: commentsReducer,
     tutorial: tutorialReducer,
     course: courseReducer,

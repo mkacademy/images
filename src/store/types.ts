@@ -6,7 +6,6 @@ import { CourseState } from './slices/courseSlice';
 import { PaginationState } from './slices/paginationSlice';
 import { QuizState } from './slices/quizSlice';
 import { TutorialState } from './slices/tutorialSlice';
-import { CommsState } from './slices/commsSlice';
 import { SettingsState } from './slices/settingsSlice';
 import { CommentsState } from './slices/commentsSlice';
 import type { ThunkDispatch, UnknownAction } from '@reduxjs/toolkit';
@@ -15,7 +14,6 @@ export interface RootState {
   session: SessionState;
   view: ViewState;
   error: ErrorState;
-  comms: CommsState;
   tutorial: TutorialState;
   course: CourseState;
   quiz: QuizState;

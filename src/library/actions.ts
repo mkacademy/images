@@ -66,7 +66,6 @@ export const updateRootsMetadata = createAction<MetadataUpdate[]>('updateRootsMe
 export const updateQuizMetadata = createAction<MetadataUpdate[]>('updateQuizMetadata');
 export const updateAnswersMetadata = createAction<MetadataUpdate[]>('updateAnswersMetadata');
 
-/** Comms hydration (cross-slice updates still referenced by commsSlice extraReducers) */
 export const updateBosses = createAction<UpdatePayload[]>('updateBosses');
 export const updateUnderbosses = createAction<UpdatePayload[]>('updateUnderbosses');
 export const updateMinions = createAction<UpdatePayload[]>('updateMinions');

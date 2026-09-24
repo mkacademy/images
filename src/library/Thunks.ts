@@ -194,7 +194,7 @@ export const fetchData = createAsyncThunk<
     async (payload: FetchDataPayload, { rejectWithValue, getState, dispatch }) => {
         const state = getState() as RootState;
         const { convolution, webapp, requestTake: payloadTake, queriesOverride } = payload;
-        const search = resolveViewerDeepLinkSearch(payload.search);
+        const search = payload.search === null ? null : resolveViewerDeepLinkSearch(payload.search);
         const {
             isUnzipCourses,
             isUnzipTutorials,

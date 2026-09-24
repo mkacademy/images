@@ -4,14 +4,14 @@ import * as styles from '../styles/loading.module.css';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchData, setCurPage } from '../library/Thunks';
 import { buildFetchDataPayload } from '../library/ThunksUtils';
-import { buildFallbackSessionQueries } from '../library/fallbackSessionQuery';
+import { buildDeepLinkSessionQueries, buildFallbackSessionQueries } from '../library/fallbackSessionQuery';
 import { RootState, AppDispatch } from '../store';
 import {
   LOADING_DEEP_LINK_PAIRS,
   deepLinkExtraParams,
+  getDeepLinkTreeIds,
   parseLoadingTreeFlags,
   primaryLoadingRoute,
-  primaryLoadingWebapp,
   resolveViewerDeepLinkSearch,
 } from '../loadingRouteUtils';
 import {
@@ -130,7 +130,6 @@ const Loading: React.FC = () => {
     if (randomizedType) dispatch(randomizedTypeSelected(randomizedType));
     dispatch(completedUnzipping(true));
     setCurPage(0);
-    const webapp = primaryLoadingWebapp(resolvedSearch, foundPairs);
     dispatch(
       fetchData(
         buildFetchDataPayload(
@@ -148,9 +147,11 @@ const Loading: React.FC = () => {
                 queriesOverride: buildFallbackSessionQueries('images'),
               }
             : {
-                search: resolvedSearch,
-                webapp,
-                convolution: webapp,
+                search: null,
+                webapp: 'session',
+                convolution: 'session',
+                requestTake: 1,
+                queriesOverride: buildDeepLinkSessionQueries(getDeepLinkTreeIds(resolvedSearch)),
               },
         ),
       ),

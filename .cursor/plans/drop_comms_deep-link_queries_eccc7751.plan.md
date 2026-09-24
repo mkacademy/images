@@ -4,13 +4,13 @@ overview: Remove unused mailbox `commsSlice` and make deep-link session fetches 
 todos:
   - id: deep-link-queries
     content: Add buildDeepLinkSessionQueries (child-only childIds) and Executedquery.childIds
-    status: pending
+    status: completed
   - id: wire-fetch
     content: Use the builder + search null + session take 1 in Loading and loadPncContent
-    status: pending
+    status: completed
   - id: drop-comms
     content: Remove commsSlice, store wiring, and mailbox validateThenDispatch branches
-    status: pending
+    status: completed
 isProject: false
 ---
 

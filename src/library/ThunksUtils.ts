@@ -2,7 +2,6 @@ import { jwtDecode } from 'jwt-decode';
 import { createSelector, Dispatch } from '@reduxjs/toolkit';
 import { Content,  Banner as TutorialBanner } from '../store/slices/tutorialSlice';
 import { Banner, SlideGroup } from '../store/slices/courseSlice';
-import { IncomingMessage, OutgoingMessage, setIncomings, setOutgoings } from '../store/slices/commsSlice';
 import { ToolKit, getCurAppName, timeout } from '../utils';
 import { ResultPayload, ROW_APPEND_QUERY_TYPE } from '../store/slices/rowSlice';
 import { Quiz } from '../store/slices/quizSlice';
@@ -21,7 +20,7 @@ const expireMessage = 'Token has expired, sign out and sign in again';
 
 interface RecordParams {
     curApp: number;
-    search: string;
+    search: string | null;
     mailer?: number;
     state: RootState;
     formatter: string;
@@ -153,6 +152,7 @@ export interface Executedquery {
     isPrivateView?: boolean;
     parentIDs?: number[];
     childIDs?: number[];
+    childIds?: number[];
     parentIds?: number[];
     search?: string;
     take?: number;
@@ -164,7 +164,7 @@ export interface FetchDataPayload {
     isMinimumFeatureMode?: boolean;
     convolution: string;
     webapp: string;
-    search: string;
+    search: string | null;
     requestTake?: number;
     queriesOverride?: Record<string, Executedquery>;
 }
@@ -274,7 +274,7 @@ export interface FetchedData {
     banners?: Banner[] | TutorialBanner[];
     counts: Record<string, Record<string, number>>;
     executedQueries?: Record<string, Executedquery>;
-    content?: SlideGroup[] | Content[][] | OutgoingMessage[] | IncomingMessage[] | Record<string, Record<string, CpanelRow[]>> | SessionRow[];
+    content?: SlideGroup[] | Content[][] | Record<string, Record<string, CpanelRow[]>> | SessionRow[];
     sessions?: SessionRow[];
     sessionItems?: Array<Partial<SessionItem> & { id: number; sender?: string; purpose?: string }>;
 }
@@ -379,16 +379,7 @@ export const validateThenDispatch = ({
     }
 
     if (content && Array.isArray(content) && content.length > 0) {
-        if (isArrayOfType(content, isOutgoingMessage)) {
-            console.log("is_outgoing_response");
-            const filtered = filterCommsByDeepLinkTreeIds(content);
-            dispatch(setOutgoings(filtered));
-        }
-        else if (isArrayOfType(content, isIncomingMessage)) {
-            console.log("is_incoming_response");
-            dispatch(setIncomings(filterCommsByDeepLinkTreeIds(content)));
-        }
-        else if (isArrayOfType(content, isSessionRow)) {
+        if (isArrayOfType(content, isSessionRow)) {
             console.log("is_session_response");
             const normalized = normalizeSessionDomainPayload({
                 sessions: content,
@@ -411,24 +402,6 @@ const isArrayOfType = <T>(arr: unknown[], typeGuard: (item: unknown) => item is 
     return Array.isArray(arr) && arr.every((item) => typeGuard(item));
 };
 
-
-const isOutgoingMessage = (item: unknown): item is OutgoingMessage => {
-    if (typeof item !== 'object' || item === null) return false;
-    const o = item as Record<string, unknown>;
-    // OutgoingMessage has mailer as undefined (not present), no email, status as object
-    return typeof o.status === 'object' &&
-        typeof o.mailer === 'undefined' &&
-        !('email' in o);
-};
-
-const isIncomingMessage = (item: unknown): item is IncomingMessage => {
-    if (typeof item !== 'object' || item === null) return false;
-    const o = item as Record<string, unknown>;
-    // IncomingMessage has mailer as number, no email, status as object
-    return typeof o.status === 'object' &&
-        typeof o.mailer === 'number' &&
-        !('email' in o);
-};
 
 const logGuardInvalidReasons = (guardName: string, reasons: string[], response: unknown) => {
     if (reasons.length === 0) return;

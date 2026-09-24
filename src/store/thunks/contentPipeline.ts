@@ -1,7 +1,8 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { fetchData } from '../../library/Thunks';
 import { buildFetchDataPayload } from '../../library/ThunksUtils';
-import { LOADING_DEEP_LINK_PAIRS, LoadingDeepLinkPair, parseLoadingTreeFlags, primaryLoadingWebapp, resolveViewerDeepLinkSearch } from '../../loadingRouteUtils';
+import { LOADING_DEEP_LINK_PAIRS, LoadingDeepLinkPair, getDeepLinkTreeIds, parseLoadingTreeFlags, resolveViewerDeepLinkSearch } from '../../loadingRouteUtils';
+import { buildDeepLinkSessionQueries } from '../../library/fallbackSessionQuery';
 import {
   completedUnzipping,
   toggleUnzipCourses,
@@ -62,8 +63,6 @@ export const loadPncContent = createAsyncThunk<
     const hasQuiz = foundPairs.length > 0
       ? foundPairs.some((p) => p.webapp === 'quiz')
       : treeFlags.hasQuiz;
-    const webapp = primaryLoadingWebapp(resolvedSearch, foundPairs);
-
     dispatch(toggleUnzipTutorials(hasTutorial));
     dispatch(toggleUnzipCourses(hasCourse));
     dispatch(toggleUnzipQuizzes(hasQuiz));
@@ -77,9 +76,11 @@ export const loadPncContent = createAsyncThunk<
         buildFetchDataPayload(
           { isUnzipCourses: hasCourse, isUnzipQuizzes: hasQuiz, isUnzipTutorials: hasTutorial },
           {
-            search: resolvedSearch,
-            webapp,
-            convolution: webapp,
+            search: null,
+            webapp: 'session',
+            convolution: 'session',
+            requestTake: 1,
+            queriesOverride: buildDeepLinkSessionQueries(getDeepLinkTreeIds(resolvedSearch)),
           },
         ),
       ),
