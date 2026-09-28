@@ -13,7 +13,7 @@ import { mediaHydration } from "./actions";
 import { InitializedLoadingPayload } from "../store/slices/sessionSlice";
 import { CustomJwtPayload, AuthPayload } from "./types";
 import { RootState } from "../store";
-import { FetchDataPayload, Executedquery, validateThenDispatch, getAccountRecords, getAnonymousRecords } from "./ThunksUtils";
+import { FetchDataPayload, Executedquery, jsonHeaders, validateThenDispatch, getAccountRecords, getAnonymousRecords } from "./ThunksUtils";
 import { resetAppliedRouterSelections } from "../Hooks/useShortcuts";
 
 export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayload, { rejectValue: string }>(
@@ -30,7 +30,7 @@ export const authenticate = createAsyncThunk<InitializedLoadingPayload, AuthPayl
         const timeoutId = setTimeout(() => controller.abort(), timeout);
         try {
             const response = await fetch(ToolKit.accountLoginUrl, {
-                headers: { 'Content-Type': 'application/json' },
+                headers: jsonHeaders,
                 body: JSON.stringify(variables),
                 method: 'POST',
                 signal: controller.signal,

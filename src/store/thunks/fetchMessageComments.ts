@@ -1,4 +1,5 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { jsonHeaders } from '../../library/ThunksUtils';
 import { timeout } from '../../utils';
 import {
   getLatestRootCommentSelection,
@@ -34,7 +35,7 @@ async function postJson<T>(url: string, body: unknown): Promise<T> {
   try {
     const response = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: jsonHeaders,
       body: JSON.stringify(body),
       signal: controller.signal,
     });
