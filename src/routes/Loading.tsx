@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import * as styles from '../styles/loading.module.css';
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,6 +10,7 @@ import {
   LOADING_DEEP_LINK_PAIRS,
   deepLinkExtraParams,
   getDeepLinkTreeIds,
+  hasLoadingDeepLinkParams,
   parseLoadingTreeFlags,
   primaryLoadingRoute,
   resolveViewerDeepLinkSearch,
@@ -24,11 +25,12 @@ import {
 import { unzipMessage } from '../store/thunks/unzipMessage';
 import { buildConvolutionNavigateTo, warnConvolutionCsFsqConflict } from '../library/convolutionNavSearch';
 import { parseRandomizedQueryParam } from '../library/randomizedQuery';
+import SearchLanding from './SearchLanding';
 
 const MIN_LOADING_DELAY_MS = 2_000;
 const MAX_LOADING_WAIT_MS = 30_000;
 
-const Loading: React.FC = () => {
+const LoadingScreen: React.FC<{ fallbackSearch: string }> = ({ fallbackSearch }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -144,7 +146,7 @@ const Loading: React.FC = () => {
                 webapp: 'session',
                 convolution: 'session',
                 requestTake: 1,
-                queriesOverride: buildFallbackSessionQueries('images'),
+                queriesOverride: buildFallbackSessionQueries(fallbackSearch),
               }
             : {
                 search: null,
@@ -156,7 +158,7 @@ const Loading: React.FC = () => {
         ),
       ),
     );
-  }, [location.search, dispatch, foundPairs, hasTutorial, hasCourse, hasQuiz, hasTreeParams, contentAlreadyLoaded]);
+  }, [location.search, dispatch, foundPairs, hasTutorial, hasCourse, hasQuiz, hasTreeParams, contentAlreadyLoaded, fallbackSearch]);
 
   useEffect(() => {
     if (contentAlreadyLoaded) {
@@ -252,6 +254,28 @@ const Loading: React.FC = () => {
       <span></span>
     </div>
   );
+};
+
+/** Last submitted landing search; kept in memory so returning to `/` (e.g. after login) reuses it. */
+let lastFallbackSearch: string | null = null;
+
+/** No valid deep-link params: ask for the fallback search text before loading. */
+const Loading: React.FC = () => {
+  const location = useLocation();
+  const [fallbackSearch, setFallbackSearch] = useState<string | null>(lastFallbackSearch);
+  const hasParams = hasLoadingDeepLinkParams(resolveViewerDeepLinkSearch(location.search));
+
+  if (!hasParams && fallbackSearch === null) {
+    return (
+      <SearchLanding
+        onSearch={(text) => {
+          lastFallbackSearch = text;
+          setFallbackSearch(text);
+        }}
+      />
+    );
+  }
+  return <LoadingScreen fallbackSearch={fallbackSearch ?? ''} />;
 };
 
 export default Loading;
