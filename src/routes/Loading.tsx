@@ -26,6 +26,7 @@ import { unzipMessage } from '../store/thunks/unzipMessage';
 import { buildConvolutionNavigateTo, warnConvolutionCsFsqConflict } from '../library/convolutionNavSearch';
 import { parseRandomizedQueryParam } from '../library/randomizedQuery';
 import SearchLanding from './SearchLanding';
+import { addSearchToHistory, isSearchHistoryAvailable } from '../library/searchHistory';
 
 const MIN_LOADING_DELAY_MS = 2_000;
 const MAX_LOADING_WAIT_MS = 30_000;
@@ -269,6 +270,7 @@ const Loading: React.FC = () => {
     return (
       <SearchLanding
         onSearch={(text) => {
+          if (isSearchHistoryAvailable()) addSearchToHistory(text);
           lastFallbackSearch = text;
           setFallbackSearch(text);
         }}
