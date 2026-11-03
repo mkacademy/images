@@ -1,23 +1,16 @@
 import { createAction } from '@reduxjs/toolkit';
 import { BaseFormattedData, DataRow, BaseEntity, Row } from '../../types/cpanel';
-import Boss from '../../components/Core/Boss';
-import Minion from '../../components/Core/Minion';
-import Sifter from '../../components/Core/Sifter';
-import Filter from '../../components/Core/Filter';
-import Underboss from '../../components/Core/Underboss';
-import Dashboard from '../../components/Core/Dashboard';
-import Instruction from '../../components/Core/Instruction';
 
 export type { Row };
 
 export type EntityTypeMap = {
-  bosses: Boss;
-  minions: Minion;
-  sifters: Sifter;
-  filters: Filter;
-  underbosses: Underboss;
-  dashboards: Dashboard;
-  instructions: Instruction;
+  bosses: BaseEntity;
+  minions: BaseEntity;
+  sifters: BaseEntity;
+  filters: BaseEntity;
+  underbosses: BaseEntity;
+  dashboards: BaseEntity;
+  instructions: BaseEntity;
   foundation: BaseEntity;
 };
 

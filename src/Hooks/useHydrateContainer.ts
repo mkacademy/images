@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { isDehydrated } from '../library/controlPanelUtils';
+import { isDehydrated, type IsDehydratedItem } from '../library/controlPanelUtils';
 import { hydrateContainer, type HydrateContentWebapp } from '../store/thunks/hydrateContent';
 import type { AppDispatch } from '../store';
 
@@ -19,7 +19,7 @@ export function useHydrateContainer(
 }
 
 export function hasDehydratedChildren(
-  rows: Array<{ id: number; bannerId?: number; filterId?: number; sifterId?: number; dashboardId?: number }>,
+  rows: Array<IsDehydratedItem & { bannerId?: number; filterId?: number; sifterId?: number; dashboardId?: number }>,
   bannerId: number,
 ): boolean {
   return rows.some((row) => {

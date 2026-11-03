@@ -22,19 +22,15 @@ import {
 } from '../../library/TutorialUtils';
 
 export type {
-  TutorialClearSelectedErasePayload,
   TutorialState,
   Banner,
   Content,
   SetTutorialsPayload,
   dismissTutorialPayload,
-  TutorialReOrderSelectionPayload,
 } from '../../library/TutorialUtils';
 
 export {
-  ordinalForReorder,
   findTutorialContentRow,
-  applyOrdinalRangeReorder,
   tutorialSlideExists,
 } from '../../library/TutorialUtils';
 

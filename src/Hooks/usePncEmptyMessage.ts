@@ -10,7 +10,6 @@ const OOPS = 'oops! nothing in here';
  */
 export function usePncEmptyMessage(): string {
   const requestIsFetching = useSelector((state: RootState) => state.view.requestIsFetching);
-  const requestIsSkeletons = useSelector((state: RootState) => state.view.requestIsSkeletons);
   const hydrationQueries = useSelector((state: RootState) => state.session.hydrationQueries);
   const isNotUnzipping = useSelector((state: RootState) => state.settings.isNotUnzipping);
   const isUnzipTutorials = useSelector((state: RootState) => state.settings.isUnzipTutorials);
@@ -22,7 +21,6 @@ export function usePncEmptyMessage(): string {
 
   const isLoading =
     requestIsFetching ||
-    requestIsSkeletons ||
     hydrationQueries > 0 ||
     pipelineBusy;
 

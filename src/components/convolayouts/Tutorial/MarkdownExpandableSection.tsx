@@ -1,8 +1,10 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { isMarkdownSlotValue, isPlainTextSlotValue } from '../../../library/imageUtils';
 import * as styles from '../../../styles/course.module.css';
 import { getSectionClass, SlideType } from './Content';
-import MarkdownExpandPane from './MarkdownExpandPane';
+
+// react-markdown + remark-gfm stay out of the main bundle until a markdown row expands.
+const MarkdownExpandPane = lazy(() => import('./MarkdownExpandPane'));
 
 /** Same gate as the Snapshot card — show expand for markdown or plain-text slots. */
 export const canExpandMarkdownSlot = (imageurl: string): boolean =>
@@ -49,7 +51,9 @@ const MarkdownExpandableSection: React.FC<MarkdownExpandableSectionProps> = ({
   return (
     <section className={sectionClass}>
       {expanded ? (
-        <MarkdownExpandPane imageurl={slide.imageurl} onClose={onClose} />
+        <Suspense fallback={null}>
+          <MarkdownExpandPane imageurl={slide.imageurl} onClose={onClose} />
+        </Suspense>
       ) : (
         children({ canExpand, onExpand })
       )}

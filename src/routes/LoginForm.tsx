@@ -41,7 +41,6 @@ const LoginForm: React.FC = () => {
         password,
         seconds: Number(seconds),
         selectedRole,
-        ingredients: {},
       }));
       if (authenticate.fulfilled.match(resultAction)) {
         dispatch(initializedLoading(resultAction.payload));

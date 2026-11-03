@@ -1,5 +1,5 @@
 import type { Middleware } from '@reduxjs/toolkit';
-import type { RootState } from '../index';
+import type { AppDispatch, RootState } from '../index';
 import { mutateCurApp } from '../slices/sessionSlice';
 import { abortIfHydrationDisabled } from '../../library/hydrationUtils';
 import { isHydrationSessionBusy } from '../../library/hydrationQueue';
@@ -13,15 +13,16 @@ const hydrationOnCurAppChange: Middleware<{}, RootState> = ({ dispatch, getState
   const result = next(action);
 
   if (!mutateCurApp.match(action) || !isPncWebapp(action.payload)) return result;
+  const webapp = action.payload;
 
   const {
     settings: { isUnzipCourses, isUnzipTutorials, isUnzipQuizzes },
   } = getState();
 
   const shouldRun =
-    (action.payload === 'tutorial' && isUnzipTutorials) ||
-    (action.payload === 'course' && isUnzipCourses) ||
-    (action.payload === 'quiz' && isUnzipQuizzes);
+    (webapp === 'tutorial' && isUnzipTutorials) ||
+    (webapp === 'course' && isUnzipCourses) ||
+    (webapp === 'quiz' && isUnzipQuizzes);
 
   if (!shouldRun || abortIfHydrationDisabled(getState)) return result;
 
@@ -29,7 +30,8 @@ const hydrationOnCurAppChange: Middleware<{}, RootState> = ({ dispatch, getState
   if (hydrationQueries > 0 || isHydrationSessionBusy()) return result;
 
   setTimeout(() => {
-    void dispatch(hydrateContent([action.payload]));
+    // Plain Middleware dispatch isn't thunk-aware; the store's dispatch is.
+    void (dispatch as AppDispatch)(hydrateContent([webapp]));
   }, 0);
 
   return result;
