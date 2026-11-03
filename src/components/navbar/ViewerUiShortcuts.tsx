@@ -8,10 +8,17 @@ import { clearData as clearReducers } from '../../store/slices/rowSlice';
 import { dispatchEscapeKeyShortcut, resetAppliedRouterSelections } from '../../Hooks/useShortcuts';
 import * as styles from '../../styles/shortcuts.module.css';
 import ViewerNavigation from './ViewerNavigation';
-import { isViewerLoadingRoute, isViewerLoginRoute, isViewerNotFoundRoute, isViewerUnknownRoute } from '../../loadingRouteUtils';
+import {
+  SEARCH_LANDING_STATE,
+  isViewerLoadingRoute,
+  isViewerLoginRoute,
+  isViewerNotFoundRoute,
+  isViewerUnknownRoute,
+} from '../../loadingRouteUtils';
 
 const account = new URL('../../Images/user.png', import.meta.url).href;
 const exit = new URL('../../Images/3094700.png', import.meta.url).href;
+const searchIcon = new URL('../../Images/search-icon.png', import.meta.url).href;
 
 interface ViewerUiShortcutsProps {
   convCss?: string;
@@ -66,6 +73,11 @@ const ViewerUiShortcuts: React.FC<ViewerUiShortcutsProps> = ({ convCss = 'carder
         </button>
       </div>
       <ViewerNavigation convCss={convCss} />
+      <div className={container}>
+        <Link to="/" state={SEARCH_LANDING_STATE} aria-label="Search">
+          <Image className={cssClass} src={searchIcon} alt="" />
+        </Link>
+      </div>
       <div className={container} style={{ position: 'relative' }}>
         <Link
           to={{ pathname: '/login', search: loginSearch }}

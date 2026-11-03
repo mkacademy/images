@@ -11,6 +11,7 @@ import {
   deepLinkExtraParams,
   getDeepLinkTreeIds,
   hasLoadingDeepLinkParams,
+  isSearchLandingState,
   parseLoadingTreeFlags,
   primaryLoadingRoute,
   resolveViewerDeepLinkSearch,
@@ -263,7 +264,9 @@ let lastFallbackSearch: string | null = null;
 /** No valid deep-link params: ask for the fallback search text before loading. */
 const Loading: React.FC = () => {
   const location = useLocation();
-  const [fallbackSearch, setFallbackSearch] = useState<string | null>(lastFallbackSearch);
+  const [fallbackSearch, setFallbackSearch] = useState<string | null>(() =>
+    isSearchLandingState(location.state) ? null : lastFallbackSearch,
+  );
   const hasParams = hasLoadingDeepLinkParams(resolveViewerDeepLinkSearch(location.search));
 
   if (!hasParams && fallbackSearch === null) {
