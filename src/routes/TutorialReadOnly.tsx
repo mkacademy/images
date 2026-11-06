@@ -4,6 +4,7 @@ import * as styles from '../styles/404.module.css';
 import Tutorials from '../components/convolayouts/Tutorial/Screen';
 import { ArticleSelector } from '../components/convolutions/ViewSelector';
 import ArticleNavFooter from '../components/convolutions/ArticleNavFooter';
+import SessionPager from '../components/Pagination/SessionPager';
 import * as courseStyles from '../styles/course.module.css';
 import { CourseGlobal } from '../components/views/wrappers/courseGlobal';
 import { useSelector } from 'react-redux';
@@ -42,6 +43,7 @@ const TutorialReadOnly: React.FC<TutorialReadOnlyProps> = ({ setWebApp, noTutori
         ) : (
           <Tutorials noTutorials={noTutorials} />
         )}
+        <SessionPager screen="tutorial" />
         <ArticleNavFooter>
           <ArticleSelector content="Tutorials" noArticles={noTutorials} />
         </ArticleNavFooter>

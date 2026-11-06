@@ -1,4 +1,5 @@
 import Slide from './Slide';
+import { useSessionPagerVisibleIds } from '../../../Hooks/useSessionPagerVisibleIds';
 import Banner from './Banner';
 import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
@@ -29,6 +30,7 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials }) => {
   const banners = useSelector((state: RootState) => state.tutorial.banners);
   const content = useSelector((state: RootState) => state.tutorial.content);
   const selected = useSelector((state: RootState) => state.tutorial.selected);
+  const visibleIds = useSessionPagerVisibleIds('tutorial');
 
 
   useEffect(() => {
@@ -101,7 +103,7 @@ const Screen: React.FC<ScreenProps> = ({ noTutorials }) => {
           )}
         </>
       ) : (
-        banners.filter(predicate).map((banner: BannerType, i: number) => (
+        banners.filter((b) => predicate(b) && (!visibleIds || visibleIds.has(b.id))).map((banner: BannerType, i: number) => (
           <Banner
             id={banner.id}
             key={banner.id}

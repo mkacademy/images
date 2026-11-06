@@ -24,6 +24,7 @@ import {
   randomizedTypeSelected,
 } from '../store/slices/settingsSlice';
 import { unzipMessage } from '../store/thunks/unzipMessage';
+import { initSessionPager } from '../store/thunks/sessionPager';
 import { buildConvolutionNavigateTo, warnConvolutionCsFsqConflict } from '../library/convolutionNavSearch';
 import { parseRandomizedQueryParam } from '../library/randomizedQuery';
 import SearchLanding from './SearchLanding';
@@ -134,7 +135,8 @@ const LoadingScreen: React.FC<{ fallbackSearch: string }> = ({ fallbackSearch })
     if (randomizedType) dispatch(randomizedTypeSelected(randomizedType));
     dispatch(completedUnzipping(true));
     setCurPage(0);
-    dispatch(
+    const pagerSearchKey = isFallbackLoad ? `search:${fallbackSearch}` : `link:${resolvedSearch}`;
+    void dispatch(
       fetchData(
         buildFetchDataPayload(
           {
@@ -159,7 +161,11 @@ const LoadingScreen: React.FC<{ fallbackSearch: string }> = ({ fallbackSearch })
               },
         ),
       ),
-    );
+    ).then((result) => {
+      if (fetchData.fulfilled.match(result)) {
+        void dispatch(initSessionPager({ searchKey: pagerSearchKey, executedQueries: result.payload }));
+      }
+    });
   }, [location.search, dispatch, foundPairs, hasTutorial, hasCourse, hasQuiz, hasTreeParams, contentAlreadyLoaded, fallbackSearch]);
 
   useEffect(() => {

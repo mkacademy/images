@@ -1,3 +1,4 @@
+import { initSessionPager } from './sessionPager';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { fetchData } from '../../library/Thunks';
 import { buildFetchDataPayload } from '../../library/ThunksUtils';
@@ -89,6 +90,10 @@ export const loadPncContent = createAsyncThunk<
     if (fetchData.rejected.match(fetchResult)) {
       return { skipped: false as const, fetched: false, unzipped: false };
     }
+    await dispatch(initSessionPager({
+      searchKey: `link:${resolvedSearch}`,
+      executedQueries: fetchResult.payload,
+    }));
 
     await dispatch(unzipMessage());
 

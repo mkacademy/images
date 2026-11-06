@@ -3,6 +3,7 @@ import { _500 as Notfound } from '../components/views/404';
 import CourseCanopy from '../components/convolayouts/Course/Canopy';
 import { ArticleSelector, ChaptersSelector } from '../components/convolutions/ViewSelector';
 import ArticleNavFooter from '../components/convolutions/ArticleNavFooter';
+import SessionPager from '../components/Pagination/SessionPager';
 import { CourseGlobal } from '../components/views/wrappers/courseGlobal';
 import Comments from '../components/views/Comments';
 import * as pennantStyles from '../styles/course.module.css';
@@ -44,6 +45,7 @@ const CourseReadOnly: React.FC<CourseReadOnlyProps> = ({ setWebApp, noCourses })
         ) : (
           <CourseCanopy noCourses={noCourses} />
         )}
+        <SessionPager screen="course" />
         <ArticleNavFooter>
           {chapterIndexes.length === 0 ? (
             <ArticleSelector content="Courses" noArticles={noCourses} />

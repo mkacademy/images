@@ -20,6 +20,8 @@ export interface SessionItem {
   isHighlighted: boolean;
   status: number;
   descendentsSums: Record<string, number>;
+  /** `instructionId` = parent session id(s). */
+  metadata?: { instructionId?: number | number[] };
 }
 
 export interface SessionRow {

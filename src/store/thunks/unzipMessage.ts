@@ -64,11 +64,13 @@ const scheduleCompletedUnzippingWhenIdle = (
 /** Unzips sessionItems.quote into Trees + skeleton PNC rows. */
 export const unzipMessage = createAsyncThunk<
   { hasTrees: boolean },
-  void,
+  /** `pagerItemId`: unzip only that session item, ignoring deep-link id restrictions. */
+  { pagerItemId?: number } | void,
   { state: RootState; dispatch: AppDispatch }
 >(
   'content/unzipMessage',
-  async (_, { dispatch, getState }) => {
+  async (arg, { dispatch, getState }) => {
+    const pagerItemId = arg ? arg.pagerItemId : undefined;
     const state = getState();
     const {
       settings: {
@@ -85,8 +87,12 @@ export const unzipMessage = createAsyncThunk<
     const viewerSearch = typeof window !== 'undefined'
       ? resolveViewerDeepLinkSearch(window.location.search)
       : '';
-    const restrictToUrlIds = hasLoadingDeepLinkParams(viewerSearch);
-    const treeIds = getDeepLinkTreeIds(viewerSearch);
+    const isPagerUnzip = pagerItemId !== undefined;
+    const restrictToUrlIds = !isPagerUnzip && hasLoadingDeepLinkParams(viewerSearch);
+    const urlTreeIds = getDeepLinkTreeIds(viewerSearch);
+    const treeIds = isPagerUnzip
+      ? { tutorial: pagerItemId, course: pagerItemId, quiz: pagerItemId }
+      : urlTreeIds;
     const tutorialTrees: ItemWithTutorialTrees[] = collectKindTrees<TutorialTrees>(
       sessionItems,
       'tutorial',

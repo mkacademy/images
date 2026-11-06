@@ -1,3 +1,4 @@
+import { capturedSessionResponse } from '../store/slices/sessionPagerSlice';
 import { jwtDecode } from "jwt-decode";
 import { getCurAppIndex, signOut, userroles, timeout, getGraphqlResolver, ToolKit } from "../utils";
 import { resolveViewerDeepLinkSearch } from "../loadingRouteUtils";
@@ -193,7 +194,7 @@ export const fetchData = createAsyncThunk<
     'fetchData',
     async (payload: FetchDataPayload, { rejectWithValue, getState, dispatch }) => {
         const state = getState() as RootState;
-        const { convolution, webapp, requestTake: payloadTake, queriesOverride } = payload;
+        const { convolution, webapp, requestTake: payloadTake, queriesOverride, counts: payloadCounts } = payload;
         const search = payload.search === null ? null : resolveViewerDeepLinkSearch(payload.search);
         const {
             isUnzipCourses,
@@ -233,7 +234,7 @@ export const fetchData = createAsyncThunk<
                     queriesOverride,
                     convolution: unzippedAppName,
                     formatter: unzippedAppConvolution,
-                    counts:  {},
+                    counts: payloadCounts ?? {},
                     executedQueries: {},
                     path: ToolKit.authenticatedRecordsUrl,
                 }
@@ -245,7 +246,7 @@ export const fetchData = createAsyncThunk<
                     queriesOverride,
                     convolution: unzippedAppName,
                     formatter: unzippedAppConvolution,
-                    counts: {},
+                    counts: payloadCounts ?? {},
                     executedQueries: {},
                     path: ToolKit.anonymousRecordsUrl,
                 };
@@ -260,6 +261,10 @@ export const fetchData = createAsyncThunk<
                 curApp: unzippedApp,
                 dispatch,
             });
+            if (webapp === 'session') {
+                const responseCounts = (fetchedData as { counts?: Record<string, Record<string, number>> }).counts;
+                dispatch(capturedSessionResponse(responseCounts ?? null));
+            }
             console.log(content);
             return query || {};
         } catch (error) {

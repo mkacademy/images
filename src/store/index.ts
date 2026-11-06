@@ -8,6 +8,7 @@ import tutorialReducer from './slices/tutorialSlice';
 import viewReducer from './slices/viewSlice';
 import commentsReducer from './slices/commentsSlice';
 import paginationReducer from './slices/paginationSlice';
+import sessionPagerReducer from './slices/sessionPagerSlice';
 import { bindHydrationPayloadDispatch } from '../library/hydrationPayloadBuffer';
 import { bindHydrationQueueDispatch } from '../library/hydrationQueue';
 import { preThunkMiddleware, postThunkMiddleware } from './middleware';
@@ -24,6 +25,7 @@ export const store = configureStore({
     settings: settingsReducer,
     error: errorReducer,
     pagination: paginationReducer,
+    sessionPager: sessionPagerReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

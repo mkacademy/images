@@ -4,6 +4,7 @@ import QuizzesScreen from '../components/convolayouts/Quizzes/Screen';
 import { CourseGlobal } from '../components/views/wrappers/courseGlobal';
 import { ArticleSelector, FollowupsSelector } from '../components/convolutions/ViewSelector';
 import ArticleNavFooter from '../components/convolutions/ArticleNavFooter';
+import SessionPager from '../components/Pagination/SessionPager';
 import Comments from '../components/views/Comments';
 import * as courseStyles from '../styles/course.module.css';
 import * as _404styles from '../styles/404.module.css';
@@ -43,6 +44,7 @@ const QuizReadOnly: React.FC<QuizReadOnlyProps> = ({ setWebApp, noQuizzes }) => 
         ) : (
           <QuizzesScreen noQuizzes={noQuizzes} />
         )}
+        <SessionPager screen="quiz" />
         <ArticleNavFooter>
           {followupId !== undefined ? (
             <FollowupsSelector noArticles={noQuizzes} />

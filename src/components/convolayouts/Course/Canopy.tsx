@@ -13,6 +13,7 @@ import { contentPred as courseContentPred } from './Screen';
 import { LengthItem } from '../Tutorial/Screen';
 import { useApplyRouterSelections, useClearFsqOnEscapeWhenUnselected, useExitExpandedOnEscape } from '../../../Hooks/useShortcuts';
 import Covers from './Covers';
+import { useSessionPagerVisibleIds } from '../../../Hooks/useSessionPagerVisibleIds';
 import { SlideGroupItem } from '../../../store/slices/courseSlice';
 
 interface CanopyProps {
@@ -25,6 +26,7 @@ const Canopy: React.FC<CanopyProps> = ({ noCourses }) => {
     const { state: routerState } = useLocation();
     useApplyRouterSelections(!noCourses, routerState);
     const banners = useSelector((state: RootState) => state.course.banners);
+    const visibleIds = useSessionPagerVisibleIds('course');
     const content = useSelector((state: RootState) => state.course.content);
     const selected = useSelector((state: RootState) => state.course.selected);
     const chapters = useSelector((state: RootState) => state.course.chapters) ?? [];
@@ -87,7 +89,7 @@ const Canopy: React.FC<CanopyProps> = ({ noCourses }) => {
                     )}
                 </>
             ) : (
-                banners.map((banner: CourseBannerType, i: number) => (
+                banners.filter((b) => !visibleIds || visibleIds.has(b.id)).map((banner: CourseBannerType, i: number) => (
                     <CoversBanner
                         id={banner.id}
                         key={banner.id}

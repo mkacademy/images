@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import Quiz from './Quiz';
+import { useSessionPagerVisibleIds } from '../../../Hooks/useSessionPagerVisibleIds';
 import Questions from './Questions';
 import Followups from './Followups';
 import { _500 as NotFound } from '../../views/404';
@@ -46,6 +47,7 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes }) => {
   const { state: routerState } = useLocation();
   useApplyRouterSelections(!noQuizzes, routerState);
   const quizzes = useSelector((state: RootState) => state.quiz.quizzes);
+  const visibleIds = useSessionPagerVisibleIds('quiz');
   const banners = useSelector((state: RootState) => state.quiz.banners);
   const selected = useSelector((state: RootState) => state.quiz.selected);
   const followupId = useSelector((state: RootState) => state.quiz.followupId);
@@ -177,7 +179,7 @@ const Screen: React.FC<ScreenProps> = ({ noQuizzes }) => {
         </React.Fragment>
       ) : (
         quizzes
-          .filter(({ isDismissed }) => isDismissed === false)
+          .filter(({ id, isDismissed }) => isDismissed === false && (!visibleIds || visibleIds.has(id)))
           .map((quiz, i) => {
             const { id } = quiz;
             return (

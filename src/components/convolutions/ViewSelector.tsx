@@ -2,6 +2,7 @@ import React from "react";
 import { RootState } from "../../store";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
+import { useSessionPagerVisibleIds } from "../../Hooks/useSessionPagerVisibleIds";
 import * as styles from "../../styles/course.module.css";
 import { setFollowupId, setSelected as setSelectedQuiz } from "../../store/slices/quizSlice";
 import {
@@ -29,6 +30,9 @@ const ArticleSelector: React.FC<ArticleSelectorProps> = ({ content, noArticles }
   const qSelected = useSelector((state: RootState) => state.quiz.selected);
   const cBanners = useSelector((state: RootState) => state.course.banners);
   const qBanners = useSelector((state: RootState) => state.quiz.quizzes);
+  const visibleIds = useSessionPagerVisibleIds(
+    content === "Tutorials" ? 'tutorial' : content === "Courses" ? 'course' : 'quiz',
+  );
 
   const selected =
     content === "Tutorials"
@@ -37,12 +41,24 @@ const ArticleSelector: React.FC<ArticleSelectorProps> = ({ content, noArticles }
         ? cSelected
         : qSelected;
 
-  const total =
+  const allBanners: { id: number }[] =
     content === "Tutorials"
-      ? tBanners.length
+      ? tBanners
       : content === "Courses"
-        ? cBanners.length
-        : qBanners.length;
+        ? cBanners
+        : qBanners;
+
+  // With the session pager active, step only through the current item's banners.
+  const visibleIndices = React.useMemo(
+    () => allBanners
+      .map((banner, index) => (!visibleIds || visibleIds.has(banner.id) ? index : -1))
+      .filter((index) => index > -1),
+    [allBanners, visibleIds],
+  );
+  const total = visibleIndices.length;
+  const position = visibleIndices.indexOf(selected);
+  const nextIndex = visibleIndices.find((index) => index > selected);
+  const prevIndex = [...visibleIndices].reverse().find((index) => index < selected);
 
   const label =
     content === "Tutorials"
@@ -51,41 +67,28 @@ const ArticleSelector: React.FC<ArticleSelectorProps> = ({ content, noArticles }
         ? "Course"
         : "Quiz";
 
-  const countLabel = selected < 0 ? `${label}(${total})` : `${label}(${selected + 1} - ${total})`;
+  const countLabel = selected < 0 || position < 0 ? `${label}(${total})` : `${label}(${position + 1} - ${total})`;
 
-  const isNextDisabled =
-    content === "Tutorials"
-      ? tSelected === tBanners.length - 1
-      : content === "Courses"
-        ? cSelected === cBanners.length - 1
-        : qSelected === qBanners.length - 1;
+  const isNextDisabled = selected < 0 || nextIndex === undefined;
+  const isPrevDisabled = selected <= 0 || prevIndex === undefined;
 
-  const isPrevDisabled =
-    content === "Tutorials"
-      ? tSelected <= 0
-      : content === "Courses"
-        ? cSelected <= 0
-        : qSelected <= 0;
+  const goTo = React.useCallback((index: number | undefined) => {
+    if (index === undefined) return;
+    if (content === "Tutorials")
+      dispatch(setSelectedTutorial(index));
+    else if (content === "Courses")
+      dispatch(setSelectedCourse(index));
+    else if (content === "Quizzes")
+      dispatch(setSelectedQuiz(index));
+  }, [content, dispatch]);
 
   const goNext = React.useCallback(() => {
-    if (isNextDisabled) return;
-    if (content === "Tutorials")
-      dispatch(setSelectedTutorial(tSelected + 1));
-    else if (content === "Courses")
-      dispatch(setSelectedCourse(cSelected + 1));
-    else if (content === "Quizzes")
-      dispatch(setSelectedQuiz(qSelected + 1));
-  }, [isNextDisabled, content, dispatch, tSelected, cSelected, qSelected]);
+    if (!isNextDisabled) goTo(nextIndex);
+  }, [isNextDisabled, goTo, nextIndex]);
 
   const goPrev = React.useCallback(() => {
-    if (isPrevDisabled) return;
-    if (content === "Tutorials")
-      dispatch(setSelectedTutorial(tSelected - 1));
-    else if (content === "Courses")
-      dispatch(setSelectedCourse(cSelected - 1));
-    else if (content === "Quizzes")
-      dispatch(setSelectedQuiz(qSelected - 1));
-  }, [isPrevDisabled, content, dispatch, tSelected, cSelected, qSelected]);
+    if (!isPrevDisabled) goTo(prevIndex);
+  }, [isPrevDisabled, goTo, prevIndex]);
 
   const nextHandler = (e: React.MouseEvent) => {
     e.preventDefault();
