@@ -25,6 +25,7 @@ import {
 } from '../store/slices/settingsSlice';
 import { unzipMessage } from '../store/thunks/unzipMessage';
 import { initSessionPager } from '../store/thunks/sessionPager';
+import type { PagerPageCounts } from '../library/sessionPager';
 import { buildConvolutionNavigateTo, warnConvolutionCsFsqConflict } from '../library/convolutionNavSearch';
 import { parseRandomizedQueryParam } from '../library/randomizedQuery';
 import SearchLanding from './SearchLanding';
@@ -32,6 +33,14 @@ import { addSearchToHistory, isSearchHistoryAvailable } from '../library/searchH
 
 const MIN_LOADING_DELAY_MS = 2_000;
 const MAX_LOADING_WAIT_MS = 30_000;
+
+/** Search lands on the first screen whose session set has items (tutorial when none are counted). */
+const fallbackRouteForCounts = (counts: PagerPageCounts): string => {
+  if (counts.filters > 0) return '/convolution/tutorial';
+  if (counts.sifters > 0) return '/convolution/course';
+  if (counts.dashboards > 0) return '/convolution/quiz';
+  return '/convolution/tutorial';
+};
 
 const LoadingScreen: React.FC<{ fallbackSearch: string }> = ({ fallbackSearch }) => {
   const location = useLocation();
@@ -44,6 +53,9 @@ const LoadingScreen: React.FC<{ fallbackSearch: string }> = ({ fallbackSearch })
   const tutorialCount = useSelector((state: RootState) => state.tutorial.banners.length);
   const courseCount = useSelector((state: RootState) => state.course.banners.length);
   const quizCount = useSelector((state: RootState) => state.quiz.banners.length);
+  const pagerCounts = useSelector((state: RootState) => state.sessionPager.pageCounts);
+  const pagerCountsRef = useRef(pagerCounts);
+  pagerCountsRef.current = pagerCounts;
 
   const hasNavigated = useRef(false);
   const hasTriggeredUnzip = useRef(false);
@@ -194,7 +206,7 @@ const LoadingScreen: React.FC<{ fallbackSearch: string }> = ({ fallbackSearch })
       const isFallbackLoad = !hasTreeParams && foundPairs.length === 0;
       const resolvedSearch = resolveViewerDeepLinkSearch(location.search);
       const route = isFallbackLoad
-        ? '/convolution/tutorial'
+        ? fallbackRouteForCounts(pagerCountsRef.current)
         : primaryLoadingRoute(resolvedSearch, foundPairs);
       const target = buildConvolutionNavigateTo(
         route,
