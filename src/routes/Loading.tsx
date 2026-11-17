@@ -149,7 +149,7 @@ const LoadingScreen: React.FC<{ fallbackSearch: string }> = ({ fallbackSearch })
                 search: resolvedSearch,
                 webapp: 'session',
                 convolution: 'session',
-                requestTake: 1,
+                requestTake: null,
                 queriesOverride: buildFallbackSessionQueries(fallbackSearch),
               }
             : {

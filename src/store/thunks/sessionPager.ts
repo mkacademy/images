@@ -22,6 +22,7 @@ import {
   showPagerScreen,
 } from '../slices/sessionPagerSlice';
 import { unzipMessage } from './unzipMessage';
+import { unwrapZipQuote } from '../../library/EncodingManagerUtils';
 
 type ThunkApi = { state: RootState; dispatch: AppDispatch };
 
@@ -48,6 +49,10 @@ const hasTreeFor = (state: RootState, screen: PagerScreen, itemId: number): bool
   if (screen === 'course') return !!CourseTrees[itemId];
   return !!QuizTrees[itemId];
 };
+
+/** Session search rows may carry only the zip mime (no payload); those must be fetched to unzip. */
+const canShowWithoutFetch = (state: RootState, screen: PagerScreen, item: SessionItem): boolean =>
+  hasTreeFor(state, screen, item.id) || !!unwrapZipQuote(item.quote ?? '');
 
 const currentSessionId = (state: RootState): number | undefined =>
   state.sessionPager.sessionIds[state.sessionPager.sessionIndex];
@@ -95,8 +100,9 @@ export const initSessionPager = createAsyncThunk<
   }));
   if (sessionIds.length === 0) return;
 
-  // Items returned by the first query become page 1 of their session.
-  const seen = new Set<string>();
+  // Items returned by the first query are cached as pages 1..n of their session, in response order.
+  const nextPage = new Map<string, number>();
+  const firstPageItems: Array<{ screen: PagerScreen; item: SessionItem }> = [];
   for (const item of state.session.sessionItems) {
     const screen = SCREENS.find((s) => KIND_BY_SCREEN[s] === item.kind);
     if (!screen) continue;
@@ -104,10 +110,18 @@ export const initSessionPager = createAsyncThunk<
     const sessionId = parents.find((id) => sessionIds.includes(id)) ?? (parents.length === 0 ? sessionIds[0] : undefined);
     if (sessionId === undefined) continue;
     const key = `${screen}:${sessionId}`;
-    if (seen.has(key)) continue;
-    seen.add(key);
-    dispatch(recordPagerPage({ screen, sessionId, page: 1, item }));
-    if (sessionId === sessionIds[0]) dispatch(showPagerItem({ screen, page: 1, itemId: item.id }));
+    const page = nextPage.get(key) ?? 1;
+    nextPage.set(key, page + 1);
+    dispatch(recordPagerPage({ screen, sessionId, page, item }));
+    if (page === 1 && sessionId === sessionIds[0]) firstPageItems.push({ screen, item });
+  }
+  // Show + unzip page 1 of the first session on every screen (same path as a page click).
+  for (const { screen, item } of firstPageItems) {
+    if (canShowWithoutFetch(getState(), screen, item)) {
+      await showItem(dispatch, getState, screen, 1, item);
+    } else {
+      await dispatch(pageSessionItem({ screen, page: 1 }));
+    }
   }
 });
 
@@ -127,7 +141,7 @@ export const pageSessionItem = createAsyncThunk<void, { screen: PagerScreen; pag
       await delayMs(convolutionDelay);
 
       const cached = getState().sessionPager.pages[screen][sessionId]?.[page];
-      if (cached) {
+      if (cached && canShowWithoutFetch(getState(), screen, cached)) {
         await showItem(dispatch, getState, screen, page, cached);
         return;
       }
